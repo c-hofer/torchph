@@ -71,3 +71,21 @@ class PredictionMonitor(Plugin):
             return """Accuracy: {:.2f} %""".format(100*self.accuracy)
         else:
             return "Accuracy: na"
+
+
+class LossMonitor(Plugin):
+    def __init__(self):
+        super(LossMonitor, self).__init__()
+        self.losses_by_epoch = []
+        self._losses_current_epoch = []
+
+    def register(self, trainer):
+        trainer.events.post_batch_backward.append(self.post_batch_backward_handler)
+        trainer.events.post_epoch.append(self.post_epoch_handler)
+
+    def post_batch_backward_handler(self, **kwargs):
+        self._losses_current_epoch.append(kwargs['loss'])
+
+    def post_epoch_handler(self, **kwargs):
+        self.losses_by_epoch.append(self._losses_current_epoch)
+        self._losses_current_epoch = []

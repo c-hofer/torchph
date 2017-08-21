@@ -1,13 +1,18 @@
 from torch.autograd import Variable
+from torch.nn import Module
+from torch.optim import Optimizer
+from torch.utils.data import DataLoader
+from typing import Callable
 
 
 class Event:
     def __init__(self):
         self._callbacks = []
 
-    def __call__(self, *args, **kwargs):
+    def __call__(self, default_kwargs: {}, **kwargs):
+        kwargs.update(default_kwargs)
         for callback in self._callbacks:
-            callback(*args, **kwargs)
+            callback(**kwargs)
 
     def append(self, callback):
         if not callable(callback):
@@ -32,49 +37,56 @@ class TrainerEvents:
 
 
 class Trainer(object):
-    def __init__(self, n_epochs=None, model=None, criterion=None, optimizer=None, dataset=None):
+    def __init__(self, model: Module, loss: Callable, optimizer: Optimizer, train_data: DataLoader, n_epochs=None):
         self.n_epochs = n_epochs
         self.model = model
-        self.criterion = criterion
+        self.criterion = loss
         self.optimizer = optimizer
-        self.dataset = dataset
+        self.train_data = train_data
         self.epoch_count = 1
-        self.batch_count = 1
 
         self.return_value = {}
 
         self.events = TrainerEvents()
 
+    def _get_default_event_kwargs(self):
+        return {'model': self.model,
+                'epoch_count': self.epoch_count}
+
     @property
     def iteration_count(self):
-        return self.batch_count * self.batch_count
+        return self.batch_count * self.epoch_count
 
     def register_plugin(self, plugin):
         plugin.register(self)
 
     def run(self):
-        self.events.pre_run()
+        self.events.pre_run(self._get_default_event_kwargs())
 
         for i in range(1, self.n_epochs + 1):
             self.epoch_count = i
 
-            self.events.pre_epoch()
-            self._train()
-            self.events.post_epoch()
-            self.events.post_epoch_gui()
+            self.events.pre_epoch(self._get_default_event_kwargs(),
+                                  optimizer=self.optimizer,
+                                  train_data=self.train_data,
+                                  max_epochs=self.n_epochs,
+                                  current_epoch_number=i)
+            self._train_epoch()
+            self.events.post_epoch(self._get_default_event_kwargs())
+            self.events.post_epoch_gui(self._get_default_event_kwargs())
 
-        self.events.post_run()
+        self.events.post_run(self._get_default_event_kwargs())
         return self.return_value
 
-    def _train(self):
+    def _train_epoch(self):
         self.model.train()
 
-        for i, data in enumerate(self.dataset, start=1):
-            self.batch_count = i
+        for i, (batch_input, batch_target) in enumerate(self.train_data, start=1):
+            batch_input, batch_target = self.data_typing_hook(batch_input, batch_target)
 
-            batch_input, batch_target = data
-
-            self.events.pre_batch(batch_input=batch_input, batch_target=batch_target)
+            self.events.pre_batch(self._get_default_event_kwargs(),
+                                  batch_input=batch_input,
+                                  batch_target=batch_target)
 
             target_var = Variable(batch_target)
 
@@ -83,11 +95,20 @@ class Trainer(object):
                 loss = self.criterion(batch_output, target_var)
                 loss.backward()
 
-                self.events.post_batch_backward(batch_output=batch_output, loss=loss)
+                assert len(loss.data) == 1
+                self.events.post_batch_backward(self._get_default_event_kwargs(),
+                                                batch_output=batch_output,
+                                                loss=float(loss.data[0]))
 
                 return loss
 
             self.optimizer.zero_grad()
             self.optimizer.step(closure)
 
-            self.events.post_batch(batch_input=batch_input, batch_target=batch_target)
+            self.events.post_batch(self._get_default_event_kwargs(),
+                                   batch_input=batch_input,
+                                   batch_target=batch_target,
+                                   current_batch_number=i)
+
+    def data_typing_hook(self, batch_input, batch_targets):
+        return batch_input, batch_targets

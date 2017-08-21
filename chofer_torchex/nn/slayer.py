@@ -15,7 +15,7 @@ def safe_tensor_size(tensor, dim):
 
 
 class SLayer(Module):
-    def __init__(self, n_elements, point_dimension,
+    def __init__(self, n_elements, point_dimension=2,
                  centers_init=None,
                  sharpness_init=None):
         super(SLayer, self).__init__()
@@ -104,7 +104,7 @@ class SLayer(Module):
                                                                                    gpu=self.is_gpu)
 
         else:
-            raise ValueError('SLayer does not recognize input format!')
+            raise ValueError('SLayer does not recognize input format! Expecting [Tensor] or prepared batch.')
 
         batch = Variable(batch, requires_grad=False)
         batch = torch.cat([batch] * self.n_elements, 1)
