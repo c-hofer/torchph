@@ -110,5 +110,6 @@ class Trainer(object):
                                    batch_target=batch_target,
                                    current_batch_number=i)
 
-    def data_typing_hook(self, batch_input, batch_targets):
+    @staticmethod
+    def data_typing_hook(batch_input, batch_targets):
         return batch_input, batch_targets
