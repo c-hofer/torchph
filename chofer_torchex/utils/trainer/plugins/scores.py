@@ -2,6 +2,7 @@ from .plugin import Plugin
 from torch.utils.data.dataloader import DataLoader
 from sklearn.metrics import accuracy_score, confusion_matrix
 from collections import OrderedDict
+from torch.autograd import Variable
 
 
 class PredictionMonitor(Plugin):
@@ -17,9 +18,7 @@ class PredictionMonitor(Plugin):
 
         self.evaluated_this_epoch = False
 
-
     def register(self, trainer):
-
         trainer.events.post_epoch.append(self.post_epoch_handler)
 
     def post_epoch_handler(self, **kwargs):
@@ -31,6 +30,7 @@ class PredictionMonitor(Plugin):
 
         else:
             model = kwargs['model']
+            cuda = kwargs['cuda']
             model.eval()
 
             target_list = []
@@ -40,6 +40,10 @@ class PredictionMonitor(Plugin):
                 print('testing...', end='\n')
 
             for batch_input, target in self._test_data:
+                if cuda:
+                    batch_input = batch_input.cuda()
+
+                batch_input = Variable(batch_input)
 
                 output = model(batch_input).data
                 predictions = output.max(1)[1].type_as(target)

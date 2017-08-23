@@ -55,7 +55,9 @@ class Trainer(object):
 
     def _get_default_event_kwargs(self):
         return {'model': self.model,
-                'epoch_count': self.epoch_count}
+                'epoch_count': self.epoch_count,
+                'cuda': self.cuda
+                }
 
     @property
     def iteration_count(self):
