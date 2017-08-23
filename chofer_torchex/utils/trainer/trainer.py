@@ -131,10 +131,10 @@ class Trainer(object):
         batch_input, batch_targets = self.before_data_typing_hook(batch_input, batch_targets)
 
         if self.cuda:
-            batch_input.cuda(), batch_targets.cuda()
+            batch_input, batch_targets = batch_input.cuda(), batch_targets.cuda()
 
         else:
-            batch_input.cpu(), batch_targets.cpu()
+            batch_input, batch_targets = batch_input.cpu(), batch_targets.cpu()
 
         batch_input, batch_targets = self.after_data_typing_hook(batch_input, batch_targets)
 
