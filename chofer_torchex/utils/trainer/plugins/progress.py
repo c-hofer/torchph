@@ -26,11 +26,7 @@ class ConsoleBatchProgress(Plugin):
 
     def post_batch_handler(self, **kwargs):
         current_batch_number = kwargs['current_batch_number']
-
-        if current_batch_number == 1:
-            print('')
-        else:
-            print(self._blanks, end='\r')
+        print(self._blanks, end='\r')
 
         str = """Epoch {}/{} Batch {}/{} ({:.2f} %)""".format(self.current_epoch_number,
                                                                 self.max_epochs,
@@ -41,5 +37,4 @@ class ConsoleBatchProgress(Plugin):
         print(str, end='\r')
 
     def post_epoch_handler(self, **kwargs):
-        print('')
-
+         print('')

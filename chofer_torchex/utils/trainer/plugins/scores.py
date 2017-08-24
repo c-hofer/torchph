@@ -6,12 +6,12 @@ from torch.autograd import Variable
 
 
 class PredictionMonitor(Plugin):
-    def __init__(self, test_data: DataLoader, eval_every_n_epochs=1, print_to_std_out=False):
+    def __init__(self, test_data: DataLoader, eval_every_n_epochs=1, verbose=False):
         super(PredictionMonitor, self).__init__()
 
         self.eval_ever_n_epochs = eval_every_n_epochs
         self._test_data = test_data
-        self._print_to_std_out = print_to_std_out
+        self.verbose = verbose
 
         self.accuracies = OrderedDict()
         self.confusion_matrices = OrderedDict()
@@ -36,8 +36,8 @@ class PredictionMonitor(Plugin):
             target_list = []
             predictions_list = []
 
-            if self._print_to_std_out:
-                print('testing...', end='\n')
+            if self.verbose:
+                print('testing...', end=' ')
 
             for batch_input, target in self._test_data:
                 if cuda:
@@ -55,7 +55,7 @@ class PredictionMonitor(Plugin):
             self.confusion_matrices[epoch_count] = confusion_matrix(target_list, predictions_list)
             self.evaluated_this_epoch = True
 
-            if self._print_to_std_out:
+            if self.verbose:
                 print(str(self))
 
     @staticmethod
