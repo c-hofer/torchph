@@ -3,6 +3,7 @@ from torch.nn import Module
 from torch.optim import Optimizer
 from torch.utils.data import DataLoader
 from typing import Callable
+from torch import Tensor
 
 
 class Event:
@@ -132,11 +133,16 @@ class Trainer(object):
     def data_typing(self, batch_input, batch_targets):
         batch_input, batch_targets = self.before_data_typing_hook(batch_input, batch_targets)
 
-        if self.cuda:
-            batch_input, batch_targets = batch_input.cuda(), batch_targets.cuda()
+        cast_func = Tensor.cuda if self.cuda else Tensor.cpu
 
-        else:
-            batch_input, batch_targets = batch_input.cpu(), batch_targets.cpu()
+        def cast(x):
+            if isinstance(x, dict):
+                return {k: cast(v) for k, v in x.items()}
+            else:
+                return cast_func(x)
+
+        batch_input = cast(batch_input)
+        batch_targets = cast(batch_targets)
 
         batch_input, batch_targets = self.after_data_typing_hook(batch_input, batch_targets)
 
