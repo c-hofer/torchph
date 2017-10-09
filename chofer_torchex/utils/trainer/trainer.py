@@ -40,7 +40,8 @@ class TrainerEvents:
 class Trainer(object):
     def __init__(self, model: Module, loss: Callable, optimizer: Optimizer, train_data: DataLoader, n_epochs,
                  cuda=False,
-                 cuda_device_id=None):
+                 cuda_device_id=None,
+                 variable_created_by_model=False):
         self.n_epochs = n_epochs
         self.model = model
         self.criterion = loss
@@ -49,6 +50,7 @@ class Trainer(object):
         self.epoch_count = 1
         self.cuda = cuda
         self.cuda_device_id = cuda_device_id
+        self.variable_created_by_model = variable_created_by_model
 
         self.return_value = {}
 
@@ -100,7 +102,9 @@ class Trainer(object):
             batch_input, batch_target = self.data_typing(batch_input, batch_target)
 
             target_var = Variable(batch_target)
-            batch_input = Variable(batch_input)
+
+            if not self.variable_created_by_model:
+                batch_input = Variable(batch_input)
 
             def closure():
                 batch_output = self.model(batch_input)
