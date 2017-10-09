@@ -104,7 +104,7 @@ class SLayer(Module):
                                                                                    gpu=self.is_gpu)
 
         else:
-            raise ValueError('SLayer does not recognize input format! Expecting [Tensor] or prepared batch.')
+            raise ValueError('SLayer does not recognize input format! Expecting [Tensor] or prepared batch. Not {}'.format(input))
 
         batch = Variable(batch, requires_grad=False)
         batch = torch.cat([batch] * self.n_elements, 1)
