@@ -133,13 +133,17 @@ class Trainer(object):
     def data_typing(self, batch_input, batch_targets):
         batch_input, batch_targets = self.before_data_typing_hook(batch_input, batch_targets)
 
-        cast_func = Tensor.cuda if self.cuda else Tensor.cpu
+        tensor_cast = Tensor.cuda if self.cuda else Tensor.cpu
 
         def cast(x):
-            if isinstance(x, dict):
+            if isinstance(x, Tensor):
+                return tensor_cast(x)
+            elif isinstance(x, dict):
                 return {k: cast(v) for k, v in x.items()}
+            elif isinstance(x, tuple):
+                return (cast(v) for v in x)
             else:
-                return cast_func(x)
+                return x
 
         batch_input = cast(batch_input)
         batch_targets = cast(batch_targets)
