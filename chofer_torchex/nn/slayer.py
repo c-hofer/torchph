@@ -87,7 +87,11 @@ class SLayer(Module):
 
     @staticmethod
     def is_list_of_tensors(input):
-        return all([isinstance(x, _TensorBase) for x in input])
+        try:
+            return all([isinstance(x, _TensorBase) for x in input])
+
+        except TypeError:
+            return False
 
     @property
     def is_gpu(self):
