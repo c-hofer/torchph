@@ -6,12 +6,13 @@ from torch.autograd import Variable
 
 
 class PredictionMonitor(Plugin):
-    def __init__(self, test_data: DataLoader, eval_every_n_epochs=1, verbose=False):
+    def __init__(self, test_data: DataLoader, eval_every_n_epochs=1, verbose=False, variable_created_by_model=False):
         super(PredictionMonitor, self).__init__()
 
         self.eval_ever_n_epochs = eval_every_n_epochs
         self._test_data = test_data
         self.verbose = verbose
+        self.variable_created_by_model = variable_created_by_model
 
         self.accuracies = OrderedDict()
         self.confusion_matrices = OrderedDict()
@@ -29,8 +30,8 @@ class PredictionMonitor(Plugin):
             return
 
         else:
+            trainer = kwargs['trainer']
             model = kwargs['model']
-            cuda = kwargs['cuda']
             model.eval()
 
             target_list = []
@@ -40,10 +41,11 @@ class PredictionMonitor(Plugin):
                 print('testing...', end=' ')
 
             for batch_input, target in self._test_data:
-                if cuda:
-                    batch_input = batch_input.cuda()
 
-                batch_input = Variable(batch_input)
+                batch_input, target = trainer.data_typing(batch_input, target)
+
+                if not self.variable_created_by_model:
+                    batch_input = Variable(batch_input)
 
                 output = model(batch_input).data
                 predictions = output.max(1)[1].type_as(target)

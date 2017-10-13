@@ -84,7 +84,7 @@ class Trainer(object):
                                   max_epochs=self.n_epochs,
                                   current_epoch_number=i)
             self._train_epoch()
-            self.events.post_epoch(self._get_default_event_kwargs())
+            self.events.post_epoch(self._get_default_event_kwargs(), trainer=self)
             self.events.post_epoch_gui(self._get_default_event_kwargs())
 
         self.events.post_run(self._get_default_event_kwargs())
