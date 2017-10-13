@@ -142,6 +142,8 @@ class Trainer(object):
         def cast(x):
             if isinstance(x, Tensor):
                 return tensor_cast(x)
+            elif isinstance(x, list):
+                return [cast(v) for v in x]
             elif isinstance(x, dict):
                 return {k: cast(v) for k, v in x.items()}
             elif isinstance(x, tuple):
