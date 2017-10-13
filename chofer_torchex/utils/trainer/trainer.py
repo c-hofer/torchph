@@ -1,9 +1,11 @@
+import torch
 from torch.autograd import Variable
 from torch.nn import Module
 from torch.optim import Optimizer
 from torch.utils.data import DataLoader
 from typing import Callable
 from torch import Tensor
+
 
 
 class Event:
@@ -140,7 +142,7 @@ class Trainer(object):
         tensor_cast = Tensor.cuda if self.cuda else Tensor.cpu
 
         def cast(x):
-            if isinstance(x, Tensor):
+            if isinstance(x, torch.tensor._TensorBase):
                 return tensor_cast(x)
             elif isinstance(x, list):
                 return [cast(v) for v in x]
