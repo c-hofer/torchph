@@ -147,7 +147,7 @@ class Trainer(object):
             elif isinstance(x, dict):
                 return {k: cast(v) for k, v in x.items()}
             elif isinstance(x, tuple):
-                return (cast(v) for v in x)
+                return tuple(cast(v) for v in x)
             else:
                 return x
 
