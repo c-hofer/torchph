@@ -33,8 +33,12 @@ class SLayer(Module):
         self.sharpness = Parameter(sharpness_init)
 
     @staticmethod
-    def prepare_batch(batch: [Tensor], point_dim, gpu=False)->tuple:
-        assert not any(t.is_cuda for t in batch)
+    def prepare_batch(batch: [Tensor], point_dim)->tuple:
+        input_is_cuda = batch[0].cuda
+        assert all(t.is_cuda == input_is_cuda for t in batch)
+
+        # We do the following on cpu since there is a lot of looping
+        batch = [x.cpu() for x in batch]
 
         batch_size = len(batch)
         batch_max_points = max([safe_tensor_size(t, 0) for t in batch])
@@ -59,8 +63,8 @@ class SLayer(Module):
 
             if n_points > 0:
                 index_selection = LongTensor(range(n_points))
-                if prepared_dgm.is_cuda:
-                    index_selection = index_selection.cuda()
+                # if prepared_dgm.is_cuda:
+                #     index_selection = index_selection.cuda()
 
                 prepared_dgm.index_add_(0, index_selection, multi_set)
 
@@ -70,7 +74,7 @@ class SLayer(Module):
 
         prepared_batch = torch.stack(prepared_batch)
 
-        if gpu:
+        if input_is_cuda:
             not_dummy_points = not_dummy_points.cuda()
             prepared_batch = prepared_batch.cuda()
 
