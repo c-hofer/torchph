@@ -34,7 +34,7 @@ class SLayer(Module):
 
     @staticmethod
     def prepare_batch(batch: [Tensor], point_dim)->tuple:
-        input_is_cuda = batch[0].cuda
+        input_is_cuda = batch[0].is_cuda
         assert all(t.is_cuda == input_is_cuda for t in batch)
 
         # We do the following on cpu since there is a lot of looping
@@ -108,8 +108,7 @@ class SLayer(Module):
             batch, not_dummy_points, max_points, batch_size = input
         elif self.is_list_of_tensors(input):
             batch, not_dummy_points, max_points, batch_size = SLayer.prepare_batch(input,
-                                                                                   self.point_dimension,
-                                                                                   gpu=self.is_gpu)
+                                                                                   self.point_dimension)
 
         else:
             raise ValueError('SLayer does not recognize input format! Expecting [Tensor] or prepared batch. Not {}'.format(input))
