@@ -15,9 +15,30 @@ def safe_tensor_size(tensor, dim):
 
 
 class SLayer(Module):
-    def __init__(self, n_elements, point_dimension=2,
-                 centers_init=None,
-                 sharpness_init=None):
+    """
+    Implementation of the in
+
+    {
+      Hofer17c,
+      author    = {C.~Hofer and R.~Kwitt and M.~Niethammer and A.~Uhl},
+      title     = {Deep Learning with Topological Signatures},
+      booktitle = {NIPS},
+      year      = 2017,
+      note      = {accepted}
+    }
+
+    proposed input layer for multisets.
+    """
+    def __init__(self, n_elements: int,
+                 point_dimension: int=2,
+                 centers_init: Tensor=None,
+                 sharpness_init: Tensor=None):
+        """
+        :param n_elements: number of structure elements used
+        :param point_dimension: dimensionality of the points of which the input multi set consists of
+        :param centers_init: the initialization for the centers of the structure elements
+        :param sharpness_init: initialization for the sharpness of the structure elements
+        """
         super(SLayer, self).__init__()
 
         self.n_elements = n_elements
@@ -33,7 +54,15 @@ class SLayer(Module):
         self.sharpness = Parameter(sharpness_init)
 
     @staticmethod
-    def prepare_batch(batch: [Tensor], point_dim)->tuple:
+    def prepare_batch(batch: [Tensor], point_dim: int)->tuple:
+        """
+        This method 'vectorizes' the multiset in order to take advances of gpu processing.
+        The policy is to embed the all multisets in batch to the highest dimensionality
+        occurring in batch, i.e., max(t.size()[0] for t in batch).
+        :param batch:
+        :param point_dim:
+        :return:
+        """
         input_is_cuda = batch[0].is_cuda
         assert all(t.is_cuda == input_is_cuda for t in batch)
 
