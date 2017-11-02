@@ -126,6 +126,14 @@ class SLayer(Module):
         except TypeError:
             return False
 
+    @staticmethod
+    def is_list_of_variables(input):
+        try:
+            return all(isinstance(x, Variable) for x in input)
+
+        except TypeError:
+            return False
+
     @property
     def is_gpu(self):
         return self.centers.is_cuda
@@ -138,7 +146,10 @@ class SLayer(Module):
         elif self.is_list_of_tensors(input):
             batch, not_dummy_points, max_points, batch_size = SLayer.prepare_batch(input,
                                                                                    self.point_dimension)
-
+        elif self.is_list_of_variables(input):
+            input = [x.data for x in input]
+            batch, not_dummy_points, max_points, batch_size = SLayer.prepare_batch(input,
+                                                                                   self.point_dimension)
         else:
             raise ValueError('SLayer does not recognize input format! Expecting [Tensor] or prepared batch. Not {}'.format(input))
 
