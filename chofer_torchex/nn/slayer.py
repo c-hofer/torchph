@@ -164,7 +164,8 @@ class SLayer(Module):
         centers = centers.view(-1, self.point_dimension)
         centers = torch.stack([centers] * batch_size, 0)
 
-        sharpness = torch.cat([self.sharpness] * max_points, 1)
+        sharpness = torch.pow(self.sharpness, 2)
+        sharpness = torch.cat([sharpness] * max_points, 1)
         sharpness = sharpness.view(-1, self.point_dimension)
         sharpness = torch.stack([sharpness] * batch_size, 0)
 
