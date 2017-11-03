@@ -12,9 +12,9 @@ a list of its main features (admitably short ... yet ;) ).
 this is an input layer which can operate on multi sets of points of some 
 cartesian product of the real numbers. Its primary intention is to train 
 networks on the output of a topological data analysis pipeline, but can 
-be used on arbitrary multi set input, like mentioned above. 
+be used on arbitrary (real vector) multi set input.. 
 See [Deep Learning with Topological Signatures](https://arxiv.org/abs/1707.04041) for 
-futher reading. 
+further reading. 
 
 The folder *tutorials* contains minimalistic examples in form of jupyter notebooks
 to improve usability. 
