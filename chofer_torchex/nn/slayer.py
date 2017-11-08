@@ -92,8 +92,6 @@ class SLayer(Module):
 
             if n_points > 0:
                 index_selection = LongTensor(range(n_points))
-                # if prepared_dgm.is_cuda:
-                #     index_selection = index_selection.cuda()
 
                 prepared_dgm.index_add_(0, index_selection, multi_set)
 
