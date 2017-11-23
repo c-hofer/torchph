@@ -59,7 +59,9 @@ class Trainer(object):
         self.events = TrainerEvents()
 
     def _get_default_event_kwargs(self):
-        return {'model': self.model,
+        return {
+                'trainer': self,
+                'model': self.model,
                 'epoch_count': self.epoch_count,
                 'cuda': self.cuda
                 }
