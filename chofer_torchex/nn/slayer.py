@@ -171,7 +171,6 @@ class SLayer(Module):
         x = torch.mul(x, sharpness)
         x = torch.sum(x, 2)
         x = torch.exp(-x)
-        print(x.size())
         x = torch.mul(x, not_dummy_points)
         x = x.view(batch_size, self.n_elements, -1)
         x = torch.sum(x, 2)
