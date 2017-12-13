@@ -147,7 +147,6 @@ class SLayer(Module):
 
         not_dummy_points = Variable(not_dummy_points, requires_grad=False)
         not_dummy_points = torch.cat([not_dummy_points] * self.n_elements, 1)
-        not_dummy_points = not_dummy_points.view(batch_size, self.n_elements * max_points, 1)
 
         centers = torch.cat([self.centers] * max_points, 1)
         centers = centers.view(-1, self.point_dimension)
