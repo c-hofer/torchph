@@ -5,6 +5,8 @@ from torch.autograd import Variable
 from torch.nn.parameter import Parameter
 from torch.nn.modules.module import Module
 
+import numpy as np
+
 
 def safe_tensor_size(tensor, dim):
     try:
@@ -170,3 +172,27 @@ class SLayer(Module):
 
     def __str__(self):
         return 'SLayer (... -> {} )'.format(self.n_elements)
+
+
+class UpperDiagonalThresholdedLogTransform:
+    def __init__(self, nu):
+        self.b_1 = (torch.Tensor([1, 1]) / np.sqrt(2))
+        self.b_2 = (torch.Tensor([-1, 1]) / np.sqrt(2))
+        self.nu = nu
+
+    def __call__(self, dgm):
+        if dgm.ndimension() == 0:
+            return dgm
+
+        if dgm.is_cuda:
+            self.b_1 = self.b_1.cuda()
+            self.b_2 = self.b_2.cuda()
+
+        x = torch.mul(dgm, self.b_1.repeat(dgm.size(0), 1))
+        x = torch.sum(x, 1).squeeze()
+        y = torch.mul(dgm, self.b_2.repeat( dgm.size(0), 1))
+        y = torch.sum(y, 1).squeeze()
+        i = (y <= self.nu)
+        y[i] = torch.log(y[i] / self.nu) + self.nu
+        ret = torch.stack([x, y], 1)
+        return ret
