@@ -16,6 +16,94 @@ def safe_tensor_size(tensor, dim):
         return 0
 
 
+def prepare_batch(batch: [Tensor], point_dim: int=None)->tuple:
+    """
+    This method 'vectorizes' the multiset in order to take advances of gpu processing.
+    The policy is to embed the all multisets in batch to the highest dimensionality
+    occurring in batch, i.e., max(t.size()[0] for t in batch).
+    :param batch:
+    :param point_dim:
+    :return:
+    """
+    if point_dim is None:
+        point_dim = batch[0].size(1)
+    assert (all(x.size(1) == point_dim for x in batch))
+
+    # We do the following on cpu since there is a lot of looping
+    batch = [x.cpu() for x in batch]
+
+    batch_size = len(batch)
+    batch_max_points = max([safe_tensor_size(t, 0) for t in batch])
+    input_type = type(batch[0])
+
+    if batch_max_points == 0:
+        # if we are here, batch consists only of empty diagrams.
+        batch_max_points = 1
+
+    # This will later be used to set the dummy points to zero in the output.
+    not_dummy_points = input_type(batch_size, batch_max_points)
+    # In the initialization every point is a dummy point.
+    not_dummy_points[:, :] = 0
+
+    prepared_batch = []
+
+    for i, multi_set in enumerate(batch):
+        n_points = safe_tensor_size(multi_set, 0)
+
+        prepared_dgm = type(multi_set)()
+        torch.zeros(batch_max_points, point_dim, out=prepared_dgm)
+
+        if n_points > 0:
+            index_selection = LongTensor(range(n_points))
+            # if prepared_dgm.is_cuda:
+            #     index_selection = index_selection.cuda()
+
+            prepared_dgm.index_add_(0, index_selection, multi_set)
+
+            not_dummy_points[i, :n_points] = 1
+
+        prepared_batch.append(prepared_dgm)
+
+    prepared_batch = torch.stack(prepared_batch)
+
+    return prepared_batch, not_dummy_points, batch_max_points, batch_size
+
+
+def is_prepared_batch(input):
+    if not (isinstance(input, tuple) and len(input) == 4):
+        return False
+
+    else:
+        batch, not_dummy_points, max_points, batch_size = input
+        return isinstance(batch, _TensorBase) and isinstance(not_dummy_points, _TensorBase) and max_points > 0 and batch_size > 0
+
+
+def is_list_of_tensors(input):
+    try:
+        return all([isinstance(x, _TensorBase) for x in input])
+
+    except TypeError:
+        return False
+
+
+def prepare_batch_if_necessary(input, point_dimension=None):
+    batch, not_dummy_points, max_points, batch_size = None, None, None, None
+
+    if is_prepared_batch(input):
+        batch, not_dummy_points, max_points, batch_size = input
+    elif is_list_of_tensors(input):
+        if point_dimension is None:
+            point_dimension = input[0].size(1)
+
+        batch, not_dummy_points, max_points, batch_size = prepare_batch(input, point_dimension)
+
+    else:
+        raise ValueError(
+            'SLayer does not recognize input format! Expecting [Tensor] or prepared batch. Not {}'.format(input))
+
+    return batch, not_dummy_points, max_points, batch_size
+
+
 class SLayer(Module):
     """
     Implementation of the in
@@ -55,94 +143,13 @@ class SLayer(Module):
         self.centers = Parameter(centers_init)
         self.sharpness = Parameter(sharpness_init)
 
-    @staticmethod
-    def prepare_batch(batch: [Tensor], point_dim: int)->tuple:
-        """
-        This method 'vectorizes' the multiset in order to take advances of gpu processing.
-        The policy is to embed the all multisets in batch to the highest dimensionality
-        occurring in batch, i.e., max(t.size()[0] for t in batch).
-        :param batch:
-        :param point_dim:
-        :return:
-        """
-        input_is_cuda = batch[0].is_cuda
-        assert all(t.is_cuda == input_is_cuda for t in batch)
-
-        # We do the following on cpu since there is a lot of looping
-        batch = [x.cpu() for x in batch]
-
-        batch_size = len(batch)
-        batch_max_points = max([safe_tensor_size(t, 0) for t in batch])
-        input_type = type(batch[0])
-
-        if batch_max_points == 0:
-            # if we are here, batch consists only of empty diagrams.
-            batch_max_points = 1
-
-        # This will later be used to set the dummy points to zero in the output.
-        not_dummy_points = input_type(batch_size, batch_max_points)
-        # In the initialization every point is a dummy point.
-        not_dummy_points[:, :] = 0
-
-        prepared_batch = []
-
-        for i, multi_set in enumerate(batch):
-            n_points = safe_tensor_size(multi_set, 0)
-
-            prepared_dgm = type(multi_set)()
-            torch.zeros(batch_max_points, point_dim, out=prepared_dgm)
-
-            if n_points > 0:
-                index_selection = LongTensor(range(n_points))
-                # if prepared_dgm.is_cuda:
-                #     index_selection = index_selection.cuda()
-
-                prepared_dgm.index_add_(0, index_selection, multi_set)
-
-                not_dummy_points[i, :n_points] = 1
-
-            prepared_batch.append(prepared_dgm)
-
-        prepared_batch = torch.stack(prepared_batch)
-
-        if input_is_cuda:
-            not_dummy_points = not_dummy_points.cuda()
-            prepared_batch = prepared_batch.cuda()
-
-        return prepared_batch, not_dummy_points, batch_max_points, batch_size
-
-    @staticmethod
-    def is_prepared_batch(input):
-        if not (isinstance(input, tuple) and len(input) == 4):
-            return False
-
-        else:
-            batch, not_dummy_points, max_points, batch_size = input
-            return isinstance(batch, _TensorBase) and isinstance(not_dummy_points, _TensorBase) and max_points > 0 and batch_size > 0
-
-    @staticmethod
-    def is_list_of_tensors(input):
-        try:
-            return all([isinstance(x, _TensorBase) for x in input])
-
-        except TypeError:
-            return False
-
     @property
     def is_gpu(self):
         return self.centers.is_cuda
 
     def forward(self, input)->Variable:
-        batch, not_dummy_points, max_points, batch_size = None, None, None, None
-
-        if self.is_prepared_batch(input):
-            batch, not_dummy_points, max_points, batch_size = input
-        elif self.is_list_of_tensors(input):
-            batch, not_dummy_points, max_points, batch_size = SLayer.prepare_batch(input,
-                                                                                   self.point_dimension)
-
-        else:
-            raise ValueError('SLayer does not recognize input format! Expecting [Tensor] or prepared batch. Not {}'.format(input))
+        batch, not_dummy_points, max_points, batch_size = prepare_batch_if_necessary(input,
+                                                                                     point_dimension=self.point_dimension)
 
         batch = Variable(batch, requires_grad=False)
         batch = torch.cat([batch] * self.n_elements, 1)
