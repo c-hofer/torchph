@@ -1,11 +1,29 @@
+"""
+Refs:
+
+[1] {
+      Hofer17c,
+      author    = {C.~Hofer and R.~Kwitt and M.~Niethammer and A.~Uhl},
+      title     = {Deep Learning with Topological Signatures},
+      booktitle = {NIPS},
+      year      = 2017,
+      note      = {accepted}
+    }
+
+
+"""
 import torch
+import numpy as np
 from torch import Tensor, LongTensor
 from torch.tensor import _TensorBase
 from torch.autograd import Variable
 from torch.nn.parameter import Parameter
 from torch.nn.modules.module import Module
 
-import numpy as np
+import warnings
+
+
+# region helper functions
 
 
 def safe_tensor_size(tensor, dim):
@@ -104,20 +122,12 @@ def prepare_batch_if_necessary(input, point_dimension=None):
     return batch, not_dummy_points, max_points, batch_size
 
 
-class SLayer(Module):
+# endregion
+
+
+class SLayerExponential(Module):
     """
-    Implementation of the in
-
-    {
-      Hofer17c,
-      author    = {C.~Hofer and R.~Kwitt and M.~Niethammer and A.~Uhl},
-      title     = {Deep Learning with Topological Signatures},
-      booktitle = {NIPS},
-      year      = 2017,
-      note      = {accepted}
-    }
-
-    proposed input layer for multisets.
+    proposed input layer for multisets [1].
     """
     def __init__(self, n_elements: int,
                  point_dimension: int=2,
@@ -129,7 +139,7 @@ class SLayer(Module):
         :param centers_init: the initialization for the centers of the structure elements
         :param sharpness_init: initialization for the sharpness of the structure elements
         """
-        super(SLayer, self).__init__()
+        super().__init__()
 
         self.n_elements = n_elements
         self.point_dimension = point_dimension
@@ -178,7 +188,7 @@ class SLayer(Module):
         return x
 
     def __str__(self):
-        return 'SLayer (... -> {} )'.format(self.n_elements)
+        return 'SLayerExponential (... -> {} )'.format(self.n_elements)
 
 
 class UpperDiagonalThresholdedLogTransform:
@@ -203,3 +213,9 @@ class UpperDiagonalThresholdedLogTransform:
         y[i] = torch.log(y[i] / self.nu) + self.nu
         ret = torch.stack([x, y], 1)
         return ret
+
+
+class SLayer(SLayerExponential):
+    def __init__(self, *args,  **kwargs):
+        super().__init__(*args, **kwargs)
+        warnings.warn("Renaming in progress. In future use SLayerExponential.", FutureWarning)
