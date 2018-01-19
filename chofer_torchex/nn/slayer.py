@@ -45,7 +45,7 @@ def prepare_batch(batch: [Tensor], point_dim: int=None)->tuple:
     """
     if point_dim is None:
         point_dim = batch[0].size(1)
-    assert (all(x.size(1) == point_dim for x in batch))
+    assert (all(x.size(1) == point_dim for x in batch if len(x) != 0))
 
     # We do the following on cpu since there is a lot of looping
     batch = [x.cpu() for x in batch]
