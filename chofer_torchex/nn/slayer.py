@@ -122,6 +122,23 @@ def prepare_batch_if_necessary(input, point_dimension=None):
     return batch, not_dummy_points, max_points, batch_size
 
 
+def parameter_init_from_arg(arg, size, default, scalar_is_valid=False):
+    if isinstance(arg, (int, float)):
+        if not scalar_is_valid:
+            raise ValueError("Scalar initialization values are not valid. Got {} expected Tensor of size {}."
+                             .format(arg, size))
+        return torch.Tensor(*size).fill_(arg)
+    elif isinstance(arg, torch._TensorBase):
+        assert(arg.size() == size)
+        return arg
+    elif arg is None:
+        if default in [torch.rand, torch.randn, torch.ones, torch.ones_like]:
+            return default(*size)
+        else:
+            return default(size)
+    else:
+        raise ValueError('Cannot handle parameter initialization. Got "{}" '.format(arg))
+
 # endregion
 
 
@@ -144,11 +161,10 @@ class SLayerExponential(Module):
         self.n_elements = n_elements
         self.point_dimension = point_dimension
 
-        if centers_init is None:
-            centers_init = torch.rand(self.n_elements, self.point_dimension)
+        expected_init_size = (self.n_elements, self.point_dimension)
 
-        if sharpness_init is None:
-            sharpness_init = torch.ones(self.n_elements, self.point_dimension)*3
+        centers_init = parameter_init_from_arg(centers_init, expected_init_size, torch.rand, scalar_is_valid=False)
+        sharpness_init = parameter_init_from_arg(sharpness_init, expected_init_size, lambda size: torch.ones(*size)*3)
 
         self.centers = Parameter(centers_init)
         self.sharpness = Parameter(sharpness_init)
@@ -187,8 +203,70 @@ class SLayerExponential(Module):
 
         return x
 
-    def __str__(self):
+    def __repr__(self):
         return 'SLayerExponential (... -> {} )'.format(self.n_elements)
+
+
+class SLayerRational(Module):
+    """
+    """
+    def __init__(self, n_elements: int,
+                 point_dimension: int=2,
+                 centers_init: Tensor=None,
+                 sharpness_init: Tensor=None,
+                 exponent_init: Tensor=None,):
+        """
+        :param n_elements: number of structure elements used
+        :param point_dimension: dimensionality of the points of which the input multi set consists of
+        :param centers_init: the initialization for the centers of the structure elements
+        :param sharpness_init: initialization for the sharpness of the structure elements
+        """
+        super().__init__()
+
+        self.n_elements = n_elements
+        self.point_dimension = point_dimension
+
+        expected_tensor_size = (self.n_elements, self.point_dimension)
+
+        centers_init = parameter_init_from_arg(centers_init, expected_tensor_size, torch.rand)
+        sharpness_init = parameter_init_from_arg(sharpness_init, expected_tensor_size, torch.ones, scalar_is_valid=True)
+        exponent_init = parameter_init_from_arg(exponent_init, (1,), torch.ones, scalar_is_valid=True)
+
+        self.centers = Parameter(centers_init)
+        self.sharpness = Parameter(sharpness_init)
+        self.exponent = Parameter(exponent_init)
+
+    def forward(self, input)->Variable:
+        batch, not_dummy_points, max_points, batch_size = prepare_batch_if_necessary(input,
+                                                                                     point_dimension=self.point_dimension)
+        batch = Variable(batch, requires_grad=False)
+        batch = torch.cat([batch] * self.n_elements, 1)
+
+        not_dummy_points = Variable(not_dummy_points, requires_grad=False)
+        not_dummy_points = torch.cat([not_dummy_points] * self.n_elements, 1)
+
+        centers = torch.cat([self.centers] * max_points, 1)
+        centers = centers.view(-1, self.point_dimension)
+        centers = torch.stack([centers] * batch_size, 0)
+
+        sharpness = torch.cat([self.sharpness] * max_points, 1)
+        sharpness = sharpness.view(-1, self.point_dimension)
+        sharpness = torch.stack([sharpness] * batch_size, 0)
+
+        x = centers - batch
+        x = x.abs()
+        x = torch.mul(x, sharpness.abs())
+        x = torch.sum(x, 2)
+        x = 1/(1+x.pow(self.exponent))
+        x = torch.mul(x, not_dummy_points)
+        x = x.view(batch_size, self.n_elements, -1)
+        x = torch.sum(x, 2)
+        x = x.squeeze()
+
+        return x
+
+    def __repr__(self):
+        return 'SLayerRational (... -> {} )'.format(self.n_elements)
 
 
 class UpperDiagonalThresholdedLogTransform:
