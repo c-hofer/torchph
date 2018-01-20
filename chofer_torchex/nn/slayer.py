@@ -214,7 +214,8 @@ class SLayerRational(Module):
                  point_dimension: int=2,
                  centers_init: Tensor=None,
                  sharpness_init: Tensor=None,
-                 exponent_init: Tensor=None,):
+                 exponent_init: Tensor=None,
+                 pointwise_activation_threshold=None):
         """
         :param n_elements: number of structure elements used
         :param point_dimension: dimensionality of the points of which the input multi set consists of
@@ -223,8 +224,11 @@ class SLayerRational(Module):
         """
         super().__init__()
 
-        self.n_elements = n_elements
-        self.point_dimension = point_dimension
+        self.n_elements = int(n_elements)
+        self.point_dimension = int(point_dimension)
+        self.pointwise_activation_threshold = pointwise_activation_threshold
+        if self.pointwise_activation_threshold is not None:
+            self.pointwise_activation_threshold = float(self.pointwise_activation_threshold)
 
         expected_tensor_size = (self.n_elements, self.point_dimension)
 
@@ -258,6 +262,10 @@ class SLayerRational(Module):
         x = torch.mul(x, sharpness.abs())
         x = torch.sum(x, 2)
         x = 1/(1+x.pow(self.exponent))
+
+        if self.pointwise_activation_threshold is not None:
+            x[(x < self.pointwise_activation_threshold).data] = 0
+
         x = torch.mul(x, not_dummy_points)
         x = x.view(batch_size, self.n_elements, -1)
         x = torch.sum(x, 2)
