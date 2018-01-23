@@ -37,11 +37,11 @@ def safe_tensor_size(tensor, dim):
 def prepare_batch(batch: [Tensor], point_dim: int=None)->tuple:
     """
     This method 'vectorizes' the multiset in order to take advances of gpu processing.
-    The policy is to embed the all multisets in batch to the highest dimensionality
+    The policy is to embed all multisets in batch to the highest dimensionality
     occurring in batch, i.e., max(t.size()[0] for t in batch).
     :param batch:
     :param point_dim:
-    :return:
+    :return: Tensor with size batch_size x n_max_points x point_dim
     """
     if point_dim is None:
         point_dim = batch[0].size(1)
@@ -244,6 +244,7 @@ class SLayerRational(Module):
         batch, not_dummy_points, max_points, batch_size = prepare_batch_if_necessary(input,
                                                                                      point_dimension=self.point_dimension)
         batch = Variable(batch, requires_grad=False)
+
         batch = torch.cat([batch] * self.n_elements, 1)
 
         not_dummy_points = Variable(not_dummy_points, requires_grad=False)
