@@ -230,11 +230,19 @@ class SLayerRational(Module):
         if self.pointwise_activation_threshold is not None:
             self.pointwise_activation_threshold = float(self.pointwise_activation_threshold)
 
-        expected_tensor_size = (self.n_elements, self.point_dimension)
+        centers_init = parameter_init_from_arg(arg=centers_init,
+                                               size=(self.n_elements, self.point_dimension),
+                                               default=torch.rand)
 
-        centers_init = parameter_init_from_arg(centers_init, expected_tensor_size, torch.rand)
-        sharpness_init = parameter_init_from_arg(sharpness_init, expected_tensor_size, torch.ones, scalar_is_valid=True)
-        exponent_init = parameter_init_from_arg(exponent_init, (1,), torch.ones, scalar_is_valid=True)
+        sharpness_init = parameter_init_from_arg(arg=sharpness_init,
+                                                 size=(self.n_elements, self.point_dimension),
+                                                 default=torch.ones,
+                                                 scalar_is_valid=True)
+
+        exponent_init = parameter_init_from_arg(arg=exponent_init,
+                                                size=(self.n_elements,),
+                                                default=torch.ones,
+                                                scalar_is_valid=True)
 
         self.centers = Parameter(centers_init)
         self.sharpness = Parameter(sharpness_init)
@@ -243,34 +251,33 @@ class SLayerRational(Module):
     def forward(self, input)->Variable:
         batch, not_dummy_points, max_points, batch_size = prepare_batch_if_necessary(input,
                                                                                      point_dimension=self.point_dimension)
-        batch = Variable(batch, requires_grad=False)
 
-        batch = torch.cat([batch] * self.n_elements, 1)
+        batch = Variable(batch, requires_grad=False)
+        batch = batch.unsqueeze(1).expand(batch_size, self.n_elements, max_points, self.point_dimension)
 
         not_dummy_points = Variable(not_dummy_points, requires_grad=False)
-        not_dummy_points = torch.cat([not_dummy_points] * self.n_elements, 1)
+        not_dummy_points = not_dummy_points.unsqueeze(1).expand(-1, self.n_elements, -1)
 
-        centers = torch.cat([self.centers] * max_points, 1)
-        centers = centers.view(-1, self.point_dimension)
-        centers = torch.stack([centers] * batch_size, 0)
+        centers = self.centers.unsqueeze(1).expand(self.n_elements, max_points, self.point_dimension)
+        centers = centers.unsqueeze(0).expand(batch_size, *centers.size())
 
-        sharpness = torch.cat([self.sharpness] * max_points, 1)
-        sharpness = sharpness.view(-1, self.point_dimension)
-        sharpness = torch.stack([sharpness] * batch_size, 0)
+        sharpness = self.sharpness.unsqueeze(1).expand(-1, max_points, -1)
+        sharpness = sharpness.unsqueeze(0).expand(batch_size, *sharpness.size())
+
+        exponent = self.exponent.unsqueeze(1).expand(-1, max_points)
+        exponent = exponent.unsqueeze(0).expand(batch_size, *exponent.size())
 
         x = centers - batch
         x = x.abs()
         x = torch.mul(x, sharpness.abs())
-        x = torch.sum(x, 2)
-        x = 1/(1+x.pow(self.exponent))
+        x = torch.sum(x, 3)
+        x = 1/(1+x.pow(exponent))
 
         if self.pointwise_activation_threshold is not None:
             x[(x < self.pointwise_activation_threshold).data] = 0
 
         x = torch.mul(x, not_dummy_points)
-        x = x.view(batch_size, self.n_elements, -1)
         x = torch.sum(x, 2)
-        x = x.squeeze()
 
         return x
 
