@@ -215,7 +215,9 @@ class SLayerRational(Module):
                  centers_init: Tensor=None,
                  sharpness_init: Tensor=None,
                  exponent_init: Tensor=None,
-                 pointwise_activation_threshold=None):
+                 pointwise_activation_threshold=None,
+                 share_sharpness=False,
+                 share_exponent=False):
         """
         :param n_elements: number of structure elements used
         :param point_dimension: dimensionality of the points of which the input multi set consists of
@@ -226,7 +228,11 @@ class SLayerRational(Module):
 
         self.n_elements = int(n_elements)
         self.point_dimension = int(point_dimension)
-        self.pointwise_activation_threshold = pointwise_activation_threshold
+        self.pointwise_activation_threshold = float(pointwise_activation_threshold) \
+            if pointwise_activation_threshold is not None else None
+        self.share_sharpness = bool(share_sharpness)
+        self.share_exponent = bool(share_exponent)
+
         if self.pointwise_activation_threshold is not None:
             self.pointwise_activation_threshold = float(self.pointwise_activation_threshold)
 
@@ -235,12 +241,12 @@ class SLayerRational(Module):
                                                default=torch.rand)
 
         sharpness_init = parameter_init_from_arg(arg=sharpness_init,
-                                                 size=(self.n_elements, self.point_dimension),
+                                                 size=(1,) if self.share_sharpness else (self.n_elements, self.point_dimension),
                                                  default=torch.ones,
                                                  scalar_is_valid=True)
 
         exponent_init = parameter_init_from_arg(arg=exponent_init,
-                                                size=(self.n_elements,),
+                                                size=(1,) if self.share_exponent else (self.n_elements,),
                                                 default=torch.ones,
                                                 scalar_is_valid=True)
 
@@ -261,10 +267,17 @@ class SLayerRational(Module):
         centers = self.centers.unsqueeze(1).expand(self.n_elements, max_points, self.point_dimension)
         centers = centers.unsqueeze(0).expand(batch_size, *centers.size())
 
-        sharpness = self.sharpness.unsqueeze(1).expand(-1, max_points, -1)
+        sharpness = self.sharpness
+        if self.share_sharpness:
+            sharpness = sharpness.expand(self.n_elements, self.point_dimension)
+        sharpness = sharpness.unsqueeze(1).expand(-1, max_points, -1)
         sharpness = sharpness.unsqueeze(0).expand(batch_size, *sharpness.size())
 
-        exponent = self.exponent.unsqueeze(1).expand(-1, max_points)
+        exponent = self.exponent
+        if self.share_exponent:
+            exponent = exponent.expand(self.n_elements)
+
+        exponent = exponent.unsqueeze(1).expand(-1, max_points)
         exponent = exponent.unsqueeze(0).expand(batch_size, *exponent.size())
 
         x = centers - batch
