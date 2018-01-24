@@ -217,7 +217,8 @@ class SLayerRational(Module):
                  exponent_init: Tensor=None,
                  pointwise_activation_threshold=None,
                  share_sharpness=False,
-                 share_exponent=False):
+                 share_exponent=False,
+                 freeze_exponent=True):
         """
         :param n_elements: number of structure elements used
         :param point_dimension: dimensionality of the points of which the input multi set consists of
@@ -232,6 +233,7 @@ class SLayerRational(Module):
             if pointwise_activation_threshold is not None else None
         self.share_sharpness = bool(share_sharpness)
         self.share_exponent = bool(share_exponent)
+        self.freeze_exponent = freeze_exponent
 
         if self.pointwise_activation_threshold is not None:
             self.pointwise_activation_threshold = float(self.pointwise_activation_threshold)
@@ -252,7 +254,7 @@ class SLayerRational(Module):
 
         self.centers = Parameter(centers_init)
         self.sharpness = Parameter(sharpness_init)
-        self.exponent = Parameter(exponent_init)
+        self.exponent = Parameter(exponent_init) if not self.freeze_exponent else Variable(exponent_init)
 
     def forward(self, input)->Variable:
         batch, not_dummy_points, max_points, batch_size = prepare_batch_if_necessary(input,
