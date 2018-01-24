@@ -301,7 +301,8 @@ class SLayerRational(Module):
 
     def cuda(self, device=None):
         super().cuda(device=device)
-        self.exponent = self.exponent.cuda()
+        if self.freeze_exponent:
+            self.exponent = self.exponent.cuda()
 
 
 class UpperDiagonalThresholdedLogTransform:
