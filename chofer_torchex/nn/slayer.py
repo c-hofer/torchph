@@ -299,10 +299,10 @@ class SLayerRational(Module):
     def __repr__(self):
         return 'SLayerRational (... -> {} )'.format(self.n_elements)
 
-    def cuda(self, device=None):
-        super().cuda(device=device)
+    def _apply(self, fn):
+        super()._apply(fn)
         if self.freeze_exponent:
-            self.exponent = self.exponent.cuda()
+            self.exponent.data = fn(self.exponent.data)
 
 
 class UpperDiagonalThresholdedLogTransform:
