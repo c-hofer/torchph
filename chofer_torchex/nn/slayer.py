@@ -299,6 +299,10 @@ class SLayerRational(Module):
     def __repr__(self):
         return 'SLayerRational (... -> {} )'.format(self.n_elements)
 
+    def cuda(self, device=None):
+        super().cuda(device=device)
+        self.exponent = self.exponent.cuda()
+
 
 class UpperDiagonalThresholdedLogTransform:
     def __init__(self, nu):
