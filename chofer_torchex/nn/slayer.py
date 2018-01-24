@@ -305,6 +305,23 @@ class SLayerRational(Module):
             self.exponent.data = fn(self.exponent.data)
 
 
+class LogStretchedBirthLifeTimeCoordinateTransform:
+    def __init__(self, nu):
+        self.nu = nu
+
+    def __call__(self, dgm):
+        if dgm.ndimension() == 0:
+            return dgm
+
+        x, y = dgm[:, 0], dgm[:, 1]
+        y = y - x
+
+        i = (y <= self.nu)
+        y[i] = torch.log(y[i] / self.nu) + self.nu
+
+        return torch.stack([x, y], dim=1)
+
+
 class UpperDiagonalThresholdedLogTransform:
     def __init__(self, nu):
         self.b_1 = (torch.Tensor([1, 1]) / np.sqrt(2))
