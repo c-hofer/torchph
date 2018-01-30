@@ -310,7 +310,7 @@ class LogStretchedBirthLifeTimeCoordinateTransform:
         self.nu = nu
 
     def __call__(self, dgm):
-        if dgm.ndimension() == 0:
+        if len(dgm) == 0:
             return dgm
 
         x, y = dgm[:, 0], dgm[:, 1]
@@ -329,7 +329,7 @@ class UpperDiagonalThresholdedLogTransform:
         self.nu = nu
 
     def __call__(self, dgm):
-        if dgm.ndimension() == 0:
+        if len(dgm) == 0:
             return dgm
 
         if dgm.is_cuda:
