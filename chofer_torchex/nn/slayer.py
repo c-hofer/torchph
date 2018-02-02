@@ -286,7 +286,7 @@ class SLayerRational(Module):
         x = x.abs()
         x = torch.mul(x, sharpness.abs())
         x = torch.sum(x, 3)
-        x = 1/(1+x.pow(exponent.abs()))
+        x = 1/(1+x).pow(exponent.abs())
 
         if self.pointwise_activation_threshold is not None:
             x[(x < self.pointwise_activation_threshold).data] = 0
