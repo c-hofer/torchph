@@ -305,6 +305,76 @@ class SLayerRational(Module):
             self.exponent.data = fn(self.exponent.data)
 
 
+class SLayerRationalHat(Module):
+    """
+    """
+    def __init__(self, n_elements: int,
+                 point_dimension: int=2,
+                 centers_init: Tensor=None,
+                 radius_init: float=1,
+                 exponent: int=1):
+        """
+        :param n_elements: number of structure elements used
+        :param point_dimension: dimensionality of the points of which the input multi set consists of
+        :param centers_init: the initialization for the centers of the structure elements
+        :param radius_init: initialization for radius of zero level-set of the hat
+        :param exponent: Exponent of the rationals forming the hat
+        """
+        super().__init__()
+
+        self.n_elements = int(n_elements)
+        self.point_dimension = int(point_dimension)
+        self.exponent = int(exponent)
+
+        centers_init = parameter_init_from_arg(arg=centers_init,
+                                               size=(self.n_elements, self.point_dimension),
+                                               default=torch.rand)
+
+        radius_init = parameter_init_from_arg(arg=radius_init,
+                                              size=(self.n_elements,),
+                                              default=torch.ones,
+                                              scalar_is_valid=True)
+
+        self.centers = Parameter(centers_init)
+        self.radius = Parameter(radius_init)
+        self.norm_p = 1
+
+    def forward(self, input)->Variable:
+        batch, not_dummy_points, max_points, batch_size = prepare_batch_if_necessary(input,
+                                                                                     point_dimension=self.point_dimension)
+
+        batch = Variable(batch, requires_grad=False)
+        batch = batch.unsqueeze(1).expand(batch_size, self.n_elements, max_points, self.point_dimension)
+
+        not_dummy_points = Variable(not_dummy_points, requires_grad=False)
+        not_dummy_points = not_dummy_points.unsqueeze(1).expand(-1, self.n_elements, -1)
+
+        centers = self.centers.unsqueeze(1).expand(self.n_elements, max_points, self.point_dimension)
+        centers = centers.unsqueeze(0).expand(batch_size, *centers.size())
+
+        radius = self.radius
+        radius = radius.unsqueeze(1).expand(-1, max_points)
+        radius = radius.unsqueeze(0).expand(batch_size, *radius.size())
+        radius = radius.abs()
+
+        norm_to_center = centers - batch
+        norm_to_center = torch.norm(norm_to_center, p=self.norm_p, dim=3)
+
+        positive_part = 1/(1+norm_to_center).pow(self.exponent)
+
+        negative_part = 1/(1 + (radius - norm_to_center).abs()).pow(self.exponent)
+
+        x = positive_part - negative_part
+
+        x = torch.mul(x, not_dummy_points)
+        x = torch.sum(x, 2)
+
+        return x
+
+    def __repr__(self):
+        return 'SLayerRationalHat (... -> {} )'.format(self.n_elements)
+
+
 class LogStretchedBirthLifeTimeCoordinateTransform:
     def __init__(self, nu):
         self.nu = nu
