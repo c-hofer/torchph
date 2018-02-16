@@ -387,7 +387,7 @@ class LogStretchedBirthLifeTimeCoordinateTransform:
         y = y - x
 
         i = (y <= self.nu)
-        y[i] = torch.log(y[i] / self.nu) + self.nu
+        y[i] = torch.log(y[i] / self.nu)*self.nu + self.nu
 
         return torch.stack([x, y], dim=1)
 
