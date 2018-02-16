@@ -375,6 +375,25 @@ class SLayerRationalHat(Module):
         return 'SLayerRationalHat (... -> {} )'.format(self.n_elements)
 
 
+class LinearRationalStretchedBirthLifeTimeCoordinateTransform:
+    def __init__(self, nu):
+        self._nu = nu
+        self._nu_squared = nu**2
+        self._2_nu = 2*nu
+
+    def __call__(self, dgm):
+        if len(dgm) == 0:
+            return dgm
+
+        x, y = dgm[:, 0], dgm[:, 1]
+        y = y - x
+
+        i = (y <= self._nu)
+        y[i] = - self._nu_squared/y[i] + self._2_nu
+
+        return torch.stack([x,y], dim=1)
+
+
 class LogStretchedBirthLifeTimeCoordinateTransform:
     def __init__(self, nu):
         self.nu = nu
