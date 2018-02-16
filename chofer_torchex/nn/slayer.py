@@ -411,7 +411,7 @@ class UpperDiagonalThresholdedLogTransform:
         y = torch.mul(dgm, self.b_2.repeat( dgm.size(0), 1))
         y = torch.sum(y, 1).squeeze()
         i = (y <= self.nu)
-        y[i] = torch.log(y[i] / self.nu) + self.nu
+        y[i] = torch.log(y[i] / self.nu)*self.nu + self.nu
         ret = torch.stack([x, y], 1)
         return ret
 
