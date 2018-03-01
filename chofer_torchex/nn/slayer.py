@@ -369,7 +369,9 @@ class SLayerRationalHat(Module):
         x = torch.mul(x, not_dummy_points)
         x = torch.sum(x, 2)
 
-        return x
+        c = (1 + radius)/radius
+
+        return x*c
 
     def __repr__(self):
         return 'SLayerRationalHat (... -> {} )'.format(self.n_elements)
