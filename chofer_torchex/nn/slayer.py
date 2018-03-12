@@ -312,7 +312,8 @@ class SLayerRationalHat(Module):
                  point_dimension: int=2,
                  centers_init: Tensor=None,
                  radius_init: float=1,
-                 exponent: int=1):
+                 exponent: int=1
+                 ):
         """
         :param n_elements: number of structure elements used
         :param point_dimension: dimensionality of the points of which the input multi set consists of
@@ -369,9 +370,10 @@ class SLayerRationalHat(Module):
         x = torch.mul(x, not_dummy_points)
         x = torch.sum(x, 2)
 
-        c = (1 + radius)/radius
+        # c = (1 + self.radius.abs())/self.radius.abs()
+        # x = x*c
 
-        return x*c
+        return x
 
     def __repr__(self):
         return 'SLayerRationalHat (... -> {} )'.format(self.n_elements)
