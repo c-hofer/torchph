@@ -369,7 +369,7 @@ class SLayerRationalHat(Module):
 
         x = torch.mul(x, not_dummy_points)
         x = torch.sum(x, 2)
-
+        
         # c = (1 + self.radius.abs())/self.radius.abs()
         # x = x*c
 
