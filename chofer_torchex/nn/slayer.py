@@ -361,9 +361,9 @@ class SLayerRationalHat(Module):
         norm_to_center = centers - batch
         norm_to_center = torch.norm(norm_to_center, p=self.norm_p, dim=3)
 
-        positive_part = 1/(1+norm_to_center).pow(self.exponent)
+        positive_part = 1/(1+norm_to_center).pow_(self.exponent)
 
-        negative_part = 1/(1 + (radius - norm_to_center).abs()).pow(self.exponent)
+        negative_part = 1/(1 + (radius - norm_to_center).abs_()).pow_(self.exponent)
 
         x = positive_part - negative_part
 
