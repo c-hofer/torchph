@@ -7,10 +7,10 @@ def histogram_intersection_loss(input: torch.Tensor,
                                 reduce: bool=True,
                                 symetric_version: bool=True)->torch.Tensor:
     r"""
-    This is an implementation of the `Histogram Intersection` score introduced in
+    This loss function is based on the `Histogram Intersection` score introduced in
     #TODO ref needed
-     
 
+    The output is the *negative* Histogram Intersection Score.
 
     Args:
         input (Tensor): :math:`(N, B)` where `N = batch size` and `B = number of classes`
@@ -23,7 +23,7 @@ def histogram_intersection_loss(input: torch.Tensor,
         symetric_version (bool, optional): By default, the symetric version of histogram intersection
                 is used. If false the asymetric version is used. Default: ``True``
 
-    Returns:
+    Returns: Tensor.
 
     """
     assert input.size() == target.size(), \
