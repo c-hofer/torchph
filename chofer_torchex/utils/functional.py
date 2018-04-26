@@ -5,9 +5,13 @@ def collection_cascade(input, stop_predicate: callable, function_to_apply: calla
     if stop_predicate(input):
         return function_to_apply(input)
     elif isinstance(input, list or tuple):
-        return [function_to_apply(x) for x in input]
+        return [collection_cascade(x,
+                                   stop_predicate=stop_predicate,
+                                   function_to_apply=function_to_apply) for x in input]
     elif isinstance(input, dict):
-        return {k: function_to_apply(v) for k, v in input.items()}
+        return {k: collection_cascade(v,
+                                      stop_predicate=stop_predicate,
+                                      function_to_apply=function_to_apply) for k, v in input.items()}
     else:
         raise ValueError('Unknown type collection type. Expected list, tuple, dict but got {}'
                          .format(type(input)))
