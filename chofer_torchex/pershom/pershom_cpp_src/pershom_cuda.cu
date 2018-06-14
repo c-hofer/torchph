@@ -104,7 +104,6 @@ Tensor find_merge_pairings_cuda(
   int max_pairs){
 
     // std::cout << pivots << std::endl;
-
     auto sort_res = pivots.sort(0);
     auto sort_val = std::get<0>(sort_res);
     auto sort_ind = std::get<1>(sort_res);
@@ -145,15 +144,23 @@ Tensor find_merge_pairings_cuda(
 
     Tensor merge_pairs;
     if (pairing_tensors.size() != 0){      
-      merge_pairs = cat(pairing_tensors, 0);
-      merge_pairs = merge_pairs.slice(0, 0,  max_pairs);
+      merge_pairs = cat(pairing_tensors, 0);     
+
+      // We sort the pairs such that pairs with smaller index come first.
+      // This improves performance???
+      if (merge_pairs.size(0) > max_pairs){
+
+        sort_res = merge_pairs.slice(1, 0, 1).sort(0);
+        sort_ind = std::get<1>(sort_res);
+        sort_ind = sort_ind.slice(0, 0, max_pairs).squeeze();
+
+        merge_pairs = merge_pairs.index_select(0, sort_ind);
+        merge_pairs = merge_pairs.contiguous();
+      }
     }
     else{
       throw NoPairsException();
     }
-
-    // std::cout << merge_pairs << std::endl;
-    // std::cout <<"End"<<std::endl;
 
    return merge_pairs;
 }
@@ -225,6 +232,7 @@ namespace{
       size_t merge_pairings_size_0, 
       int* d_boundary_array_needs_resize
   ){
+    //ASSERTION: cache.size(1) == descending_sorted_boundary_array.size(1)
     const int thread_id = blockIdx.x*blockDim.x + threadIdx.x;   
 
     if (thread_id < merge_pairings_size_0){  
@@ -235,7 +243,7 @@ namespace{
       merge_one_column_s<int32_t>(
         descending_sorted_boundary_array + (filt_id_merger * descending_sorted_boundary_array_size_1),
         descending_sorted_boundary_array + (filt_id_target * descending_sorted_boundary_array_size_1),
-        cache + thread_id, 
+        cache + (thread_id * descending_sorted_boundary_array_size_1), 
         descending_sorted_boundary_array_size_1,
         d_boundary_array_needs_resize
       );
@@ -258,14 +266,15 @@ Tensor resize_boundary_array(
 Tensor merge_columns_cuda(
   Tensor descending_sorted_boundary_array, 
   Tensor merge_pairings){
-    const int threads_per_block = 256;
+    const int threads_per_block = 32;
     const int blocks = merge_pairings.size(0)/threads_per_block + 1;
 
     auto targets = merge_pairings.slice(1, 1).squeeze();
     // std::cout << "merge_columns_cuda --> targets:" << std::endl << targets << std::endl;
 
-    // fill cache for merging 
-    //TODO optimize: we do not need all columns it is enough to take des...array.size(1)/2 + 1
+    // fill cache for merging ... 
+    //  TODO optimize: we do not need all columns it is enough to take des...array.size(1)/2 + 1 
+    //  ATTENTION if we do this we have to inform merge_columns_cuda_kernel about this!!!
     auto cache = descending_sorted_boundary_array.index_select(0, targets);
 
     // reset content of target columns 
@@ -292,11 +301,8 @@ Tensor merge_columns_cuda(
     
     cudaDeviceSynchronize();
     cudaMemcpy(h_boundary_array_needs_resize, d_boundary_array_needs_resize, size, cudaMemcpyDeviceToHost);
-    // std::cout << "merge_columns_cuda --> boundary_array_needs_resize:" << (*h_boundary_array_needs_resize ? "True" : "False") << std::endl;
-
-
+  
     if (*h_boundary_array_needs_resize == 1){
-      // std::cout << "Resizing ..." << std::endl;
       descending_sorted_boundary_array = resize_boundary_array(descending_sorted_boundary_array);
     }
 
@@ -324,24 +330,23 @@ Tensor calculate_persistence_cuda(
 
   // std::cout << "calculate_persistence_cuda --> descending_sorted_boundary_array " << std::endl << descending_sorted_boundary_array << std::endl;
 
+  int iterations = 0;
+  // int debug_count = 0;
   Tensor pivots, merge_pairings;
   while(true){
-    pivots = descending_sorted_boundary_array.slice(1, 0, 1);
+    pivots = descending_sorted_boundary_array.slice(1, 0, 1).contiguous();
 
     try{
-      merge_pairings = find_merge_pairings_cuda(pivots, max_pairs);
-      // std::cout << merge_pairings.size(0) << std::endl;
+      merge_pairings = find_merge_pairings_cuda(pivots, max_pairs);      
     }
     catch(NoPairsException& e){
-      std::cout << "Reached end of reduction" << std::endl;
+      std::cout << "Reached end of reduction after " << iterations << " iterations" << std::endl;
+      // std::cout << descending_sorted_boundary_array << std::endl;
       break;
     }
     
-
-    // std::cout << "calculate_persistence_cuda --> merge_pairings:" << std::endl << merge_pairings << std::endl;
-    
     descending_sorted_boundary_array = merge_columns_cuda(descending_sorted_boundary_array, merge_pairings);
-
+    iterations++;
     // std::cout << "calculate_persistence_cuda --> descending_sorted_boundary_array " << std::endl << descending_sorted_boundary_array << std::endl;
   }
 
