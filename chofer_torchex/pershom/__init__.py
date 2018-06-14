@@ -12,4 +12,4 @@ pershom_cuda_ext = load(
     verbose=True)
 
 _find_merge_pairings = pershom_cuda_ext._find_merge_pairings
-
+calculate_persistence = pershom_cuda_ext.calculate_persistence

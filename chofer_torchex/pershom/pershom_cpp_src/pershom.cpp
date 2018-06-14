@@ -2,10 +2,11 @@
 
 using namespace at;
 
+
 // CUDA forward declarations
 
 Tensor find_merge_pairings_cuda(Tensor, int);
-void merge_columns_cuda(Tensor, Tensor);
+Tensor merge_columns_cuda(Tensor, Tensor);
 Tensor read_points_cuda(Tensor);
 Tensor calculate_persistence_cuda(Tensor, Tensor, int);
 
@@ -17,6 +18,7 @@ Tensor calculate_persistence_cuda(Tensor, Tensor, int);
   CHECK_CUDA(x);       \
   CHECK_CONTIGUOUS(x)
 
+
 Tensor find_merge_pairings(
     Tensor pivots,
     int max_pairs){
@@ -25,6 +27,7 @@ Tensor find_merge_pairings(
 
   return find_merge_pairings_cuda(pivots, max_pairs);
 }
+
 
 void merge_columns(
     Tensor descending_sorted_boundary_array,
