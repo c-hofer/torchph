@@ -23,6 +23,7 @@ __module_file_dir = pth.dirname(pth.realpath(__file__))
 __cpp_src_dir = pth.join(__module_file_dir, 'pershom_cpp_src')
 
 
+# jit compiling the c++ extension
 __C = load(
     'pershom_cuda_ext',
     [pth.join(__cpp_src_dir, 'pershom.cpp'),
@@ -61,7 +62,6 @@ def merge_columns_(
     Returns:
         None -- []
     """
-
     __C.merge_columns_(descending_sorted_boundary_array, merge_pairs)
 
 
@@ -85,6 +85,4 @@ def read_barcodes(
         [[Tensor], [Tensor]] -- [ret[0][i] = non essential barcodes of dimension i
                                  ret[1][i] = birth-times of essential classes]
     """
-
-
     __C.read_barcodes(pivots, column_dimension, max_dimension)
