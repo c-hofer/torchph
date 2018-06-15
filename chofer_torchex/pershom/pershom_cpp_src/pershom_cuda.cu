@@ -340,7 +340,8 @@ std::vector<std::vector<Tensor> > read_barcodes_cuda(
   Tensor pivots, 
   Tensor column_dimension, 
   int max_dimension){
-    std::vector<Tensor> ret_non_ess, ret_ess;
+    std::vector<Tensor> ret_non_ess; 
+    std::vector<Tensor> ret_ess;
     column_dimension = column_dimension.unsqueeze(1);    
 
     auto range = empty_like(pivots);
@@ -362,16 +363,17 @@ std::vector<std::vector<Tensor> > read_barcodes_cuda(
     auto mask_ess = mask_no_pivot.__and__(mask_rows_with_no_lowest_one);
 
     for (int dim=0; dim <= max_dimension; dim++){
-      auto mask_dim = column_dimension.eq(dim);
-
+      
       // non essentials ...
+      auto mask_dim = column_dimension.eq(dim + 1);
       auto mask_non_essential_dim = mask_non_essential.__and__(mask_dim.expand({-1, 2}));
       auto barcodes_non_essential_dim = pool_for_barcodes_non_essential.masked_select(mask_non_essential_dim).view({-1, 2});
-
+      
       ret_non_ess.push_back(barcodes_non_essential_dim);
-
+      
       // essentials ...
-      auto mask_essential_dim = mask_ess.__and__(mask_dim); 
+      auto mask_dim_ess = column_dimension.eq(dim);
+      auto mask_essential_dim = mask_ess.__and__(mask_dim_ess); 
       auto barcode_birth_times_essential_dim = range.masked_select(mask_essential_dim).view({-1, 1});
 
       ret_ess.push_back(barcode_birth_times_essential_dim);
