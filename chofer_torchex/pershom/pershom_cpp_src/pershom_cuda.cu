@@ -315,41 +315,125 @@ Tensor merge_columns_cuda(
 #pragma endregion
 
 
-#pragma region read_points
-Tensor read_points_cuda(
-  Tensor reduced_descending_sorted_boundary_array);
+#pragma region read_barcodes
+
+
+namespace {
+  template<typename scalar_t>
+  __global__ void fill_range_kernel(scalar_t* out, int64_t out_numel){
+    auto index = blockIdx.x * blockDim.x + threadIdx.x;
+
+    if (index < out_numel){
+      out[index] = index;
+    }
+  }
+}
+
+void fill_range_cuda_(Tensor t){
+  const int threads_per_block = 256;
+  const int blocks = t.numel()/threads_per_block + 1;
+
+  fill_range_kernel<int32_t><<<blocks, threads_per_block>>>(t.data<int32_t>(), t.numel());
+}
+
+std::vector<std::vector<Tensor> > read_barcodes_cuda(
+  Tensor pivots, 
+  Tensor column_dimension, 
+  int max_dimension){
+    std::vector<Tensor> ret_non_ess, ret_ess;
+    column_dimension = column_dimension.unsqueeze(1);    
+
+    auto range = empty_like(pivots);
+    fill_range_cuda_(range); 
+
+    auto pool_for_barcodes_non_essential = cat({pivots, range}, 1);
+    auto mask_pivot = pivots.ge(0);
+    
+    // all dimenions mask non essential ... 
+    auto mask_non_essential = mask_pivot.expand({-1, 2});
+
+    // all dimensions mask essential ...
+    auto mask_no_pivot = pivots.le(-1); 
+
+    auto mask_rows_with_no_lowest_one = ones_like(mask_no_pivot);
+    auto row_indices_with_lowest_one = pivots.masked_select(mask_pivot).toType(ScalarType::Long);
+    mask_rows_with_no_lowest_one.index_fill_(0, row_indices_with_lowest_one, 0);
+
+    auto mask_ess = mask_no_pivot.__and__(mask_rows_with_no_lowest_one);
+
+    for (int dim=0; dim <= max_dimension; dim++){
+      auto mask_dim = column_dimension.eq(dim);
+
+      // non essentials ...
+      auto mask_non_essential_dim = mask_non_essential.__and__(mask_dim.expand({-1, 2}));
+      auto barcodes_non_essential_dim = pool_for_barcodes_non_essential.masked_select(mask_non_essential_dim).view({-1, 2});
+
+      ret_non_ess.push_back(barcodes_non_essential_dim);
+
+      // essentials ...
+      auto mask_essential_dim = mask_ess.__and__(mask_dim); 
+      auto barcode_birth_times_essential_dim = range.masked_select(mask_essential_dim).view({-1, 1});
+
+      ret_ess.push_back(barcode_birth_times_essential_dim);
+    } 
+
+    return std::vector<std::vector<Tensor> >({ret_non_ess, ret_ess});
+  }
 
 
 #pragma endregion 
 
 
-Tensor calculate_persistence_cuda(  
+std::vector<std::vector<Tensor> > calculate_persistence_cuda(  
   Tensor descending_sorted_boundary_array, 
   Tensor column_dimension,
-  int max_pairs) {
-
-  // std::cout << "calculate_persistence_cuda --> descending_sorted_boundary_array " << std::endl << descending_sorted_boundary_array << std::endl;
+  int max_pairs, 
+  int max_dimension) {
 
   int iterations = 0;
   // int debug_count = 0;
   Tensor pivots, merge_pairings;
+
   while(true){
     pivots = descending_sorted_boundary_array.slice(1, 0, 1).contiguous();
 
     try{
-      merge_pairings = find_merge_pairings_cuda(pivots, max_pairs);      
+
+      merge_pairings = find_merge_pairings_cuda(pivots, max_pairs);   
+
     }
     catch(NoPairsException& e){
+
       std::cout << "Reached end of reduction after " << iterations << " iterations" << std::endl;
-      // std::cout << descending_sorted_boundary_array << std::endl;
       break;
+
     }
     
     descending_sorted_boundary_array = merge_columns_cuda(descending_sorted_boundary_array, merge_pairings);
     iterations++;
-    // std::cout << "calculate_persistence_cuda --> descending_sorted_boundary_array " << std::endl << descending_sorted_boundary_array << std::endl;
+
   }
 
-  return descending_sorted_boundary_array;
-
+  auto barcodes = read_barcodes_cuda(pivots, column_dimension, max_dimension);
+  return barcodes;
 }
+
+//-----------devel
+
+// namespace {
+//   __global__ void my_test_kernel(Tensor t){
+//     int x = 0;
+//     auto index = blockIdx.x * blockDim.x + threadIdx.x; 
+//     t[index][2] = 1;
+//   }
+// }
+
+Tensor my_test_f_cuda(Tensor t){
+  auto ret = zeros_like(t);
+
+  // my_test_kernel<<<1, 32>>>(t);
+
+  return ret;
+}
+
+//-----------
