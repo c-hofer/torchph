@@ -4,18 +4,63 @@ using namespace at;
 
 // CUDA forward declarations
 
+//low level
+template <typename scalar_t> Tensor find_slicing_indices_cuda_kernel_call(Tensor);
+template <typename scalar_t> void merge_columns_cuda_kernel_call(Tensor, Tensor, int*);
+
+
+//high level 
 Tensor find_merge_pairings_cuda(Tensor, int);
 Tensor merge_columns_cuda(Tensor, Tensor);
 std::vector<std::vector<Tensor>> read_barcodes_cuda(Tensor, Tensor, int);
 std::vector<std::vector<Tensor>> calculate_persistence_cuda(Tensor, Tensor, int, int);
 
-// C++ interface
 
 #define CHECK_CUDA(x) AT_ASSERT(x.type().is_cuda(), #x " must be a CUDA tensor")
 #define CHECK_CONTIGUOUS(x) AT_ASSERT(x.is_contiguous(), #x " must be contiguous")
 #define CHECK_INPUT(x) \
   CHECK_CUDA(x);       \
   CHECK_CONTIGUOUS(x)
+
+
+// C++ low level interface
+#pragma region C++ low level interface
+
+
+Tensor find_slicing_indices_kernel_call(
+  Tensor t)
+{
+  CHECK_INPUT(t);
+  assert(t.type().scalarType() == ScalarType::Int);
+
+  return find_slicing_indices_cuda_kernel_call<int32_t>(t);
+}
+
+
+void merge_columns_kernel_call(
+  Tensor descending_sorted_boundary_array,
+  Tensor merge_pairings, 
+  int* h_boundary_array_needs_resize
+)
+{
+  CHECK_INPUT(descending_sorted_boundary_array);
+  assert(descending_sorted_boundary_array.type().scalarType() == ScalarType::Int);
+
+  CHECK_INPUT(merge_pairings);
+  assert(merge_pairings.type().scalarType() == ScalarType::Int);
+
+  merge_columns_cuda_kernel_call<int32_t>(descending_sorted_boundary_array, merge_pairings, h_boundary_array_needs_resize); 
+}
+
+
+#pragma endregion
+
+
+
+
+// C++ high level interface
+#pragma region C++ high level interface
+
 
 Tensor find_merge_pairings(
     Tensor pivots,
@@ -71,17 +116,33 @@ std::vector<std::vector<Tensor>> calculate_persistence(
   return dgms;
 }
 
+
+#pragma endregion
+
+
 //-------------devel
 Tensor my_test_f_cuda(Tensor);
 
 Tensor my_test_f(Tensor t)
 {
-  return my_test_f_cuda(t);
+  // auto state = globalContext().getTHCState();
+
+  // Context* c = &globalContext();
+  // auto thc_state = c->getTHCState();
+  
+  // std::cout << p_state << std::endl;
+  // return my_test_f_cuda(t);
+  return t;
 }
 //-------------
 
 PYBIND11_MODULE(TORCH_EXTENSION_NAME, m)
 {
+  // low level
+  m.def("find_slicing_indices_kernel_call", &find_slicing_indices_kernel_call, "find_slicing_indices_kernel_call (CUDA)");
+  m.def("merge_columns_kernel_call", &merge_columns_kernel_call, "merge_columns_kernel_call (CUDA)");
+
+  //high level 
   m.def("find_merge_pairings", &find_merge_pairings, "find_merge_pairings (CUDA)");
   m.def("merge_columns_", &merge_columns_, "merge_columns (CUDA)");
   m.def("read_barcodes", &read_barcodes, "read_barcodes (CUDA)");

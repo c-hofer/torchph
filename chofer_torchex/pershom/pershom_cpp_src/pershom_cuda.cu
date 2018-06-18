@@ -74,22 +74,22 @@ public:
 };
 
 
-//FIXME make this method template to get ride of hardcoded int32_t 
-Tensor find_slicing_indices(
+template <typename scalar_t>
+Tensor find_slicing_indices_cuda_kernel_call(
     Tensor input) {
   Tensor output = zeros_like(input).fill_(-1);
   
   const int threads_per_block = 256;
   const int blocks = input.size(0)/threads_per_block + 1;
 
-  find_left_plateau_indices_cuda_kernel<int32_t><<<blocks, threads_per_block>>>(
-    input.data<int32_t>(), 
-    output.data<int32_t>(),
+  find_left_plateau_indices_cuda_kernel<scalar_t><<<blocks, threads_per_block>>>(
+    input.data<scalar_t>(), 
+    output.data<scalar_t>(),
     input.size(0));
 
-  find_right_plateau_indices_cuda_kernel<int32_t><<<blocks, threads_per_block>>>(
-    input.data<int32_t>(), 
-    output.data<int32_t>(),
+  find_right_plateau_indices_cuda_kernel<scalar_t><<<blocks, threads_per_block>>>(
+    input.data<scalar_t>(), 
+    output.data<scalar_t>(),
     input.size(0));
 
   output = output.masked_select(output.ge(0));
@@ -116,7 +116,7 @@ Tensor find_merge_pairings_cuda(
     // std::vector<Tensor> l({sort_val, sort_ind.type_as(sort_val)});
     // std::cout << stack(l, 1) << std::endl;
 
-    auto slicings = find_slicing_indices(sort_val);
+    auto slicings = find_slicing_indices_cuda_kernel_call<int32_t>(sort_val);
     // std::cout << slicings << std::endl;
 
     int pairing_counter = 0;
@@ -254,6 +254,47 @@ namespace{
 } //namespace
 
 
+template <typename scalar_t>
+void merge_columns_cuda_kernel_call(
+  Tensor descending_sorted_boundary_array,
+  Tensor merge_pairings, 
+  int* h_boundary_array_needs_resize
+)
+{
+  const int threads_per_block = 32;
+  const int blocks = merge_pairings.size(0)/threads_per_block + 1;
+
+  auto targets = merge_pairings.slice(1, 1).squeeze();  
+  
+  // fill cache for merging ... 
+  //  TODO optimize: we do not need all columns it is enough to take des...array.size(1)/2 + 1 
+  //  ATTENTION if we do this we have to inform merge_columns_cuda_kernel about this!!!
+  auto cache = descending_sorted_boundary_array.index_select(0, targets);
+  
+  auto size = sizeof(int);
+  int* d_boundary_array_needs_resize;
+  cudaMalloc(&d_boundary_array_needs_resize, size);
+  cudaMemcpy(d_boundary_array_needs_resize, h_boundary_array_needs_resize, size, cudaMemcpyHostToDevice);
+
+  // reset content of target columns 
+  descending_sorted_boundary_array.index_fill_(0, targets, -1);
+
+  merge_columns_cuda_kernel<int32_t><<<blocks, threads_per_block>>>(
+    descending_sorted_boundary_array.data<int32_t>(), 
+    descending_sorted_boundary_array.size(1), 
+    cache.data<int32_t>(),
+    merge_pairings.data<int64_t>(), 
+    merge_pairings.size(0), 
+    d_boundary_array_needs_resize
+  );
+
+  cudaDeviceSynchronize();
+  cudaMemcpy(h_boundary_array_needs_resize, d_boundary_array_needs_resize, size, cudaMemcpyDeviceToHost);
+
+  cudaFree(d_boundary_array_needs_resize);
+}
+
+
 Tensor resize_boundary_array(
   Tensor descending_sorted_boundary_array){
     auto tmp = empty_like(descending_sorted_boundary_array);
@@ -265,48 +306,20 @@ Tensor resize_boundary_array(
 
 Tensor merge_columns_cuda(
   Tensor descending_sorted_boundary_array, 
-  Tensor merge_pairings){
-    const int threads_per_block = 32;
-    const int blocks = merge_pairings.size(0)/threads_per_block + 1;
-
-    auto targets = merge_pairings.slice(1, 1).squeeze();
-    // std::cout << "merge_columns_cuda --> targets:" << std::endl << targets << std::endl;
-
-    // fill cache for merging ... 
-    //  TODO optimize: we do not need all columns it is enough to take des...array.size(1)/2 + 1 
-    //  ATTENTION if we do this we have to inform merge_columns_cuda_kernel about this!!!
-    auto cache = descending_sorted_boundary_array.index_select(0, targets);
-
-    // reset content of target columns 
-    descending_sorted_boundary_array.index_fill_(0, targets, -1);
-
-    // std::cout << "merge_columns_cuda --> cache:" << std::endl << cache << std::endl;
-    
-    // bool boundary_array_needs_resize = false; //Is this save?
-    auto size = sizeof(int);
+  Tensor merge_pairings){   
+   
     int boundary_array_needs_resize = 0;
-    int* h_boundary_array_needs_resize = &boundary_array_needs_resize;
-    int* d_boundary_array_needs_resize;
-    cudaMalloc(&d_boundary_array_needs_resize, size);
-    cudaMemcpy(d_boundary_array_needs_resize, h_boundary_array_needs_resize, size, cudaMemcpyHostToDevice);
+    int* h_boundary_array_needs_resize = &boundary_array_needs_resize;    
 
-    merge_columns_cuda_kernel<int32_t><<<blocks, threads_per_block>>>(
-      descending_sorted_boundary_array.data<int32_t>(), 
-      descending_sorted_boundary_array.size(1), 
-      cache.data<int32_t>(),
-      merge_pairings.data<int64_t>(), 
-      merge_pairings.size(0), 
-      d_boundary_array_needs_resize
+    merge_columns_cuda_kernel_call<int32_t>(
+      descending_sorted_boundary_array,
+      merge_pairings, 
+      h_boundary_array_needs_resize
     );
-    
-    cudaDeviceSynchronize();
-    cudaMemcpy(h_boundary_array_needs_resize, d_boundary_array_needs_resize, size, cudaMemcpyDeviceToHost);
   
     if (*h_boundary_array_needs_resize == 1){
       descending_sorted_boundary_array = resize_boundary_array(descending_sorted_boundary_array);
     }
-
-    cudaFree(d_boundary_array_needs_resize);
     
     return descending_sorted_boundary_array;
   }
