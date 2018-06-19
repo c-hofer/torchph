@@ -79,7 +79,7 @@ void merge_columns_(
   CHECK_INPUT(descending_sorted_boundary_array);
   assert(descending_sorted_boundary_array.type().scalarType() == ScalarType::Int);
   CHECK_INPUT(merge_pairs);
-  assert(merge_pairs.type().scalarType() == ScalarType::Int);
+  assert(merge_pairs.type().scalarType() == ScalarType::Long);
 
   merge_columns_cuda(descending_sorted_boundary_array, merge_pairs);
 }
@@ -125,7 +125,7 @@ Tensor my_test_f_cuda(Tensor);
 
 Tensor my_test_f(Tensor t)
 {
-  // auto state = globalContext().getTHCState();
+  auto state = globalContext().getTHCState();
 
   // Context* c = &globalContext();
   // auto thc_state = c->getTHCState();
