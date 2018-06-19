@@ -406,7 +406,6 @@ std::vector<std::vector<Tensor> > calculate_persistence_cuda(
   int max_dimension) {
 
   int iterations = 0;
-  // int debug_count = 0;
   Tensor pivots, merge_pairings;
 
   while(true){
