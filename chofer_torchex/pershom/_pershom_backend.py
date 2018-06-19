@@ -47,7 +47,7 @@ def find_merge_pairings(
     Returns:
         Tensor -- [Nx2: N is the number of merge pairs]
     """
-    return __C.find_merge_pairings(Tensor, max_pairs)
+    return __C.find_merge_pairings(pivots, max_pairs)
 
 
 def merge_columns_(
@@ -65,7 +65,7 @@ def merge_columns_(
     Returns:
         None -- []
     """
-    return __C.merge_columns_(descending_sorted_boundary_array, merge_pairs)
+    __C.merge_columns_(descending_sorted_boundary_array, merge_pairs)
 
 
 def read_barcodes(
