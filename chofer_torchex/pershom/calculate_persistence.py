@@ -1,4 +1,4 @@
-from ._pershom_backend import find_merge_pairings, merge_columns_, read_barcodes
+from .pershom_backend import find_merge_pairings, merge_columns_, read_barcodes
 import torch 
 from torch import Tensor
 
