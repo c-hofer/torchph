@@ -136,6 +136,10 @@ Tensor my_test_f(Tensor t)
 }
 //-------------
 
+
+#ifndef PROFILE
+
+
 PYBIND11_MODULE(TORCH_EXTENSION_NAME, m)
 {
   // low level
@@ -149,3 +153,6 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m)
   m.def("calculate_persistence", &calculate_persistence, "calculate_persistence (CUDA)");
   m.def("my_test_f", &my_test_f, "test function");
 }
+
+
+#endif
