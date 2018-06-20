@@ -5,8 +5,8 @@ from torch import Tensor
 def calculate_persistence(
     descending_sorted_boundary_array: Tensor,
     column_dimension: Tensor,
-    max_pairs: int,
-    max_dimension: int
+    max_dimension: int,
+    max_pairs: int
     )->[Tensor]:
 
     iterations = 0

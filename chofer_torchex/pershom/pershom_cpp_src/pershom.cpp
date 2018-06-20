@@ -100,8 +100,9 @@ std::vector<std::vector<Tensor>> read_barcodes(
 std::vector<std::vector<Tensor>> calculate_persistence(
     Tensor descending_sorted_boundary_array,
     Tensor column_dimension,
-    int max_pairs,
-    int max_dimension)
+    int max_dimension,
+    int max_pairs
+)
 {
 
   CHECK_INPUT(descending_sorted_boundary_array);
@@ -110,9 +111,9 @@ std::vector<std::vector<Tensor>> calculate_persistence(
   assert(column_dimension.type().scalarType() == ScalarType::Int);
 
   auto dgms = calculate_persistence_cuda(descending_sorted_boundary_array,
-                                         column_dimension,
-                                         max_pairs,
-                                         max_dimension);
+                                         column_dimension,                                         
+                                         max_dimension,
+                                         max_pairs);
   return dgms;
 }
 

@@ -70,8 +70,8 @@ def merge_columns_(
 
 def read_barcodes(
     pivots: Tensor, 
-    column_dimension: 
-    Tensor, max_dimension: int
+    column_dimension: Tensor, 
+    max_dimension: int
     )->[[Tensor], [Tensor]]:
     """Reads the barcodes using the pivot of a reduced boundary array
     
@@ -94,8 +94,8 @@ def read_barcodes(
 def calculate_persistence(
     descending_sorted_boundary_array: Tensor,
     column_dimension: Tensor,
-    max_pairs: int,
-    max_dimension: int
+    max_dimension: int,
+    max_pairs: int
     )->[Tensor]:
     """Returns the barcodes of the given encoded boundary array
     

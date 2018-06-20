@@ -402,8 +402,9 @@ std::vector<std::vector<Tensor> > read_barcodes_cuda(
 std::vector<std::vector<Tensor> > calculate_persistence_cuda(  
   Tensor descending_sorted_boundary_array, 
   Tensor column_dimension,
-  int max_pairs, 
-  int max_dimension) {
+  int max_dimension,
+  int max_pairs
+  ) {
 
   int iterations = 0;
   Tensor pivots, merge_pairings;
