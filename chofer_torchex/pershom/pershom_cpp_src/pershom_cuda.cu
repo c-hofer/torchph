@@ -116,7 +116,7 @@ Tensor find_merge_pairings_cuda(
     // std::vector<Tensor> l({sort_val, sort_ind.type_as(sort_val)});
     // std::cout << stack(l, 1) << std::endl;
 
-    auto slicings = find_slicing_indices_cuda_kernel_call<int32_t>(sort_val);
+    auto slicings = find_slicing_indices_cuda_kernel_call<int32_t>(sort_val).toBackend(Backend::CPU);
     // std::cout << slicings << std::endl;
 
     int pairing_counter = 0;
@@ -127,9 +127,8 @@ Tensor find_merge_pairings_cuda(
         break;
       }
 
-      auto slicing_i = slicings[i];
-      auto begin = Scalar(slicing_i[0]).to<int>(); //OPTIMIZE: can this conversion be improved?
-      auto end = Scalar(slicing_i[1]).to<int>() + 1;
+      auto begin = Scalar(slicings[i][0]).to<int>(); //OPTIMIZE: can this conversion be improved?
+      auto end = Scalar(slicings[i][1]).to<int>() + 1;
       auto slice = sort_ind.slice(0, begin, end);
       slice = std::get<0>(slice.sort(0));
 
