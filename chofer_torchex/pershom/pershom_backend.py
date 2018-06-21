@@ -113,10 +113,7 @@ def calculate_persistence(
         [Tensor] -- [description]
     """
     return __C.calculate_persistence(
-        descending_sorted_boundary_array,
-        column_dimension, 
-        max_pairs, 
-        max_dimension)
+        descending_sorted_boundary_array, column_dimension, max_dimension, max_pairs)
 
 
 
