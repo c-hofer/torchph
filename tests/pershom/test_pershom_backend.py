@@ -13,7 +13,7 @@ class Test_find_merge_pairings:
     def test_return_value_dtype(self, device, dtype):
         pivots = torch.tensor([1, 1], device=device, dtype=dtype)
 
-        result = pershom_backend.find_merge_pairings(pivots, 100)
+        result = pershom_backend.find_merge_pairings(pivots)
 
         assert result.dtype == torch.int64
 
@@ -25,7 +25,7 @@ class Test_find_merge_pairings:
         pivots = [-1,-1, 3, 3, 3 ,5, 6, 6, 0, -1, 5, 5]
         pivots = torch.tensor(pivots, device=device, dtype=dtype).unsqueeze(1)
 
-        result = pershom_backend.find_merge_pairings(pivots, 1000)
+        result = pershom_backend.find_merge_pairings(pivots)
 
         assert result.dtype == torch.int64
 
