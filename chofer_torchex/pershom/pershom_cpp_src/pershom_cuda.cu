@@ -74,24 +74,31 @@ public:
  ~NoPairsException() {}
 };
 
-
+/**
+ * @brief Finds the indices for slicing the sorted pivots values. 
+ * Example:
+ *    pivots.sort(0)[0] = [-1, -1, 2, 2, 2, 4, 4] -> [[2, 4], [5, 6]]
+ * 
+ * @tparam scalar_t 
+ * @param pivots 
+ * @return Tensor 
+ */
 template <typename scalar_t>
 Tensor find_slicing_indices_cuda_kernel_call(
-    Tensor input) {
-  Tensor output = zeros_like(input).fill_(-1);
-  
+    Tensor pivots) {
+  Tensor output = zeros_like(pivots).fill_(-1);
   const int threads_per_block = 256;
-  const int blocks = input.size(0)/threads_per_block + 1;
+  const int blocks = pivots.size(0)/threads_per_block + 1;
 
   find_left_plateau_indices_cuda_kernel<scalar_t><<<blocks, threads_per_block>>>(
-    input.data<scalar_t>(), 
+    pivots.data<scalar_t>(), 
     output.data<scalar_t>(),
-    input.size(0));
+    pivots.size(0));
 
   find_right_plateau_indices_cuda_kernel<scalar_t><<<blocks, threads_per_block>>>(
-    input.data<scalar_t>(), 
+    pivots.data<scalar_t>(), 
     output.data<scalar_t>(),
-    input.size(0));
+    pivots.size(0));
 
   output = output.masked_select(output.ge(0));
   output = output.view(IntList({output.size(0)/2, 2}));
@@ -107,7 +114,6 @@ Tensor find_merge_pairings_cuda(
     if (max_pairs < 1){
       max_pairs = std::numeric_limits<int>::max();
     }
-    // std::cout << pivots << std::endl;
     auto sort_res = pivots.sort(0);
     auto sort_val = std::get<0>(sort_res);
     auto sort_ind = std::get<1>(sort_res);
@@ -117,11 +123,7 @@ Tensor find_merge_pairings_cuda(
     sort_val = sort_val.masked_select(mask);
     sort_ind = sort_ind.masked_select(mask);
 
-    // std::vector<Tensor> l({sort_val, sort_ind.type_as(sort_val)});
-    // std::cout << stack(l, 1) << std::endl;
-
     auto slicings = find_slicing_indices_cuda_kernel_call<int32_t>(sort_val).toBackend(Backend::CPU);
-    // std::cout << slicings << std::endl;
 
     int pairing_counter = 0;
     std::vector<Tensor> pairing_tensors; 
