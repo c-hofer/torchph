@@ -4,6 +4,7 @@
 #include <cuda_runtime.h>
 
 #include <vector>
+#include <limits>
 
 
 using namespace at;
@@ -101,8 +102,11 @@ Tensor find_slicing_indices_cuda_kernel_call(
 
 Tensor find_merge_pairings_cuda(
   Tensor pivots,
-  int max_pairs){
+  int max_pairs = -1 ){
 
+    if (max_pairs < 1){
+      max_pairs = std::numeric_limits<int>::max();
+    }
     // std::cout << pivots << std::endl;
     auto sort_res = pivots.sort(0);
     auto sort_val = std::get<0>(sort_res);
@@ -402,7 +406,7 @@ std::vector<std::vector<Tensor> > calculate_persistence_cuda(
   Tensor descending_sorted_boundary_array, 
   Tensor column_dimension,
   int max_dimension,
-  int max_pairs
+  int max_pairs = -1
   ) {
 
   int iterations = 0;

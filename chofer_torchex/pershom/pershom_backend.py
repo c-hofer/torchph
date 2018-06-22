@@ -33,7 +33,7 @@ __C = load(
 
 def find_merge_pairings(
     pivots: Tensor, 
-    max_pairs: int
+    max_pairs: int = -1
     )->Tensor:
     r"""Finds the pairs which have to be merged in the current iteration. 
     For 
@@ -95,7 +95,7 @@ def calculate_persistence(
     descending_sorted_boundary_array: Tensor,
     column_dimension: Tensor,
     max_dimension: int,
-    max_pairs: int
+    max_pairs: int = -1
     )->[Tensor]:
     """Returns the barcodes of the given encoded boundary array
     

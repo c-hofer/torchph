@@ -6,10 +6,10 @@ def calculate_persistence(
     descending_sorted_boundary_array: Tensor,
     column_dimension: Tensor,
     max_dimension: int,
-    max_pairs: int
+    max_pairs: int = -1
     )->[Tensor]:
 
-    print("This function is currently buggy. See pershom_dev/bug_1.py for reproduction. Cause could be the ATen backend")
+    raise Warning("This function is currently buggy. See pershom_dev/bug_1.py for reproduction. Cause could be the ATen backend")
 
     iterations = 0
     pivots = None

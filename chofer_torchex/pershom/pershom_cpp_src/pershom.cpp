@@ -64,7 +64,7 @@ void merge_columns_kernel_call(
 
 Tensor find_merge_pairings(
     Tensor pivots,
-    int max_pairs)
+    int max_pairs = -1)
 {
   CHECK_INPUT(pivots);
   assert(pivots.type().scalarType() == ScalarType::Int);
