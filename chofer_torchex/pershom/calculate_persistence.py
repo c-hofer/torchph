@@ -9,9 +9,12 @@ def calculate_persistence(
     max_pairs: int
     )->[Tensor]:
 
+    print("This function is currently buggy. See pershom_dev/bug_1.py for reproduction. Cause could be the ATen backend")
+
     iterations = 0
     pivots = None
     while True:
+        # FIX: synchronization issue apperas here 
         pivots = descending_sorted_boundary_array[:, 0].unsqueeze(1).contiguous()
 
         try:
