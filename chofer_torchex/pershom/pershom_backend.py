@@ -70,7 +70,7 @@ def merge_columns_(
 
 def read_barcodes(
     pivots: Tensor, 
-    column_dimension: Tensor, 
+    simplex_dimension: Tensor, 
     max_dimension: int
     )->[[Tensor], [Tensor]]:
     """Reads the barcodes using the pivot of a reduced boundary array
@@ -79,8 +79,8 @@ def read_barcodes(
         pivots {Tensor} -- [pivots is the first column of a 
         descending_sorted_boundary_array]
 
-        column_dimension {Tensor} -- [Vector whose i-th entry is 
-        the dimension if the i-th vertex in the given filtration]
+        simplex_dimension {Tensor} -- [Vector whose i-th entry is 
+        the dimension if the i-th simplex in the given filtration]
 
         max_dimension {int} -- [dimension of the filtrated simplicial complex]
     
@@ -88,12 +88,12 @@ def read_barcodes(
         [[Tensor], [Tensor]] -- [ret[0][i] = non essential barcodes of dimension i
                                  ret[1][i] = birth-times of essential classes]
     """
-    return __C.read_barcodes(pivots, column_dimension, max_dimension)
+    return __C.read_barcodes(pivots, simplex_dimension, max_dimension)
 
 
 def calculate_persistence(
     descending_sorted_boundary_array: Tensor,
-    column_dimension: Tensor,
+    simplex_dimension: Tensor,
     max_dimension: int,
     max_pairs: int = -1
     )->[Tensor]:
@@ -102,8 +102,8 @@ def calculate_persistence(
     Arguments:
         descending_sorted_boundary_array {Tensor} -- [see readme section top]
 
-        column_dimension {Tensor} -- [Vector whose i-th entry is 
-        the dimension if the i-th vertex in the given filtration]
+        simplex_dimension {Tensor} -- [Vector whose i-th entry is 
+        the dimension if the i-th simplex in the given filtration]
 
         max_pairs {int} -- [The output is at most a max_pairs x 2 Tensor]
 
@@ -113,7 +113,7 @@ def calculate_persistence(
         [Tensor] -- [description]
     """
     return __C.calculate_persistence(
-        descending_sorted_boundary_array, column_dimension, max_dimension, max_pairs)
+        descending_sorted_boundary_array, simplex_dimension, max_dimension, max_pairs)
 
 
 

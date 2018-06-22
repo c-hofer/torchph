@@ -4,7 +4,7 @@ from torch import Tensor
 
 def calculate_persistence(
     descending_sorted_boundary_array: Tensor,
-    column_dimension: Tensor,
+    simplex_dimension: Tensor,
     max_dimension: int,
     max_pairs: int = -1
     )->[Tensor]:
@@ -29,7 +29,7 @@ def calculate_persistence(
         merge_columns_(descending_sorted_boundary_array, merge_pairings)
         iterations += 1
 
-    barcodes = read_barcodes(pivots, column_dimension, max_dimension)
+    barcodes = read_barcodes(pivots, simplex_dimension, max_dimension)
 
     return barcodes 
         

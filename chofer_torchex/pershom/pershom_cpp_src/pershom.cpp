@@ -86,20 +86,20 @@ void merge_columns_(
 
 std::vector<std::vector<Tensor>> read_barcodes(
     Tensor pivots,
-    Tensor column_dimension,
+    Tensor simplex_dimension,
     int max_dimension)
 {
 
   CHECK_INPUT(pivots);
   assert(pivots.type().scalarType() == ScalarType::Int);
-  CHECK_INPUT(column_dimension);
-  assert(column_dimension.type().scalarType() == ScalarType::Int);
-  return read_barcodes_cuda(pivots, column_dimension, max_dimension);
+  CHECK_INPUT(simplex_dimension);
+  assert(simplex_dimension.type().scalarType() == ScalarType::Int);
+  return read_barcodes_cuda(pivots, simplex_dimension, max_dimension);
 }
 
 std::vector<std::vector<Tensor>> calculate_persistence(
     Tensor descending_sorted_boundary_array,
-    Tensor column_dimension,
+    Tensor simplex_dimension,
     int max_dimension,
     int max_pairs
 )
@@ -107,11 +107,11 @@ std::vector<std::vector<Tensor>> calculate_persistence(
 
   CHECK_INPUT(descending_sorted_boundary_array);
   assert(descending_sorted_boundary_array.type().scalarType() == ScalarType::Int);
-  CHECK_INPUT(column_dimension);
-  assert(column_dimension.type().scalarType() == ScalarType::Int);
+  CHECK_INPUT(simplex_dimension);
+  assert(simplex_dimension.type().scalarType() == ScalarType::Int);
 
   auto dgms = calculate_persistence_cuda(descending_sorted_boundary_array,
-                                         column_dimension,                                         
+                                         simplex_dimension,                                         
                                          max_dimension,
                                          max_pairs);
   return dgms;
