@@ -6,6 +6,7 @@ import chofer_torchex.pershom.pershom_backend as pershom_backend
 from collections import Counter
 
 
+
 class Test_find_merge_pairings:
     @pytest.mark.parametrize("device, dtype", [
         (torch.device('cuda'), torch.int32)
@@ -16,6 +17,27 @@ class Test_find_merge_pairings:
         result = pershom_backend.find_merge_pairings(pivots)
 
         assert result.dtype == torch.int64
+
+
+    @pytest.mark.parametrize("device, dtype", [
+        (torch.device('cuda'), torch.int32)
+    ]) 
+    def test_parameter_max_pairs(self, device, dtype):
+        pivots = torch.tensor([1]*1000, device=device, dtype=dtype).unsqueeze(1)
+
+        result = pershom_backend.find_merge_pairings(pivots, max_pairs=100)
+
+        assert result.size(0) == 100 
+
+
+    @pytest.mark.parametrize("device, dtype", [
+        (torch.device('cuda'), torch.int32)
+    ])
+    def test_break_exeption(self, device, dtype):
+        pivots = torch.tensor(list(range(100)), device=device, dtype=dtype).unsqueeze(1)
+
+        with pytest.raises(Exception):
+            pershom_backend.find_merge_pairings(pivots)
 
 
     @pytest.mark.parametrize("device, dtype", [
@@ -32,12 +54,26 @@ class Test_find_merge_pairings:
         expected_result = [(2, 3), (2, 4), 
                            (5, 10), (5, 11), 
                            (6, 7) ]
-
         expected_result = torch.tensor(expected_result, device=device, dtype=torch.int64)
 
         assert result.equal(expected_result)
 
-        
+
+    @pytest.mark.parametrize("device, dtype", [
+        (torch.device('cuda'), torch.int32)
+    ])  
+    def test_result_2(self, device, dtype):
+        pivots = sum([100*[i] for i in range(100)], [])
+        pivots = torch.tensor(pivots, device=device, dtype=dtype).unsqueeze(1)
+
+        expected_result = torch.tensor([(int(i/100) * 100, i) for i in range(100* 100) if i % 100 != 0])
+        expected_result = torch.tensor(expected_result, device=device, dtype=torch.int64)
+
+        result = pershom_backend.find_merge_pairings(pivots)
+
+        assert expected_result.equal(result)
+
+
 
 
 class Test_calculate_persistence:
