@@ -16,7 +16,7 @@ using namespace at;
 namespace {
 
 template <typename scalar_t>
-__global__ void find_left_plateau_indices_cuda_kernel(
+__global__ void find_left_slicings_indices_cuda_kernel(
   scalar_t* __restrict__ input,
   scalar_t* __restrict__ output, 
   size_t input_size){ 
@@ -41,7 +41,7 @@ __global__ void find_left_plateau_indices_cuda_kernel(
 
 
 template <typename scalar_t>
-__global__ void find_right_plateau_indices_cuda_kernel(
+__global__ void find_right_slicings_indices_cuda_kernel(
   scalar_t* __restrict__ input,
   scalar_t* __restrict__ output, 
   size_t input_size){ 
@@ -59,20 +59,13 @@ __global__ void find_right_plateau_indices_cuda_kernel(
       if (value_left == value_middle
           && 
           value_middle != value_right){
-        output[index_middle] = index_middle;
+        output[index_middle] = index_middle + 1;
       }
     }    
   }
 
-
 } // namespace
 
-
-class NoPairsException{
-public:
-  NoPairsException() {}
- ~NoPairsException() {}
-};
 
 /**
  * @brief Finds the indices for slicing the sorted pivots values. 
@@ -90,12 +83,12 @@ Tensor find_slicing_indices_cuda_kernel_call(
   const int threads_per_block = 256;
   const int blocks = pivots.size(0)/threads_per_block + 1;
 
-  find_left_plateau_indices_cuda_kernel<scalar_t><<<blocks, threads_per_block>>>(
+  find_left_slicings_indices_cuda_kernel<scalar_t><<<blocks, threads_per_block>>>(
     pivots.data<scalar_t>(), 
     output.data<scalar_t>(),
     pivots.size(0));
 
-  find_right_plateau_indices_cuda_kernel<scalar_t><<<blocks, threads_per_block>>>(
+  find_right_slicings_indices_cuda_kernel<scalar_t><<<blocks, threads_per_block>>>(
     pivots.data<scalar_t>(), 
     output.data<scalar_t>(),
     pivots.size(0));
@@ -104,7 +97,108 @@ Tensor find_slicing_indices_cuda_kernel_call(
   output = output.view(IntList({output.size(0)/2, 2}));
 
   return output;
-}     
+}  
+
+
+__global__ void extract_slicings_cuda_kernel(
+  int64_t* p_input,
+  int32_t* p_slicings, 
+  int64_t* p_return_value, 
+  int64_t return_value_size_0, 
+  int64_t return_value_size_1){
+    
+    const int thread_id = blockIdx.x * blockDim.x + threadIdx.x;
+
+    if (thread_id < return_value_size_0){
+      auto p_return_value_row = p_return_value + thread_id * return_value_size_1;
+      const int slice_start = *(p_slicings + (thread_id * 2));
+      const int slice_end = *(p_slicings + (thread_id * 2) + 1);
+
+      for (int i = 0; i < slice_end - slice_start; i++){
+        *(p_return_value_row + i) = *(p_input + slice_start + i);
+      }
+    }
+}
+
+
+__global__ void merge_pairings_from_extractd_sorted_slicings(
+  int64_t* extracted_slices, 
+  int64_t extracted_slices_size_0,
+  int64_t extracted_slices_size_1,
+  int32_t* lengths, 
+  int64_t* row_offset_for_thread,
+  int64_t* return_value){
+    const int thread_id = blockIdx.x * blockDim.x + threadIdx.x;
+
+    if (thread_id < extracted_slices_size_0){
+      const int length = *(lengths + thread_id);
+      const int row_offset = (thread_id > 0) ? *(row_offset_for_thread + thread_id - 1) : 0;
+      auto extracted_slices_row = extracted_slices + thread_id*extracted_slices_size_1; 
+      auto const first_col_value = *extracted_slices_row;
+
+      auto return_value_row = return_value + 2*row_offset;
+      for (int i = 0; i < length - 1; i++){
+        *(return_value_row) = first_col_value;
+        *(return_value_row + 1) = *(extracted_slices_row + i + 1);
+        return_value_row = return_value_row + 2;
+      }
+    }
+  }
+
+
+
+Tensor merge_pairings_from_sort_ind_slicings(Tensor input, Tensor slicings){
+  // ASSERTION input.dtype() == int64
+  // ASSERTION slicings.dtype() == int32
+  // ASSERTION all(input.ge(0))
+
+  auto lengths = (slicings.slice(1, 1, 2) - slicings.slice(1, 0, 1)).contiguous();
+  auto max_lengths = Scalar(lengths.max()).to<int>(); 
+  Tensor extracted_slicings = input.type().empty({slicings.size(0), max_lengths});
+  extracted_slicings.fill_(std::numeric_limits<int64_t>::max());
+
+  const int threads_per_block_apply_slicings = 256;
+  const int blocks_apply_slicings = slicings.size(0)/threads_per_block_apply_slicings + 1;
+  extract_slicings_cuda_kernel<<<threads_per_block_apply_slicings, blocks_apply_slicings>>>(
+    input.data<int64_t>(), 
+    slicings.data<int32_t>(),
+    extracted_slicings.data<int64_t>(),
+    extracted_slicings.size(0),
+    extracted_slicings.size(1)
+  );
+
+  auto extracted_slicings_sorted = std::get<0>(extracted_slicings.sort(1)).contiguous();
+  // std::cout << extracted_slicings_sorted.slice(0, 0, 10).slice(1, 0, 10) << std::endl;
+
+  auto lengths_minus_1 = lengths - lengths.type().scalarTensor(1);  
+  auto row_offset_for_thread = lengths_minus_1.cumsum(0);
+  // std::cout << row_offset_for_thread.slice(0, 0, 10).slice(1, 0, 10) << std::endl;
+
+  auto merge_pairings_size_0 = Scalar(row_offset_for_thread[-1][0]).to<int>();
+  auto merge_pairings = input.type().empty({merge_pairings_size_0, 2});
+  merge_pairings.fill_(-1);
+
+  const int threads_per_block = 256;
+  const int blocks = extracted_slicings_sorted.size(0)/threads_per_block + 1;
+
+  merge_pairings_from_extractd_sorted_slicings<<<threads_per_block, blocks>>>(
+      extracted_slicings_sorted.data<int64_t>(), 
+      extracted_slicings_sorted.size(0),
+      extracted_slicings_sorted.size(1), 
+      lengths.data<int32_t>(), 
+      row_offset_for_thread.data<int64_t>(),
+      merge_pairings.data<int64_t>()
+  );
+
+  return merge_pairings;
+  
+}
+
+class NoPairsException{
+public:
+  NoPairsException() {}
+ ~NoPairsException() {}
+};
 
 
 Tensor find_merge_pairings_cuda(
@@ -123,34 +217,12 @@ Tensor find_merge_pairings_cuda(
     sort_val = sort_val.masked_select(mask);
     sort_ind = sort_ind.masked_select(mask);
 
-    auto slicings = find_slicing_indices_cuda_kernel_call<int32_t>(sort_val).toBackend(Backend::CPU);
+    auto slicings = find_slicing_indices_cuda_kernel_call<int32_t>(sort_val).contiguous();
 
-    int pairing_counter = 0;
-    std::vector<Tensor> pairing_tensors; 
-    for (int i=0; i<slicings.size(0); i++){
+    Tensor merge_pairs; 
+    if (slicings.size(0) != 0){         
 
-      if (pairing_counter > max_pairs){
-        break;
-      }
-
-      auto begin = Scalar(slicings[i][0]).to<int>(); //OPTIMIZE: can this conversion be improved?
-      auto end = Scalar(slicings[i][1]).to<int>() + 1;
-      auto slice = sort_ind.slice(0, begin, end);
-      slice = std::get<0>(slice.sort(0));
-
-      auto col_2 = slice.slice(0, 1);
-      auto col_1 = slice[0].expand_as(col_2);
-      auto pairing_tensor = stack(std::vector<Tensor>({col_1, col_2}), 1);
-
-      pairing_counter += pairing_tensor.size(0);
-
-      pairing_tensors.push_back(pairing_tensor);
-    }
-
-    Tensor merge_pairs;
-    if (pairing_tensors.size() != 0){      
-      merge_pairs = cat(pairing_tensors, 0);     
-
+      merge_pairs = merge_pairings_from_sort_ind_slicings(sort_ind, slicings);
       // We sort the pairs such that pairs with smaller index come first.
       // This improves performance???
       if (merge_pairs.size(0) > max_pairs){
