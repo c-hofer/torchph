@@ -2,6 +2,5 @@
 .vscode
 __pycache__
 *.pyc
-pershom_dev
 .cache
 .pytest_cache
