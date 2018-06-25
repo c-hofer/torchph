@@ -9,7 +9,7 @@
 
 using namespace at;
 
-
+//TODO do proper namespacing 
 #pragma region find_merge_pairings
 
 
@@ -74,7 +74,7 @@ __global__ void find_right_slicings_indices_cuda_kernel(
  * 
  * @tparam scalar_t 
  * @param pivots 
- * @return Tensor 
+ * @return Tensor return.dtype() == scalar_t
  */
 template <typename scalar_t>
 Tensor find_slicing_indices_cuda_kernel_call(
@@ -100,6 +100,20 @@ Tensor find_slicing_indices_cuda_kernel_call(
 }  
 
 
+namespace {
+
+/**
+ * @brief Implements a batch version of traditional slice for 
+ * a input vector and a tensor which defines the slicings.
+ * The output is a then of dimension
+ * slicings.size(0) x (slicings[:, 1] - slicings[:, 0]).max()
+ * 
+ * @param p_input 
+ * @param p_slicings 
+ * @param p_return_value 
+ * @param return_value_size_0 
+ * @param return_value_size_1 
+ */
 __global__ void extract_slicings_cuda_kernel(
   int64_t* p_input,
   int32_t* p_slicings, 
@@ -120,8 +134,21 @@ __global__ void extract_slicings_cuda_kernel(
     }
 }
 
-
-__global__ void merge_pairings_from_extractd_sorted_slicings(
+/**
+ * @brief Intended to be used on the output of 
+ * extract_slicings_cuda_kernel. It reformats 
+ * extraextracted_slices row-wise to merge-pairs 
+ * format. E.g. 
+ * row_i = [1, 2, 3] -> [[1,2], [1,3]]
+ * 
+ * @param extracted_slices 
+ * @param extracted_slices_size_0 
+ * @param extracted_slices_size_1 
+ * @param lengths 
+ * @param row_offset_for_thread 
+ * @param return_value 
+ */
+__global__ void format_extracted_sorted_slicings_to_merge_pairs_kernel(
   int64_t* extracted_slices, 
   int64_t extracted_slices_size_0,
   int64_t extracted_slices_size_1,
@@ -145,12 +172,16 @@ __global__ void merge_pairings_from_extractd_sorted_slicings(
     }
   }
 
+} //namespace
 
 
-Tensor merge_pairings_from_sort_ind_slicings(Tensor input, Tensor slicings){
+Tensor sorted_pivot_indices_to_merge_pairs_cuda_kernel_call(Tensor input, Tensor slicings){
   // ASSERTION input.dtype() == int64
   // ASSERTION slicings.dtype() == int32
   // ASSERTION all(input.ge(0))
+  // ASSERTION all(slicings.ge(0))
+  // ASSERTION all(slicings[:, 0].leq(slicings[:, 1]))
+  // ASSERTION slicings[:, 1].max() < input.size(0)
 
   auto lengths = (slicings.slice(1, 1, 2) - slicings.slice(1, 0, 1)).contiguous();
   auto max_lengths = Scalar(lengths.max()).to<int>(); 
@@ -168,11 +199,9 @@ Tensor merge_pairings_from_sort_ind_slicings(Tensor input, Tensor slicings){
   );
 
   auto extracted_slicings_sorted = std::get<0>(extracted_slicings.sort(1)).contiguous();
-  // std::cout << extracted_slicings_sorted.slice(0, 0, 10).slice(1, 0, 10) << std::endl;
 
   auto lengths_minus_1 = lengths - lengths.type().scalarTensor(1);  
   auto row_offset_for_thread = lengths_minus_1.cumsum(0);
-  // std::cout << row_offset_for_thread.slice(0, 0, 10).slice(1, 0, 10) << std::endl;
 
   auto merge_pairings_size_0 = Scalar(row_offset_for_thread[-1][0]).to<int>();
   auto merge_pairings = input.type().empty({merge_pairings_size_0, 2});
@@ -181,7 +210,7 @@ Tensor merge_pairings_from_sort_ind_slicings(Tensor input, Tensor slicings){
   const int threads_per_block = 256;
   const int blocks = extracted_slicings_sorted.size(0)/threads_per_block + 1;
 
-  merge_pairings_from_extractd_sorted_slicings<<<threads_per_block, blocks>>>(
+  format_extracted_sorted_slicings_to_merge_pairs_kernel<<<threads_per_block, blocks>>>(
       extracted_slicings_sorted.data<int64_t>(), 
       extracted_slicings_sorted.size(0),
       extracted_slicings_sorted.size(1), 
@@ -195,9 +224,9 @@ Tensor merge_pairings_from_sort_ind_slicings(Tensor input, Tensor slicings){
 }
 
 class NoPairsException{
-public:
-  NoPairsException() {}
- ~NoPairsException() {}
+  public:
+    NoPairsException() {}
+    ~NoPairsException() {}
 };
 
 
@@ -222,7 +251,7 @@ Tensor find_merge_pairings_cuda(
     Tensor merge_pairs; 
     if (slicings.size(0) != 0){         
 
-      merge_pairs = merge_pairings_from_sort_ind_slicings(sort_ind, slicings);
+      merge_pairs = sorted_pivot_indices_to_merge_pairs_cuda_kernel_call(sort_ind, slicings);
       // We sort the pairs such that pairs with smaller index come first.
       // This improves performance???
       if (merge_pairs.size(0) > max_pairs){
