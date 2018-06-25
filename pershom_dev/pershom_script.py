@@ -33,7 +33,7 @@ def test():
         c = random_simplicial_complex(100, 100, 100, 100, 100) 
 
     print('|C| = ', len(c))
-    max_red_by_iteration = 10000
+    max_red_by_iteration = -1
 
     # cpu_impl = SortedListBoundaryMatrix(c)
     # cpu_impl.max_pairs = max_red_by_iteration
@@ -69,14 +69,15 @@ def test():
         return ret
 
 
-    pr = cProfile.Profile()
-    pr.enable()
+    # pr = cProfile.Profile()
+    # pr.enable()
 
-    # output = calculate_persistence(bm, col_dim, max(col_dim), max_red_by_iteration)
+    time_start = time()
     output = pershom_backend.calculate_persistence(bm, col_dim, max(col_dim), max_red_by_iteration)
+    print(time() - time_start)
 
-    pr.disable()
-    pr.dump_stats('high_level_profile.cProfile')
+    # pr.disable()
+    # pr.dump_stats('high_level_profile.cProfile')
 
     print([[len(x) for x in y] for y in output ])
 
