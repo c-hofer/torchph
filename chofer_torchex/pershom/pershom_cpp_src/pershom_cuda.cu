@@ -185,7 +185,7 @@ Tensor sorted_pivot_indices_to_merge_pairs_cuda_kernel_call(Tensor input, Tensor
 
   auto lengths = (slicings.slice(1, 1, 2) - slicings.slice(1, 0, 1)).contiguous();
   auto max_lengths = Scalar(lengths.max()).to<int>(); 
-  Tensor extracted_slicings = input.type().empty({slicings.size(0), max_lengths});
+  Tensor extracted_slicings = input.type().empty({slicings.size(0), max_lengths});//TODO FIX deprecation of empty(...)
   extracted_slicings.fill_(std::numeric_limits<int64_t>::max());
 
   const int threads_per_block_apply_slicings = 256;
@@ -204,7 +204,7 @@ Tensor sorted_pivot_indices_to_merge_pairs_cuda_kernel_call(Tensor input, Tensor
   auto row_offset_for_thread = lengths_minus_1.cumsum(0);
 
   auto merge_pairings_size_0 = Scalar(row_offset_for_thread[-1][0]).to<int>();
-  auto merge_pairings = input.type().empty({merge_pairings_size_0, 2});
+  auto merge_pairings = input.type().empty({merge_pairings_size_0, 2});//TODO FIX deprecation of empty(...)
   merge_pairings.fill_(-1);
 
   const int threads_per_block = 256;
@@ -242,9 +242,9 @@ Tensor find_merge_pairings_cuda(
     auto sort_ind = std::get<1>(sort_res);
 
     // remove columns with undefined pivot (i.e. -1)
-    auto mask = sort_val.ge(0);
-    sort_val = sort_val.masked_select(mask);
-    sort_ind = sort_ind.masked_select(mask);
+    // auto mask = sort_val.ge(0);
+    // sort_val = sort_val.masked_select(mask);
+    // sort_ind = sort_ind.masked_select(mask);
 
     auto slicings = find_slicing_indices_cuda_kernel_call<int32_t>(sort_val).contiguous();
 
@@ -449,10 +449,25 @@ namespace {
 }
 
 void fill_range_cuda_(Tensor t){
+  // AT_ASSERT(t.type().is_cuda());
+
   const int threads_per_block = 256;
   const int blocks = t.numel()/threads_per_block + 1;
 
-  fill_range_kernel<int32_t><<<blocks, threads_per_block>>>(t.data<int32_t>(), t.numel());
+  auto scalar_type = t.type().scalarType();
+  switch(scalar_type)
+  {
+    case ScalarType::Int: 
+      fill_range_kernel<int32_t><<<blocks, threads_per_block>>>(t.data<int32_t>(), t.numel());
+      break;
+
+    case ScalarType::Long: 
+      fill_range_kernel<int64_t><<<blocks, threads_per_block>>>(t.data<int64_t>(), t.numel());
+      break;
+    
+    default:
+      throw std::invalid_argument("Unrecognized Type!");
+  }
 }
 
 std::vector<std::vector<Tensor> > read_barcodes_cuda(
@@ -474,9 +489,9 @@ std::vector<std::vector<Tensor> > read_barcodes_cuda(
 
     // all dimensions mask essential ...
     auto mask_no_pivot = pivots.le(-1); 
-
     auto mask_rows_with_no_lowest_one = ones_like(mask_no_pivot);
     auto row_indices_with_lowest_one = pivots.masked_select(mask_pivot).toType(ScalarType::Long);
+
     mask_rows_with_no_lowest_one.index_fill_(0, row_indices_with_lowest_one, 0);
 
     auto mask_ess = mask_no_pivot.__and__(mask_rows_with_no_lowest_one);
@@ -489,7 +504,7 @@ std::vector<std::vector<Tensor> > read_barcodes_cuda(
       auto barcodes_non_essential_dim = pool_for_barcodes_non_essential.masked_select(mask_non_essential_dim).view({-1, 2});
       
       ret_non_ess.push_back(barcodes_non_essential_dim);
-      
+
       // essentials ...
       auto mask_dim_ess = simplex_dimension.eq(dim);
       auto mask_essential_dim = mask_ess.__and__(mask_dim_ess); 
@@ -511,12 +526,29 @@ std::vector<std::vector<Tensor> > calculate_persistence_cuda(
   int max_dimension,
   int max_pairs = -1
   ) {
-
+  
   int iterations = 0;
-  Tensor pivots, merge_pairings;
+
+  auto ind_not_reduced = descending_sorted_boundary_array.type()
+    .toScalarType(ScalarType::Long).tensor({simplex_dimension.size(0), 1});
+  fill_range_cuda_(ind_not_reduced);
+  
+  auto pivots = descending_sorted_boundary_array.slice(1, 0, 1).contiguous();
+  auto scalar_0 = pivots.type().scalarTensor(0);
+
+  Tensor mask_not_reduced = pivots.ge(scalar_0);
+
+  ind_not_reduced = ind_not_reduced.masked_select(mask_not_reduced).contiguous();
+
+  descending_sorted_boundary_array =
+    descending_sorted_boundary_array.index_select(0, ind_not_reduced).contiguous();
+  pivots = pivots.index_select(0, ind_not_reduced).contiguous();
+
+  Tensor merge_pairings, new_ind_not_reduced;
+ 
 
   while(true){
-    pivots = descending_sorted_boundary_array.slice(1, 0, 1).contiguous();
+    // pivots = descending_sorted_boundary_array.slice(1, 0, 1).contiguous();    
 
     try{
 
@@ -529,13 +561,34 @@ std::vector<std::vector<Tensor> > calculate_persistence_cuda(
       break;
 
     }
-    
+
     descending_sorted_boundary_array = merge_columns_cuda(descending_sorted_boundary_array, merge_pairings);
+
+
+    new_ind_not_reduced = descending_sorted_boundary_array.type()
+      .toScalarType(ScalarType::Long).tensor({descending_sorted_boundary_array.size(0), 1});
+      fill_range_cuda_(new_ind_not_reduced);
+    
+    pivots = descending_sorted_boundary_array.slice(1, 0, 1).contiguous();
+    mask_not_reduced = pivots.ge(scalar_0);
+    new_ind_not_reduced = new_ind_not_reduced.masked_select(mask_not_reduced).contiguous();
+
+    descending_sorted_boundary_array =
+      descending_sorted_boundary_array.index_select(0, new_ind_not_reduced).contiguous();
+    pivots = pivots.index_select(0, new_ind_not_reduced).contiguous();
+
+    ind_not_reduced = ind_not_reduced.index_select(0, new_ind_not_reduced);
+
     iterations++;
 
   }
 
-  auto barcodes = read_barcodes_cuda(pivots, simplex_dimension, max_dimension);
+  auto real_pivots = pivots.type().tensor({simplex_dimension.size(0), 1}).fill_(
+    pivots.type().scalarTensor(-1)
+  );
+  real_pivots.index_copy_(0, ind_not_reduced, pivots); 
+
+  auto barcodes = read_barcodes_cuda(real_pivots, simplex_dimension, max_dimension);
   return barcodes;
 }
 

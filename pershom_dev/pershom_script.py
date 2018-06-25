@@ -73,7 +73,7 @@ def test():
     # pr.enable()
 
     time_start = time()
-    output = pershom_backend.calculate_persistence(bm, col_dim, max(col_dim), max_red_by_iteration)
+    output = pershom_backend.calculate_persistence(bm, col_dim, max(col_dim))
     print(time() - time_start)
 
     # pr.disable()
