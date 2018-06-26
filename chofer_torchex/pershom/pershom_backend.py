@@ -93,6 +93,7 @@ def read_barcodes(
 
 def calculate_persistence(
     descending_sorted_boundary_array: Tensor,
+    ind_not_reduced: Tensor, 
     simplex_dimension: Tensor,
     max_dimension: int,
     max_pairs: int = -1
@@ -113,7 +114,7 @@ def calculate_persistence(
         [Tensor] -- [description]
     """
     return __C.calculate_persistence(
-        descending_sorted_boundary_array, simplex_dimension, max_dimension, max_pairs)
+        descending_sorted_boundary_array, ind_not_reduced, simplex_dimension, max_dimension, max_pairs)
 
 
 

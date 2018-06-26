@@ -13,7 +13,7 @@ template <typename scalar_t> void merge_columns_cuda_kernel_call(Tensor, Tensor,
 Tensor find_merge_pairings_cuda(Tensor, int);
 Tensor merge_columns_cuda(Tensor, Tensor);
 std::vector<std::vector<Tensor>> read_barcodes_cuda(Tensor, Tensor, int);
-std::vector<std::vector<Tensor>> calculate_persistence_cuda(Tensor, Tensor, int, int);
+std::vector<std::vector<Tensor>> calculate_persistence_cuda(Tensor, Tensor, Tensor, int, int);
 
 
 #define CHECK_CUDA(x) AT_ASSERTM(x.type().is_cuda(), #x " must be a CUDA tensor")
@@ -99,6 +99,7 @@ std::vector<std::vector<Tensor>> read_barcodes(
 
 std::vector<std::vector<Tensor>> calculate_persistence(
     Tensor descending_sorted_boundary_array,
+    Tensor ind_not_reduced, 
     Tensor simplex_dimension,
     int max_dimension,
     int max_pairs
@@ -107,10 +108,18 @@ std::vector<std::vector<Tensor>> calculate_persistence(
 
   CHECK_INPUT(descending_sorted_boundary_array);
   assert(descending_sorted_boundary_array.type().scalarType() == ScalarType::Int);
+  CHECK_INPUT(ind_not_reduced);
+  assert(ind_not_reduced.type().scalarType() == ScalarType::Long);
   CHECK_INPUT(simplex_dimension);
   assert(simplex_dimension.type().scalarType() == ScalarType::Int);
 
+  assert(descending_sorted_boundary_array.size(0) == ind_not_reduced.size(0));
+  assert(ind_not_reduced.ndimension() == 1);
+  assert(simplex_dimension.ndimension() == 1);
+
+
   auto dgms = calculate_persistence_cuda(descending_sorted_boundary_array,
+                                         ind_not_reduced, 
                                          simplex_dimension,                                         
                                          max_dimension,
                                          max_pairs);

@@ -27,12 +27,16 @@ def generate():
     
         bm, col_dim = descending_sorted_boundary_array_from_filtrated_sp(c)
         bm, col_dim = bm.to('cuda'), col_dim.to('cuda')
+
+        ind_not_reduced = torch.tensor(list(range(col_dim.size(0)))).to('cuda')
+        ind_not_reduced = ind_not_reduced.masked_select(bm[:, 0] >= 0).long()
+        bm = bm.index_select(0, ind_not_reduced) 
         
         barcodes_true = toplex_persistence_diagrams(c, list(range(len(c))))
         dgm_true = [Counter(((float(b), float(d)) for b, d in dgm )) for dgm in barcodes_true]
 
         with open(file_name_stub + ".pickle", 'wb') as f:
-            pickle.dump({'calculate_persistence_args': (bm, col_dim, max(col_dim)), 
+            pickle.dump({'calculate_persistence_args': (bm, ind_not_reduced, col_dim, max(col_dim)), 
                          'expected_result': dgm_true}, 
                          f)
            

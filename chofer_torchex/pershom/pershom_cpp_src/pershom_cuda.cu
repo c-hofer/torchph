@@ -517,6 +517,7 @@ std::vector<std::vector<Tensor> > read_barcodes_cuda(
 
 std::vector<std::vector<Tensor> > calculate_persistence_cuda(  
   Tensor descending_sorted_boundary_array, 
+  Tensor ind_not_reduced, 
   Tensor simplex_dimension,
   int max_dimension,
   int max_pairs = -1
@@ -524,22 +525,21 @@ std::vector<std::vector<Tensor> > calculate_persistence_cuda(
   
   int iterations = 0;
 
-  auto ind_not_reduced = descending_sorted_boundary_array.type()
-    .toScalarType(ScalarType::Long).tensor({simplex_dimension.size(0), 1});
-  fill_range_cuda_(ind_not_reduced);
+  // auto ind_not_reduced = descending_sorted_boundary_array.type()
+  //   .toScalarType(ScalarType::Long).tensor({simplex_dimension.size(0), 1});
+  // fill_range_cuda_(ind_not_reduced);
   
-  auto tmp_pivots = descending_sorted_boundary_array.slice(1, 0, 1).contiguous();
-  auto scalar_0 = tmp_pivots.type().scalarTensor(0);
+  // auto tmp_pivots = descending_sorted_boundary_array.slice(1, 0, 1).contiguous();
+  auto scalar_0 = descending_sorted_boundary_array.type().scalarTensor(0);
 
-  Tensor mask_not_reduced = tmp_pivots.ge(scalar_0);
+  // Tensor mask_not_reduced = tmp_pivots.ge(scalar_0);
 
-  ind_not_reduced = ind_not_reduced.masked_select(mask_not_reduced).contiguous();
+  // ind_not_reduced = ind_not_reduced.masked_select(mask_not_reduced).contiguous();
 
-  descending_sorted_boundary_array =
-    descending_sorted_boundary_array.index_select(0, ind_not_reduced).contiguous();
-  // pivots = pivots.index_select(0, ind_not_reduced).contiguous();
+  // descending_sorted_boundary_array =
+  //   descending_sorted_boundary_array.index_select(0, ind_not_reduced).contiguous();
 
-  Tensor pivots, merge_pairings, new_ind_not_reduced;
+  Tensor mask_not_reduced, pivots, merge_pairings, new_ind_not_reduced;
   while(true){
 
     pivots = descending_sorted_boundary_array.slice(1, 0, 1).contiguous();
