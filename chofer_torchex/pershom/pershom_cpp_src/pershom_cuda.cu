@@ -528,21 +528,21 @@ std::vector<std::vector<Tensor> > calculate_persistence_cuda(
     .toScalarType(ScalarType::Long).tensor({simplex_dimension.size(0), 1});
   fill_range_cuda_(ind_not_reduced);
   
-  auto pivots = descending_sorted_boundary_array.slice(1, 0, 1).contiguous();
-  auto scalar_0 = pivots.type().scalarTensor(0);
+  auto tmp_pivots = descending_sorted_boundary_array.slice(1, 0, 1).contiguous();
+  auto scalar_0 = tmp_pivots.type().scalarTensor(0);
 
-  Tensor mask_not_reduced = pivots.ge(scalar_0);
+  Tensor mask_not_reduced = tmp_pivots.ge(scalar_0);
 
   ind_not_reduced = ind_not_reduced.masked_select(mask_not_reduced).contiguous();
 
   descending_sorted_boundary_array =
     descending_sorted_boundary_array.index_select(0, ind_not_reduced).contiguous();
-  pivots = pivots.index_select(0, ind_not_reduced).contiguous();
+  // pivots = pivots.index_select(0, ind_not_reduced).contiguous();
 
-  Tensor merge_pairings, new_ind_not_reduced;
- 
-
+  Tensor pivots, merge_pairings, new_ind_not_reduced;
   while(true){
+
+    pivots = descending_sorted_boundary_array.slice(1, 0, 1).contiguous();
 
     try{
 
@@ -558,10 +558,9 @@ std::vector<std::vector<Tensor> > calculate_persistence_cuda(
 
     descending_sorted_boundary_array = merge_columns_cuda(descending_sorted_boundary_array, merge_pairings);
 
-
     new_ind_not_reduced = descending_sorted_boundary_array.type()
       .toScalarType(ScalarType::Long).tensor({descending_sorted_boundary_array.size(0), 1});
-      fill_range_cuda_(new_ind_not_reduced);
+    fill_range_cuda_(new_ind_not_reduced);
     
     pivots = descending_sorted_boundary_array.slice(1, 0, 1).contiguous();
     mask_not_reduced = pivots.ge(scalar_0);
@@ -569,7 +568,7 @@ std::vector<std::vector<Tensor> > calculate_persistence_cuda(
 
     descending_sorted_boundary_array =
       descending_sorted_boundary_array.index_select(0, new_ind_not_reduced).contiguous();
-    pivots = pivots.index_select(0, new_ind_not_reduced).contiguous();
+    // pivots = pivots.index_select(0, new_ind_not_reduced).contiguous();
 
     ind_not_reduced = ind_not_reduced.index_select(0, new_ind_not_reduced);
 

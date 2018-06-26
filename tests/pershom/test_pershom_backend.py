@@ -54,7 +54,6 @@ class Test_find_merge_pairings:
         expected_result = set([(0, 5), (0, 6), 
                                (1, 2), (1, 3), 
                                (4, 8), (4,9) ])
-        # expected_result = torch.tensor(expected_result, device=device, dtype=torch.int64)
 
         result = set(tuple(x) for x in result.tolist())
 
