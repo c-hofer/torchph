@@ -44,19 +44,21 @@ class Test_find_merge_pairings:
         (torch.device('cuda'), torch.int32)
     ])    
     def test_result_1(self, device, dtype):
-        pivots = [-1,-1, 3, 3, 3 ,5, 6, 6, 0, -1, 5, 5]
+        pivots = [6, 3, 3, 3 ,5, 6, 6, 0, 5, 5]
         pivots = torch.tensor(pivots, device=device, dtype=dtype).unsqueeze(1)
 
         result = pershom_backend.find_merge_pairings(pivots)
 
         assert result.dtype == torch.int64
 
-        expected_result = [(2, 3), (2, 4), 
-                           (5, 10), (5, 11), 
-                           (6, 7) ]
-        expected_result = torch.tensor(expected_result, device=device, dtype=torch.int64)
+        expected_result = set([(0, 5), (0, 6), 
+                               (1, 2), (1, 3), 
+                               (4, 8), (4,9) ])
+        # expected_result = torch.tensor(expected_result, device=device, dtype=torch.int64)
 
-        assert result.equal(expected_result)
+        result = set(tuple(x) for x in result.tolist())
+
+        assert result == (expected_result)
 
 
     @pytest.mark.parametrize("device, dtype", [
