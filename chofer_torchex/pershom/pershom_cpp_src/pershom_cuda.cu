@@ -185,7 +185,7 @@ Tensor sorted_pivot_indices_to_merge_pairs_cuda_kernel_call(Tensor input, Tensor
 
   auto lengths = (slicings.slice(1, 1, 2) - slicings.slice(1, 0, 1)).contiguous();
   auto max_lengths = Scalar(lengths.max()).to<int>(); 
-  Tensor extracted_slicings = input.type().empty({slicings.size(0), max_lengths});//TODO FIX deprecation of empty(...)
+  Tensor extracted_slicings = input.type().tensor({slicings.size(0), max_lengths});
   extracted_slicings.fill_(std::numeric_limits<int64_t>::max());
 
   const int threads_per_block_apply_slicings = 256;
@@ -204,7 +204,7 @@ Tensor sorted_pivot_indices_to_merge_pairs_cuda_kernel_call(Tensor input, Tensor
   auto row_offset_for_thread = lengths_minus_1.cumsum(0);
 
   auto merge_pairings_size_0 = Scalar(row_offset_for_thread[-1][0]).to<int>();
-  auto merge_pairings = input.type().empty({merge_pairings_size_0, 2});//TODO FIX deprecation of empty(...)
+  auto merge_pairings = input.type().tensor({merge_pairings_size_0, 2});
   merge_pairings.fill_(-1);
 
   const int threads_per_block = 256;
@@ -240,11 +240,6 @@ Tensor find_merge_pairings_cuda(
     auto sort_res = pivots.sort(0);
     auto sort_val = std::get<0>(sort_res);
     auto sort_ind = std::get<1>(sort_res);
-
-    // remove columns with undefined pivot (i.e. -1)
-    // auto mask = sort_val.ge(0);
-    // sort_val = sort_val.masked_select(mask);
-    // sort_ind = sort_ind.masked_select(mask);
 
     auto slicings = find_slicing_indices_cuda_kernel_call<int32_t>(sort_val).contiguous();
 
@@ -548,7 +543,6 @@ std::vector<std::vector<Tensor> > calculate_persistence_cuda(
  
 
   while(true){
-    // pivots = descending_sorted_boundary_array.slice(1, 0, 1).contiguous();    
 
     try{
 
