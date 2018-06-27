@@ -104,20 +104,20 @@ class Test_calculate_persistence:
         device = torch.device('cuda')
         dtype = torch.int32
 
-        bm = torch.empty((1, 4))
-        bm.fill_(-1)
-        bm[0, 0:2] = torch.tensor([1, 0])
+        ba = torch.empty((1, 4))
+        ba.fill_(-1)
+        ba[0, 0:2] = torch.tensor([1, 0])
         ind_not_reduced = torch.tensor([2])
 
         row_dim = torch.tensor([0,0,1])
 
         max_dim = 1 
 
-        bm = bm.to(device).type(dtype)
+        ba = ba.to(device).type(dtype)
         ind_not_reduced = ind_not_reduced.to(device).long()
         row_dim = row_dim.to(device).type(dtype) 
 
-        out = pershom_backend.calculate_persistence(bm, ind_not_reduced, row_dim, max_dim, 100) 
+        out = pershom_backend.calculate_persistence(ba, ind_not_reduced, row_dim, max_dim, 100) 
 
         barcodes = Test_calculate_persistence.calculate_persistence_output_to_barchode_list(out)
 
@@ -136,12 +136,12 @@ class Test_calculate_persistence:
 
             assert len(data) == 2
 
-            bm, ind_not_reduced, row_dim, max_dim = data['calculate_persistence_args']
+            ba, ind_not_reduced, row_dim, max_dim = data['calculate_persistence_args']
             expected_result = data['expected_result']
 
-            bm, ind_not_reduced, row_dim = bm.to(device).type(dtype), ind_not_reduced.to(device).long(), row_dim.to(device).type(dtype)
+            ba, ind_not_reduced, row_dim = ba.to(device).type(dtype), ind_not_reduced.to(device).long(), row_dim.to(device).type(dtype)
 
-            result = pershom_backend.calculate_persistence(bm, ind_not_reduced, row_dim, max_dim, 10000)
+            result = pershom_backend.calculate_persistence(ba, ind_not_reduced, row_dim, max_dim, 10000)
             result = Test_calculate_persistence.calculate_persistence_output_to_barchode_list(result)
 
             for dgm, dgm_exp in zip(result, expected_result):

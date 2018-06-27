@@ -38,18 +38,18 @@ Tensor find_slicing_indices_kernel_call(
 
 
 void merge_columns_kernel_call(
-  Tensor descending_sorted_boundary_array,
+  Tensor compr_desc_sort_ba,
   Tensor merge_pairings, 
   int* h_boundary_array_needs_resize
 )
 {
-  CHECK_INPUT(descending_sorted_boundary_array);
-  assert(descending_sorted_boundary_array.type().scalarType() == ScalarType::Int);
+  CHECK_INPUT(compr_desc_sort_ba);
+  assert(compr_desc_sort_ba.type().scalarType() == ScalarType::Int);
 
   CHECK_INPUT(merge_pairings);
   assert(merge_pairings.type().scalarType() == ScalarType::Int);
 
-  merge_columns_cuda_kernel_call<int32_t>(descending_sorted_boundary_array, merge_pairings, h_boundary_array_needs_resize); 
+  merge_columns_cuda_kernel_call<int32_t>(compr_desc_sort_ba, merge_pairings, h_boundary_array_needs_resize); 
 }
 
 
@@ -61,69 +61,71 @@ void merge_columns_kernel_call(
 // C++ high level interface
 #pragma region C++ high level interface
 
-
+//documentation see ../pershom_backend.py
 Tensor find_merge_pairings(
     Tensor pivots,
-    int max_pairs = -1)
-{
+    int max_pairs = -1){
   CHECK_INPUT(pivots);
   assert(pivots.type().scalarType() == ScalarType::Int);
 
   return find_merge_pairings_cuda(pivots, max_pairs);
 }
 
+//documentation see ../pershom_backend.py
 void merge_columns_(
-    Tensor descending_sorted_boundary_array,
-    Tensor merge_pairs)
-{
-  CHECK_INPUT(descending_sorted_boundary_array);
-  assert(descending_sorted_boundary_array.type().scalarType() == ScalarType::Int);
+    Tensor compr_desc_sort_ba,
+    Tensor merge_pairs){
+  CHECK_INPUT(compr_desc_sort_ba);
+  assert(compr_desc_sort_ba.type().scalarType() == ScalarType::Int);
   CHECK_INPUT(merge_pairs);
   assert(merge_pairs.type().scalarType() == ScalarType::Long);
 
-  merge_columns_cuda(descending_sorted_boundary_array, merge_pairs);
+  merge_columns_cuda(compr_desc_sort_ba, merge_pairs);
+
 }
 
+
+//documentation see ../pershom_backend.py
 std::vector<std::vector<Tensor>> read_barcodes(
     Tensor pivots,
     Tensor simplex_dimension,
-    int max_dimension)
-{
+    int max_dimension){
 
   CHECK_INPUT(pivots);
   assert(pivots.type().scalarType() == ScalarType::Int);
   CHECK_INPUT(simplex_dimension);
   assert(simplex_dimension.type().scalarType() == ScalarType::Int);
   return read_barcodes_cuda(pivots, simplex_dimension, max_dimension);
+
 }
 
+//documentation see ../pershom_backend.py
 std::vector<std::vector<Tensor>> calculate_persistence(
-    Tensor descending_sorted_boundary_array,
+    Tensor compr_desc_sort_ba,
     Tensor ind_not_reduced, 
     Tensor simplex_dimension,
     int max_dimension,
-    int max_pairs
-)
-{
+    int max_pairs){
 
-  CHECK_INPUT(descending_sorted_boundary_array);
-  assert(descending_sorted_boundary_array.type().scalarType() == ScalarType::Int);
+  CHECK_INPUT(compr_desc_sort_ba);
+  assert(compr_desc_sort_ba.type().scalarType() == ScalarType::Int);
   CHECK_INPUT(ind_not_reduced);
   assert(ind_not_reduced.type().scalarType() == ScalarType::Long);
   CHECK_INPUT(simplex_dimension);
   assert(simplex_dimension.type().scalarType() == ScalarType::Int);
 
-  assert(descending_sorted_boundary_array.size(0) == ind_not_reduced.size(0));
+  assert(compr_desc_sort_ba.size(0) == ind_not_reduced.size(0));
   assert(ind_not_reduced.ndimension() == 1);
   assert(simplex_dimension.ndimension() == 1);
 
 
-  auto dgms = calculate_persistence_cuda(descending_sorted_boundary_array,
+  auto dgms = calculate_persistence_cuda(compr_desc_sort_ba,
                                          ind_not_reduced, 
                                          simplex_dimension,                                         
                                          max_dimension,
                                          max_pairs);
   return dgms;
+
 }
 
 

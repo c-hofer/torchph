@@ -284,7 +284,7 @@ namespace{
     int boundary_array_size_1, 
     int* d_boundary_array_needs_resize 
   ){    
-    // Assertion: descending_sorted_boundary_array[:, -1] == -1 
+    // Assertion: comp_desc_sort_ba[:, -1] == -1 
 
     int p_target_increment_count = 0;
 
@@ -326,14 +326,14 @@ namespace{
 
   template <typename scalar_t>
   __global__ void merge_columns_cuda_kernel(
-      scalar_t* descending_sorted_boundary_array,
+      scalar_t* comp_desc_sort_ba,
       size_t descending_sorted_boundary_array_size_1, 
       scalar_t* cache, 
       int64_t* merge_pairings,
       size_t merge_pairings_size_0, 
       int* d_boundary_array_needs_resize
   ){
-    //ASSERTION: cache.size(1) == descending_sorted_boundary_array.size(1)
+    //ASSERTION: cache.size(1) == comp_desc_sort_ba.size(1)
     const int thread_id = blockIdx.x*blockDim.x + threadIdx.x;   
 
     if (thread_id < merge_pairings_size_0){  
@@ -342,8 +342,8 @@ namespace{
       const int filt_id_target = merge_pairings[thread_id * 2 + 1];
 
       merge_one_column_s<int32_t>(
-        descending_sorted_boundary_array + (filt_id_merger * descending_sorted_boundary_array_size_1),
-        descending_sorted_boundary_array + (filt_id_target * descending_sorted_boundary_array_size_1),
+        comp_desc_sort_ba + (filt_id_merger * descending_sorted_boundary_array_size_1),
+        comp_desc_sort_ba + (filt_id_target * descending_sorted_boundary_array_size_1),
         cache + (thread_id * descending_sorted_boundary_array_size_1), 
         descending_sorted_boundary_array_size_1,
         d_boundary_array_needs_resize
@@ -357,7 +357,7 @@ namespace{
 
 template <typename scalar_t>
 void merge_columns_cuda_kernel_call(
-  Tensor descending_sorted_boundary_array,
+  Tensor comp_desc_sort_ba,
   Tensor merge_pairings, 
   int* h_boundary_array_needs_resize
 )
@@ -370,7 +370,7 @@ void merge_columns_cuda_kernel_call(
   // fill cache for merging ... 
   //  TODO optimize: we do not need all columns it is enough to take des...array.size(1)/2 + 1 
   //  ATTENTION if we do this we have to inform merge_columns_cuda_kernel about this!!!
-  auto cache = descending_sorted_boundary_array.index_select(0, targets);
+  auto cache = comp_desc_sort_ba.index_select(0, targets);
   
   auto size = sizeof(int);
   int* d_boundary_array_needs_resize;
@@ -378,11 +378,11 @@ void merge_columns_cuda_kernel_call(
   cudaMemcpy(d_boundary_array_needs_resize, h_boundary_array_needs_resize, size, cudaMemcpyHostToDevice);
 
   // reset content of target columns 
-  descending_sorted_boundary_array.index_fill_(0, targets, -1);
+  comp_desc_sort_ba.index_fill_(0, targets, -1);
 
   merge_columns_cuda_kernel<int32_t><<<blocks, threads_per_block>>>(
-    descending_sorted_boundary_array.data<int32_t>(), 
-    descending_sorted_boundary_array.size(1), 
+    comp_desc_sort_ba.data<int32_t>(), 
+    comp_desc_sort_ba.size(1), 
     cache.data<int32_t>(),
     merge_pairings.data<int64_t>(), 
     merge_pairings.size(0), 
@@ -397,32 +397,32 @@ void merge_columns_cuda_kernel_call(
 
 
 Tensor resize_boundary_array(
-  Tensor descending_sorted_boundary_array){
-    auto tmp = empty_like(descending_sorted_boundary_array);
+  Tensor comp_desc_sort_ba){
+    auto tmp = empty_like(comp_desc_sort_ba);
     tmp.fill_(-1);
-    auto new_ba = cat(TensorList({descending_sorted_boundary_array, tmp}), 1);
+    auto new_ba = cat(TensorList({comp_desc_sort_ba, tmp}), 1);
     return new_ba.contiguous();
 }
 
 
 Tensor merge_columns_cuda(
-  Tensor descending_sorted_boundary_array, 
+  Tensor comp_desc_sort_ba, 
   Tensor merge_pairings){   
    
     int boundary_array_needs_resize = 0;
     int* h_boundary_array_needs_resize = &boundary_array_needs_resize;    
 
     merge_columns_cuda_kernel_call<int32_t>(
-      descending_sorted_boundary_array,
+      comp_desc_sort_ba,
       merge_pairings, 
       h_boundary_array_needs_resize
     );
   
     if (*h_boundary_array_needs_resize == 1){
-      descending_sorted_boundary_array = resize_boundary_array(descending_sorted_boundary_array);
+      comp_desc_sort_ba = resize_boundary_array(comp_desc_sort_ba);
     }
     
-    return descending_sorted_boundary_array;
+    return comp_desc_sort_ba;
   }
 
 
@@ -516,7 +516,7 @@ std::vector<std::vector<Tensor> > read_barcodes_cuda(
 
 
 std::vector<std::vector<Tensor> > calculate_persistence_cuda(  
-  Tensor descending_sorted_boundary_array, 
+  Tensor comp_desc_sort_ba, 
   Tensor ind_not_reduced, 
   Tensor simplex_dimension,
   int max_dimension,
@@ -525,24 +525,24 @@ std::vector<std::vector<Tensor> > calculate_persistence_cuda(
   
   int iterations = 0;
 
-  // auto ind_not_reduced = descending_sorted_boundary_array.type()
+  // auto ind_not_reduced = comp_desc_sort_ba.type()
   //   .toScalarType(ScalarType::Long).tensor({simplex_dimension.size(0), 1});
   // fill_range_cuda_(ind_not_reduced);
   
-  // auto tmp_pivots = descending_sorted_boundary_array.slice(1, 0, 1).contiguous();
-  auto scalar_0 = descending_sorted_boundary_array.type().scalarTensor(0);
+  // auto tmp_pivots = comp_desc_sort_ba.slice(1, 0, 1).contiguous();
+  auto scalar_0 = comp_desc_sort_ba.type().scalarTensor(0);
 
   // Tensor mask_not_reduced = tmp_pivots.ge(scalar_0);
 
   // ind_not_reduced = ind_not_reduced.masked_select(mask_not_reduced).contiguous();
 
-  // descending_sorted_boundary_array =
-  //   descending_sorted_boundary_array.index_select(0, ind_not_reduced).contiguous();
+  // comp_desc_sort_ba =
+  //   comp_desc_sort_ba.index_select(0, ind_not_reduced).contiguous();
 
   Tensor mask_not_reduced, pivots, merge_pairings, new_ind_not_reduced;
   while(true){
 
-    pivots = descending_sorted_boundary_array.slice(1, 0, 1).contiguous();
+    pivots = comp_desc_sort_ba.slice(1, 0, 1).contiguous();
 
     try{
 
@@ -556,18 +556,18 @@ std::vector<std::vector<Tensor> > calculate_persistence_cuda(
 
     }
 
-    descending_sorted_boundary_array = merge_columns_cuda(descending_sorted_boundary_array, merge_pairings);
+    comp_desc_sort_ba = merge_columns_cuda(comp_desc_sort_ba, merge_pairings);
 
-    new_ind_not_reduced = descending_sorted_boundary_array.type()
-      .toScalarType(ScalarType::Long).tensor({descending_sorted_boundary_array.size(0), 1});
+    new_ind_not_reduced = comp_desc_sort_ba.type()
+      .toScalarType(ScalarType::Long).tensor({comp_desc_sort_ba.size(0), 1});
     fill_range_cuda_(new_ind_not_reduced);
     
-    pivots = descending_sorted_boundary_array.slice(1, 0, 1).contiguous();
+    pivots = comp_desc_sort_ba.slice(1, 0, 1).contiguous();
     mask_not_reduced = pivots.ge(scalar_0);
     new_ind_not_reduced = new_ind_not_reduced.masked_select(mask_not_reduced).contiguous();
 
-    descending_sorted_boundary_array =
-      descending_sorted_boundary_array.index_select(0, new_ind_not_reduced).contiguous();
+    comp_desc_sort_ba =
+      comp_desc_sort_ba.index_select(0, new_ind_not_reduced).contiguous();
     // pivots = pivots.index_select(0, new_ind_not_reduced).contiguous();
 
     ind_not_reduced = ind_not_reduced.index_select(0, new_ind_not_reduced);

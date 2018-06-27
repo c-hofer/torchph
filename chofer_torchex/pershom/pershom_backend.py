@@ -51,21 +51,21 @@ def find_merge_pairings(
 
 
 def merge_columns_(
-    descending_sorted_boundary_array: Tensor, 
+    compr_desc_sort_ba: Tensor, 
     merge_pairs: Tensor
     )->None:
     r"""Executes the given merging operations inplace on the descending 
     sorted boundary array. 
     
     Arguments:
-        descending_sorted_boundary_array {Tensor} -- [see readme section top]
+        compr_desc_sort_ba {Tensor} -- [see readme section top]
 
         merge_pairs {Tensor} -- [output of a 'find_merge_pairings' call]
     
     Returns:
         None -- []
     """
-    __C.merge_columns_(descending_sorted_boundary_array, merge_pairs)
+    __C.merge_columns_(compr_desc_sort_ba, merge_pairs)
 
 
 def read_barcodes(
@@ -77,7 +77,7 @@ def read_barcodes(
     
     Arguments:
         pivots {Tensor} -- [pivots is the first column of a 
-        descending_sorted_boundary_array]
+        compr_desc_sort_ba]
 
         simplex_dimension {Tensor} -- [Vector whose i-th entry is 
         the dimension if the i-th simplex in the given filtration]
@@ -92,8 +92,8 @@ def read_barcodes(
 
 
 def calculate_persistence(
-    descending_sorted_boundary_array: Tensor,
-    ind_not_reduced: Tensor, 
+    compr_desc_sort_ba: Tensor,
+    ba_row_i_to_bm_col_i: Tensor, 
     simplex_dimension: Tensor,
     max_dimension: int,
     max_pairs: int = -1
@@ -101,20 +101,25 @@ def calculate_persistence(
     """Returns the barcodes of the given encoded boundary array
     
     Arguments:
-        descending_sorted_boundary_array {Tensor} -- [see readme section top]
+        compr_desc_sort_ba {Tensor} -- [see readme section top]
+
+        ba_row_i_to_bm_col_i -- [Vector whose i-th entry is 
+        the column index of the boundary matrix the i-th row in 
+        compr_desc_sort_ba corresponds to]
 
         simplex_dimension {Tensor} -- [Vector whose i-th entry is 
         the dimension if the i-th simplex in the given filtration]
 
-        max_pairs {int} -- [The output is at most a max_pairs x 2 Tensor]
+        max_pairs {int} -- [see find merge pairings]
 
         max_dimension {int} -- [dimension of the filtrated simplicial complex]
     
     Returns:
-        [Tensor] -- [description]
+        [[Tensor], [Tensor]] -- [ret[0][i] = non essential barcodes of dimension i
+                                 ret[1][i] = birth-times of essential classes]
     """
     return __C.calculate_persistence(
-        descending_sorted_boundary_array, ind_not_reduced, simplex_dimension, max_dimension, max_pairs)
+        compr_desc_sort_ba, ba_row_i_to_bm_col_i, simplex_dimension, max_dimension, max_pairs)
 
 
 
