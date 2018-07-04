@@ -1,3 +1,5 @@
+#pragma once;
+
 #include <ATen/ATen.h>
 
 #define CHECK_CUDA(x) AT_ASSERTM(x.type().is_cuda(), #x " must be a CUDA tensor")
