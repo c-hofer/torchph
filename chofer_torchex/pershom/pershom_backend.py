@@ -1,5 +1,6 @@
 import os.path as pth
 from torch import Tensor
+from glob import glob
 r"""README
 
 descending_sorted_boundary array: 
@@ -21,13 +22,17 @@ from torch.utils.cpp_extension import load
 
 __module_file_dir = pth.dirname(pth.realpath(__file__))
 __cpp_src_dir = pth.join(__module_file_dir, 'pershom_cpp_src')
+src_files = []
+
+for extension in ['*.cpp', '*.cu']:
+    src_files += glob(pth.join(__cpp_src_dir, extension))
+
 
 
 # jit compiling the c++ extension
 __C = load(
     'pershom_cuda_ext',
-    [pth.join(__cpp_src_dir, 'pershom.cpp'),
-     pth.join(__cpp_src_dir, 'pershom_cuda.cu')],
+    src_files,
     verbose=True)
 
 
