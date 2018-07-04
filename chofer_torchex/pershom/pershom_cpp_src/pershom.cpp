@@ -151,6 +151,10 @@ Tensor my_test_f(Tensor t)
 
 #ifndef PROFILE
 
+// #include "vr_comp.h"
+#include "vr_comp_cuda.cuh"
+
+
 
 PYBIND11_MODULE(TORCH_EXTENSION_NAME, m)
 {
@@ -164,6 +168,8 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m)
   m.def("read_barcodes", &read_barcodes, "read_barcodes (CUDA)");
   m.def("calculate_persistence", &calculate_persistence, "calculate_persistence (CUDA)");
   m.def("my_test_f", &my_test_f, "test function");
+
+  m.def("vr_persistence", &VRCompCuda::vr_persistence_checked, "test");
 }
 
 
