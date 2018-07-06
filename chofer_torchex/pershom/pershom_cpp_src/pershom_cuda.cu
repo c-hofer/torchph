@@ -9,7 +9,15 @@
 
 using namespace at;
 
-//TODO do proper namespacing 
+//TODO do proper namespacing and make header file
+
+//TODO resolve template chaos should we always use long and never int?
+
+//TODO change from by value args to by reference args 
+
+//TODO remove corresponding cpp file and insert checked call wrappers in cu file
+
+//TODO refactor python bindings in new file 
 #pragma region find_merge_pairings
 
 
