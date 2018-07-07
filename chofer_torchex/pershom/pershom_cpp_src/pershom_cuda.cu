@@ -525,7 +525,7 @@ std::vector<std::vector<Tensor> > read_barcodes_cuda(
 
 std::vector<std::vector<Tensor> > calculate_persistence_cuda(  
   Tensor comp_desc_sort_ba, 
-  Tensor ind_not_reduced, 
+  Tensor ind_not_reduced, //TODO rename parameter accordingly to python binding 
   Tensor simplex_dimension,
   int max_dimension,
   int max_pairs = -1
