@@ -11,7 +11,7 @@ using namespace at;
 
 //TODO do proper namespacing and make header file
 
-//TODO resolve template chaos should we always use long and never int?
+//TODO resolve template chaos should we always use long and never int? YES
 
 //TODO change from by value args to by reference args 
 

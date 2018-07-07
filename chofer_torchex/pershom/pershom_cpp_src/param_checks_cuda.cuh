@@ -1,4 +1,4 @@
-#pragma once;
+#pragma once
 
 #include <ATen/ATen.h>
 
@@ -7,3 +7,6 @@
 #define CHECK_INPUT(x) \
   CHECK_CUDA(x);       \
   CHECK_CONTIGUOUS(x)
+
+#define CHECK_SMALLER_EQ(x, y) AT_ASSERTM(x <= y, "expected" #x "<=" #y)
+#define CHECK_EQUAL(x, y) AT_ASSERTM(x == y, "expected " #x "==" #y)

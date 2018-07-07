@@ -169,7 +169,8 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m)
   m.def("calculate_persistence", &calculate_persistence, "calculate_persistence (CUDA)");
   m.def("my_test_f", &my_test_f, "test function");
 
-  m.def("vr_persistence", &VRCompCuda::vr_persistence_checked, "test");
+  m.def("vr_persistence", &VRCompCuda::vr_l1_persistence_checked, "test");
+  m.def("VRCompCuda::write_combinations_table_to_tensor", &VRCompCuda::write_combinations_table_to_tensor, "");
 }
 
 
