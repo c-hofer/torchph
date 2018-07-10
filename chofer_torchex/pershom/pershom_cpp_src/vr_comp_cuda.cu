@@ -11,6 +11,16 @@
 using namespace at;
 
 
+//TODO extract in other file 
+#define cudaCheckError() {                                          \
+ cudaError_t e=cudaGetLastError();                                 \
+ if(e!=cudaSuccess) {                                              \
+   printf("Cuda failure %s:%d: '%s'\n",__FILE__,__LINE__,cudaGetErrorString(e));           \
+   exit(0); \
+ }                                                                 \
+}
+
+
 namespace VRCompCuda {
 
 
@@ -38,8 +48,8 @@ __device__ int64_t binom_coeff(int64_t n, int64_t k){
 
 
 __global__ void binomial_table_kernel(int64_t* out, int64_t max_n, int64_t max_k){
-    int r = blockIdx.x*blockDim.x + threadIdx.x;
-    int c = blockIdx.y*blockDim.y + threadIdx.y;
+    int64_t r = blockIdx.x*blockDim.x + threadIdx.x;
+    int64_t c = blockIdx.y*blockDim.y + threadIdx.y;
 
     if (r < max_k && c < max_n){
 
@@ -62,14 +72,16 @@ Tensor binomial_table(int64_t max_n, int64_t max_k, const Type& type){
     
     auto ret = type.toScalarType(ScalarType::Long).tensor({max_k, max_n}); //LBL: creation 
 
-    dim3 threads_per_block = dim3(64, 64);
+    dim3 threads_per_block = dim3(8, 8);
     dim3 num_blocks= dim3(max_k/threads_per_block.y + 1, max_n/threads_per_block.x + 1);    
 
 
-    binomial_table_kernel<<<threads_per_block, num_blocks>>>(
+    binomial_table_kernel<<<num_blocks, threads_per_block>>>(
         ret.data<int64_t>(),
         max_n, 
-        max_k);        
+        max_k);      
+
+    cudaCheckError();   
 
     return ret; 
 }
@@ -111,10 +123,10 @@ __device__ void unrank_combination(
     int64_t rest = N; 
     bool broken = false; 
 
-    for (int i=0; i<r;i++){
+    for (int64_t i=0; i<r;i++){
         bt_row = &binom_table[(r - i - 1)*max_n];
 
-        for (int j=0; j < max_n - 1; j++){
+        for (int64_t j=0; j < max_n - 1; j++){
             if (bt_row[j] <= rest && bt_row[j+1] > rest){
                 rest = rest - bt_row[j];
                 out[i] = j;  
@@ -136,12 +148,12 @@ __device__ void unrank_combination(
 __device__ void next_combination(int64_t* out, int64_t r){
 
     // If we have to increase not the first digit ... 
-    for (int i = 0; i < r; i++){        
+    for (int64_t i = 0; i < r; i++){        
         if (out[r - i - 2] > out[r - i - 1] + 1){
             out[r - i - 1] += 1;
            
             // fill the following digits with the smallest ordered sequence ... 
-            for (int j=0; j < i; j++){
+            for (int64_t j=0; j < i; j++){
                 out[r - j - 1] = j;
             }
             return;
@@ -151,7 +163,7 @@ __device__ void next_combination(int64_t* out, int64_t r){
     // If the first digit has to be increased ...
     out[0] += 1;    
     // fill the following digits with the smallest ordered sequence ... 
-    for (int j=0; j < r - 1; j++){
+    for (int64_t j=0; j < r - 1; j++){
             out[r - j - 1] = j;
     }
   
@@ -169,17 +181,18 @@ __global__ void write_combinations_to_tensor_kernel(
     const int64_t n_comb_by_thread, 
     const int64_t n_max_over_r){
 
-    int thread_id = blockIdx.x*blockDim.x + threadIdx.x;
+    int64_t thread_id = blockIdx.x*blockDim.x + threadIdx.x;
 
-    if (thread_id*n_comb_by_thread < binom_coeff(max_n, r)){
+
+    if (thread_id*n_comb_by_thread < binom_coeff(max_n, r)){ // TODO use parameter instead of binom_coeff call
         int64_t* comb = new int64_t[r]; 
         unrank_combination(comb, thread_id*n_comb_by_thread, max_n, r, binom_table);
 
-        for (int i=0; i < n_comb_by_thread; i++){
+        for (int64_t i = 0; i < n_comb_by_thread; i++){
 
             if (thread_id*n_comb_by_thread + i >= n_max_over_r) break; 
 
-            for (int j=0; j < r; j++){
+            for (int64_t j = 0; j < r; j++){
                 out[out_row_stride * (out_row_offset + thread_id*n_comb_by_thread + i ) + j] 
                     = comb[j] + additive_constant;
             }     
@@ -226,13 +239,12 @@ void write_combinations_table_to_tensor(
 
 
     const auto bt = binomial_table(max_n, r, out.type());
-    const int64_t n_comb_by_thread = 100; //TODO optimize
-    const int64_t threads_per_block = 64; //TODO optimize
+    const int n_comb_by_thread = 100; //TODO optimize
+    int threads_per_block = 64; //TODO optimize
 
-    const int64_t blocks = n_max_over_r/(threads_per_block*n_comb_by_thread) + 1; 
+    int blocks = n_max_over_r/(threads_per_block*n_comb_by_thread) + 1;
 
-
-    write_combinations_to_tensor_kernel<<<threads_per_block, blocks>>>(
+    write_combinations_to_tensor_kernel<<<blocks, threads_per_block>>>(
         out.data<int64_t>(), 
         out_row_offset, 
         out.size(1), 
@@ -243,6 +255,8 @@ void write_combinations_table_to_tensor(
         n_comb_by_thread, 
         n_max_over_r
     );
+
+    cudaCheckError(); 
 }
 
 #pragma endregion 
@@ -289,12 +303,13 @@ std::tuple<Tensor, Tensor> get_boundary_and_filtration_info_dim_1(
 std::tuple<Tensor, Tensor> get_boundary_and_filtration_info(
     const Tensor & filt_vals_prev_dim, 
     int64_t dim){
+
     auto n_dim_min_one_simplices = filt_vals_prev_dim.size(0); 
 
     auto n_new_simplices = binom_coeff_cpu(n_dim_min_one_simplices, dim + 1); 
     auto n_simplices_prev_dim = filt_vals_prev_dim.size(0); 
 
-    auto new_boundary_info = filt_vals_prev_dim.type().toScalarType(ScalarType::Long).tensor({n_new_simplices, dim + 1}).fill_(0); 
+    auto new_boundary_info = filt_vals_prev_dim.type().toScalarType(ScalarType::Long).tensor({n_new_simplices, dim + 1}); 
 
     // write combinations ... 
     write_combinations_table_to_tensor(new_boundary_info, 0, 0, n_simplices_prev_dim, dim + 1); 
@@ -303,22 +318,19 @@ std::tuple<Tensor, Tensor> get_boundary_and_filtration_info(
     auto new_filt_vals = filt_vals_prev_dim.expand({n_new_simplices, filt_vals_prev_dim.size(0)});
     new_filt_vals = new_filt_vals.gather(1, new_boundary_info); 
     new_filt_vals = std::get<0>(new_filt_vals.max(1));
-    new_filt_vals = new_filt_vals.squeeze(); 
+
+    // If we have just one simplex of the current dimension this
+    // condition avoids that new_filt_vals is squeezed to a 0-dim 
+    // Tensor
+    if (new_filt_vals.ndimension() != 1){      
+        new_filt_vals = new_filt_vals.squeeze(); 
+    }
+
+    std::cout << new_filt_vals << std::endl;
 
     return std::make_tuple(new_boundary_info, new_filt_vals); 
 }
 
-
-// Tensor min_difference_within_elements_of_positive_vector(const Tensor & t){
-
-//     auto sorted_vals = std::get<0>(t.sort(0));
-
-//     auto t_1 = sorted_vals.slice(0, 0, t.size(0) - 1); 
-//     auto t_2 = sorted_valse.slice(0, 1, t.size(0));
-//     auto max_val = std::get<0>((t_2 - t_1).max());
-
-//     return max_val; 
-// }
 
 std::vector<std::vector<Tensor>> vr_l1_persistence(
     const Tensor& point_cloud,
@@ -327,6 +339,9 @@ std::vector<std::vector<Tensor>> vr_l1_persistence(
     ){
 
     CHECK_INPUT(point_cloud);
+    CHECK_SMALLER_EQ(max_dimension + 1, point_cloud.size(0)); 
+
+
     std::vector<std::vector<Tensor>> ret;
     std::vector<Tensor> tmp;
 
@@ -345,7 +360,6 @@ std::vector<std::vector<Tensor>> vr_l1_persistence(
             get_boundary_and_filtration_info(filt_vals_prev_dim, dim)
         );
     }
-
 
     // 2. Make simplex id's compatible within dimensions ... 
     //
@@ -438,9 +452,7 @@ std::vector<std::vector<Tensor>> vr_l1_persistence(
     
     }
 
-
     //6.2 Do sorting ...
-
     auto sort_filt_res = filtration_values_vector.sort();
     auto sorted_filtration_values_vector = std::get<0>(sort_filt_res);
     auto sort_i_filt = std::get<1>(sort_filt_res); 
@@ -462,12 +474,12 @@ std::vector<std::vector<Tensor>> vr_l1_persistence(
     sort_i_filt_with_vertices = cat({dummy_sort_indices, sort_i_filt_with_vertices}, 0); 
   
 
-    // sort simplex_dimension ...
+    // Sort simplex_dimension ...
     simplex_dimension.slice(0, n_simplices_by_dim.at(0)) = 
         simplex_dimension.slice(0, n_simplices_by_dim.at(0)).index_select(0, sort_i_filt);
 
 
-    // 6.1 Copy boundary_info of each dimension into the final boundary array ... 
+    // Copy boundary_info of each dimension into the final boundary array ... 
     auto boundary_array = point_cloud.type().toScalarType(ScalarType::Long)
         .tensor({n_non_vertex_simplices, 2*(max_dimension + 1)});
 
@@ -478,6 +490,7 @@ std::vector<std::vector<Tensor>> vr_l1_persistence(
         auto edge_boundary_info = std::get<0>(boundary_and_filtration_by_dim.at(0));
         boundary_array.slice(0, 0, n_simplices_by_dim.at(1)).slice(1, 0, 2) = edge_boundary_info; 
 
+        // copy higher dimensional simplices
         if (max_dimension >= 2){
             int64_t copy_offset = n_simplices_by_dim.at(1);             
 
@@ -485,6 +498,7 @@ std::vector<std::vector<Tensor>> vr_l1_persistence(
                 auto boundary_info = std::get<0>(boundary_and_filtration_by_dim.at(i)); 
                 auto look_up_table = sort_i_filt_with_vertices.expand({boundary_info.size(0), sort_i_filt_with_vertices.size(0)}); 
 
+                // Apply ordering to row content ... 
                 boundary_info = look_up_table.gather(1, boundary_info); 
                 boundary_array.slice(0, copy_offset, copy_offset + boundary_info.size(0)).slice(1, 0, boundary_info.size(1)) = boundary_info; 
 
@@ -500,11 +514,10 @@ std::vector<std::vector<Tensor>> vr_l1_persistence(
 
     // for (auto n : n_simplices_by_dim) {std::cout << n << std::endl;}
     tmp.push_back(boundary_array); 
-    tmp.push_back(sorted_filtration_values_vector); 
     tmp.push_back(simplex_dimension); 
-    tmp.push_back(std::get<0>(boundary_and_filtration_by_dim.at(2)));
+    tmp.push_back(sorted_filtration_values_vector); 
     ret.push_back(tmp);
-
+ 
 
     return ret;
 }
