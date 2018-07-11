@@ -293,9 +293,17 @@ std::tuple<Tensor, Tensor> get_boundary_and_filtration_info_dim_1(
     filt_val_vec_dim_1 = filt_val_vec_dim_1.squeeze(); // 
 
     // reduce to edges with filtration value <= max_ball_radius...
-    auto i_select = filt_val_vec_dim_1.le(point_cloud.type().scalarTensor(max_ball_radius)).nonzero().squeeze(); 
-    ba_dim_1 = ba_dim_1.index_select(0, i_select);
-    filt_val_vec_dim_1 = filt_val_vec_dim_1.index_select(0, i_select); 
+    if (max_ball_radius > 0){
+        auto i_select = filt_val_vec_dim_1.le(point_cloud.type().scalarTensor(max_ball_radius)).nonzero().squeeze(); 
+
+        if (i_select.numel() ==  0){
+            ba_dim_1 = ba_dim_1.type().tensor({0});
+        }
+        else{
+            ba_dim_1 = ba_dim_1.index_select(0, i_select);
+            filt_val_vec_dim_1 = filt_val_vec_dim_1.index_select(0, i_select); 
+        }
+    }
 
     return std::make_tuple(ba_dim_1, filt_val_vec_dim_1);
 }
@@ -307,24 +315,34 @@ std::tuple<Tensor, Tensor> get_boundary_and_filtration_info(
 
     auto n_dim_min_one_simplices = filt_vals_prev_dim.size(0); 
 
-    auto n_new_simplices = binom_coeff_cpu(n_dim_min_one_simplices, dim + 1); 
-    auto n_simplices_prev_dim = filt_vals_prev_dim.size(0); 
+    Tensor new_boundary_info, new_filt_vals;
 
-    auto new_boundary_info = filt_vals_prev_dim.type().toScalarType(ScalarType::Long).tensor({n_new_simplices, dim + 1}); 
+    if (n_dim_min_one_simplices < dim + 1){
+        // There are not enough dim-1 simplices ...
+        new_boundary_info = filt_vals_prev_dim.type().toScalarType(ScalarType::Long).tensor({0, dim + 1});
+        new_filt_vals = filt_vals_prev_dim.type().tensor({0});
+    }
+    else{
+        // There are enough dim-1 simplices ...
+        auto n_new_simplices = binom_coeff_cpu(n_dim_min_one_simplices, dim + 1); 
+        auto n_simplices_prev_dim = filt_vals_prev_dim.size(0); 
 
-    // write combinations ... 
-    write_combinations_table_to_tensor(new_boundary_info, 0, 0, n_simplices_prev_dim, dim + 1); 
-    cudaStreamSynchronize(0); 
+        new_boundary_info = filt_vals_prev_dim.type().toScalarType(ScalarType::Long).tensor({n_new_simplices, dim + 1}); 
 
-    auto new_filt_vals = filt_vals_prev_dim.expand({n_new_simplices, filt_vals_prev_dim.size(0)});
-    new_filt_vals = new_filt_vals.gather(1, new_boundary_info); 
-    new_filt_vals = std::get<0>(new_filt_vals.max(1));
+        // write combinations ... 
+        write_combinations_table_to_tensor(new_boundary_info, 0, 0, n_simplices_prev_dim, dim + 1); 
+        cudaStreamSynchronize(0); 
 
-    // If we have just one simplex of the current dimension this
-    // condition avoids that new_filt_vals is squeezed to a 0-dim 
-    // Tensor
-    if (new_filt_vals.ndimension() != 1){      
-        new_filt_vals = new_filt_vals.squeeze(); 
+        new_filt_vals = filt_vals_prev_dim.expand({n_new_simplices, filt_vals_prev_dim.size(0)});
+        new_filt_vals = new_filt_vals.gather(1, new_boundary_info); 
+        new_filt_vals = std::get<0>(new_filt_vals.max(1));
+
+        // If we have just one simplex of the current dimension this
+        // condition avoids that new_filt_vals is squeezed to a 0-dim 
+        // Tensor
+        if (new_filt_vals.ndimension() != 1){      
+            new_filt_vals = new_filt_vals.squeeze(); 
+        }
     }
 
     return std::make_tuple(new_boundary_info, new_filt_vals); 
@@ -352,6 +370,7 @@ std::vector<Tensor> vr_l1_generate_calculate_persistence_args(
 
     for (int dim = 2; dim <= max_dimension; dim++){
         auto filt_vals_prev_dim = std::get<1>(boundary_and_filtration_by_dim.at(dim - 1 - 1));
+
         boundary_and_filtration_by_dim.push_back(
             get_boundary_and_filtration_info(filt_vals_prev_dim, dim)
         );
@@ -534,6 +553,8 @@ std::vector<Tensor> vr_l1_generate_calculate_persistence_args(
     ret.push_back(simplex_dimension); 
     ret.push_back(sorted_filtration_values_vector);  
 
+    auto x = point_cloud.type().tensor({0});
+
     return ret;
 }
 
@@ -552,7 +573,6 @@ std::vector<std::vector<Tensor>> vr_l1_persistence(
     ret.push_back(tmp); 
 
     return ret; 
-
 }
 
 } // namespace VRCompCuda 

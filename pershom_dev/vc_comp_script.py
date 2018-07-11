@@ -4,23 +4,24 @@ import time
 from scipy.special import binom
 
 
-vr_persistence = pershom_backend.__C.vr_persistence
+
 
  #torch.tensor([[-0.6690,  1.5059], [ 0.4220,  1.2434], [-0.3436, -0.0053], [-0.1569,  0.0627]], device='cuda', requires_grad=True).float()
-point_cloud = torch.randn(4,3, device='cuda', requires_grad=True).float()
+# point_cloud = torch.randn(4,3, device='cuda', requires_grad=True).float()
+point_cloud = torch.tensor([(0, 0), (1, 0), (0, 0.5), (1, 1.5)], device='cuda', requires_grad=True).double()
 print(point_cloud)
 
 time_start = time.time()
-r = vr_persistence(point_cloud, 2, 100.0)
-r =r[0]
+r = pershom_backend.__C.VRCompCuda__vr_l1_generate_calculate_persistence_args(point_cloud, 3, 0)
+
 
 for x in r:
     print(x.size())
 
 print("===")
-torch.set_printoptions(threshold=5000)
-for x in r:
-    print(x)
+# torch.set_printoptions(threshold=5000)
+# for x in r:
+#     print(x)
 
 print("===")
 ba = r[0]
