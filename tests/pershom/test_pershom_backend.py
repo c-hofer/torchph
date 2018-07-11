@@ -80,7 +80,7 @@ class Test_find_merge_pairings:
 class Test_calculate_persistence:
 
     @staticmethod
-    def calculate_persistence_output_to_barchode_list(input):
+    def calculate_persistence_output_to_barcode_list(input):
         ret = []
         b, b_e = input    
 
@@ -119,7 +119,7 @@ class Test_calculate_persistence:
 
         out = pershom_backend.calculate_persistence(ba, ind_not_reduced, row_dim, max_dim, 100) 
 
-        barcodes = Test_calculate_persistence.calculate_persistence_output_to_barchode_list(out)
+        barcodes = Test_calculate_persistence.calculate_persistence_output_to_barcode_list(out)
 
         assert barcodes[0] == Counter([(1.0, 2.0), (0.0, float('inf'))])
 
@@ -142,7 +142,7 @@ class Test_calculate_persistence:
             ba, ind_not_reduced, row_dim = ba.to(device).type(dtype), ind_not_reduced.to(device).long(), row_dim.to(device).type(dtype)
 
             result = pershom_backend.calculate_persistence(ba, ind_not_reduced, row_dim, max_dim, 10000)
-            result = Test_calculate_persistence.calculate_persistence_output_to_barchode_list(result)
+            result = Test_calculate_persistence.calculate_persistence_output_to_barcode_list(result)
 
             for dgm, dgm_exp in zip(result, expected_result):
                 assert dgm == dgm_exp 

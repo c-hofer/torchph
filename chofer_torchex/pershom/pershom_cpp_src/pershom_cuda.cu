@@ -6,6 +6,8 @@
 #include <vector>
 #include <limits>
 
+#include "tensor_utils.cuh"
+
 
 using namespace at;
 
@@ -440,39 +442,6 @@ Tensor merge_columns_cuda(
 #pragma region read_barcodes
 
 
-namespace {
-  template<typename scalar_t>
-  __global__ void fill_range_kernel(scalar_t* out, int64_t out_numel){
-    auto index = blockIdx.x * blockDim.x + threadIdx.x;
-
-    if (index < out_numel){
-      out[index] = index;
-    }
-  }
-}
-
-void fill_range_cuda_(Tensor t){
-  // AT_ASSERT(t.type().is_cuda());
-
-  const int threads_per_block = 256;
-  const int blocks = t.numel()/threads_per_block + 1;
-
-  auto scalar_type = t.type().scalarType();
-  switch(scalar_type)
-  {
-    case ScalarType::Int: 
-      fill_range_kernel<int32_t><<<blocks, threads_per_block>>>(t.data<int32_t>(), t.numel());
-      break;
-
-    case ScalarType::Long: 
-      fill_range_kernel<int64_t><<<blocks, threads_per_block>>>(t.data<int64_t>(), t.numel());
-      break;
-    
-    default:
-      throw std::invalid_argument("Unrecognized Type!");
-  }
-}
-
 std::vector<std::vector<Tensor> > read_barcodes_cuda(
   Tensor pivots, 
   Tensor simplex_dimension, 
@@ -482,7 +451,7 @@ std::vector<std::vector<Tensor> > read_barcodes_cuda(
     simplex_dimension = simplex_dimension.unsqueeze(1);    
 
     auto range = empty_like(pivots);
-    fill_range_cuda_(range); 
+    TensorUtils::fill_range_cuda_(range); 
 
     auto pool_for_barcodes_non_essential = cat({pivots, range}, 1);
     auto mask_pivot = pivots.ge(0);
@@ -568,7 +537,7 @@ std::vector<std::vector<Tensor> > calculate_persistence_cuda(
 
     new_ind_not_reduced = comp_desc_sort_ba.type()
       .toScalarType(ScalarType::Long).tensor({comp_desc_sort_ba.size(0), 1});
-    fill_range_cuda_(new_ind_not_reduced);
+    TensorUtils::fill_range_cuda_(new_ind_not_reduced);
     
     pivots = comp_desc_sort_ba.slice(1, 0, 1).contiguous();
     mask_not_reduced = pivots.ge(scalar_0);

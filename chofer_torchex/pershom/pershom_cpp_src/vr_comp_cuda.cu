@@ -6,7 +6,8 @@
 #include <vector>
 #include <limits>
 
-#include"param_checks_cuda.cuh"
+#include "param_checks_cuda.cuh"
+#include "tensor_utils.cuh"
 
 using namespace at;
 
@@ -330,7 +331,7 @@ std::tuple<Tensor, Tensor> get_boundary_and_filtration_info(
 }
 
 
-std::vector<std::vector<Tensor>> vr_l1_persistence(
+std::vector<Tensor> vr_l1_generate_calculate_persistence_args(
     const Tensor& point_cloud,
     int64_t max_dimension, 
     double max_ball_radius
@@ -339,10 +340,7 @@ std::vector<std::vector<Tensor>> vr_l1_persistence(
     CHECK_INPUT(point_cloud);
     CHECK_SMALLER_EQ(max_dimension + 1, point_cloud.size(0)); 
 
-
-    std::vector<std::vector<Tensor>> ret;
-    std::vector<Tensor> tmp;
-
+    std::vector<Tensor> ret;
 
     // 1. generate boundaries and filtration values ...
     std::vector<std::tuple<Tensor, Tensor>> boundary_and_filtration_by_dim;
@@ -450,7 +448,7 @@ std::vector<std::vector<Tensor>> vr_l1_persistence(
     
     }
 
-    //6.2 Do sorting ...
+    //6 Do sorting ...
     auto sort_filt_res = filtration_values_vector.sort(0);
     auto sorted_filtration_values_vector = std::get<0>(sort_filt_res);
     auto sort_i_filt = std::get<1>(sort_filt_res); 
@@ -524,18 +522,37 @@ std::vector<std::vector<Tensor>> vr_l1_persistence(
     }
 
     // Sort boundary_array rows ...
-    boundary_array = boundary_array.index_select(0, sort_i_filt); 
+    boundary_array = boundary_array.index_select(0, sort_i_filt);  
 
+    //8. generate ba_row_i_to_bm_col_i
+    auto ba_row_i_to_bm_col_i = boundary_array.type().tensor({boundary_array.size(0)});
+    TensorUtils::fill_range_cuda_(ba_row_i_to_bm_col_i); 
+    ba_row_i_to_bm_col_i += n_simplices_by_dim.at(0); 
 
-
-    // for (auto n : n_simplices_by_dim) {std::cout << n << std::endl;}
-    tmp.push_back(boundary_array); 
-    tmp.push_back(simplex_dimension); 
-    tmp.push_back(sorted_filtration_values_vector); 
-    ret.push_back(tmp);
- 
+    ret.push_back(boundary_array); 
+    ret.push_back(ba_row_i_to_bm_col_i);
+    ret.push_back(simplex_dimension); 
+    ret.push_back(sorted_filtration_values_vector);  
 
     return ret;
+}
+
+
+std::vector<std::vector<Tensor>> vr_l1_persistence(
+    const Tensor& point_cloud,
+    int64_t max_dimension, 
+    double max_ball_radius){
+
+    std::vector<std::vector<Tensor>> ret; 
+
+    auto tmp = vr_l1_generate_calculate_persistence_args(
+        point_cloud, max_dimension, max_ball_radius
+    );
+
+    ret.push_back(tmp); 
+
+    return ret; 
+
 }
 
 } // namespace VRCompCuda 

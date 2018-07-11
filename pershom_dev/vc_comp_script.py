@@ -11,7 +11,7 @@ point_cloud = torch.randn(4,3, device='cuda', requires_grad=True).float()
 print(point_cloud)
 
 time_start = time.time()
-r = vr_persistence(point_cloud, 3, 100.0)
+r = vr_persistence(point_cloud, 2, 100.0)
 r =r[0]
 
 for x in r:
@@ -24,8 +24,8 @@ for x in r:
 
 print("===")
 ba = r[0]
-simp_dim = r[1]
-filt_val = r[2]
+simp_dim = r[2]
+filt_val = r[3]
 
 dim = 3
 for simp_id, boundaries in enumerate(ba):
