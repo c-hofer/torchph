@@ -72,14 +72,17 @@ def test():
     # pr = cProfile.Profile()
     # pr.enable()
     
-    ind_not_reduced = torch.tensor(list(range(col_dim.size(0)))).to('cuda')
-    ind_not_reduced = ind_not_reduced.masked_select(bm[:, 0] >= 0).long()
-    bm = bm.index_select(0, ind_not_reduced) 
+    ind_not_reduced = torch.tensor(list(range(col_dim.size(0)))).to('cuda').detach()
+    ind_not_reduced = ind_not_reduced.masked_select(bm[:, 0] >= 0).long().detach()
+    bm = bm.index_select(0, ind_not_reduced).detach()
 
     yep.start('profiling_pershom/profile.google-pprof')
-    output = pershom_backend.calculate_persistence(bm, ind_not_reduced, col_dim, max(col_dim))
+    
+    for i in range(10):
+        time_start = time()
+        output = pershom_backend.calculate_persistence(bm.clone(), ind_not_reduced.clone(), col_dim.clone(), max(col_dim))
+        print(time() - time_start)
     yep.stop()
-    # print(time() - time_start)
 
     # pr.disable()
     # pr.dump_stats('high_level_profile.cProfile')

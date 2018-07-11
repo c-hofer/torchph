@@ -52,7 +52,7 @@ def find_merge_pairings(
     Returns:
         Tensor -- [Nx2: N is the number of merge pairs]
     """
-    return __C.find_merge_pairings(pivots, max_pairs)
+    return __C.CalcPersCuda__find_merge_pairings(pivots, max_pairs)
 
 
 def merge_columns_(
@@ -70,7 +70,7 @@ def merge_columns_(
     Returns:
         None -- []
     """
-    __C.merge_columns_(compr_desc_sort_ba, merge_pairs)
+    __C.CalcPersCuda__merge_columns_(compr_desc_sort_ba, merge_pairs)
 
 
 def read_barcodes(
@@ -93,7 +93,7 @@ def read_barcodes(
         [[Tensor], [Tensor]] -- [ret[0][i] = non essential barcodes of dimension i
                                  ret[1][i] = birth-times of essential classes]
     """
-    return __C.read_barcodes(pivots, simplex_dimension, max_dimension)
+    return __C.CalcPersCuda__read_barcodes(pivots, simplex_dimension, max_dimension)
 
 
 def calculate_persistence(
@@ -123,7 +123,7 @@ def calculate_persistence(
         [[Tensor], [Tensor]] -- [ret[0][i] = non essential barcodes of dimension i
                                  ret[1][i] = birth-times of essential classes]
     """
-    return __C.calculate_persistence(
+    return __C.CalcPersCuda__calculate_persistence(
         compr_desc_sort_ba, ba_row_i_to_bm_col_i, simplex_dimension, max_dimension, max_pairs)
 
 

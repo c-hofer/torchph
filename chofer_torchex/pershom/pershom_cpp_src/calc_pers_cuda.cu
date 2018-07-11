@@ -7,6 +7,7 @@
 #include <limits>
 
 #include "tensor_utils.cuh"
+#include "param_checks_cuda.cuh"
 
 
 using namespace at;
@@ -20,7 +21,12 @@ using namespace at;
 //TODO remove corresponding cpp file and insert checked call wrappers in cu file
 
 //TODO refactor python bindings in new file 
+
+//TODO more assertions 
 #pragma region find_merge_pairings
+
+
+namespace CalcPersCuda{
 
 
 namespace {
@@ -240,9 +246,12 @@ class NoPairsException{
 };
 
 
-Tensor find_merge_pairings_cuda(
+Tensor find_merge_pairings(
   Tensor pivots,
   int max_pairs = -1 ){
+
+    CHECK_INPUT(pivots);
+    assert(pivots.type().scalarType() == ScalarType::Int);
 
     if (max_pairs < 1){
       max_pairs = std::numeric_limits<int>::max();
@@ -415,10 +424,15 @@ Tensor resize_boundary_array(
 }
 
 
-Tensor merge_columns_cuda(
+Tensor merge_columns(
   Tensor comp_desc_sort_ba, 
   Tensor merge_pairings){   
-   
+
+    CHECK_INPUT(comp_desc_sort_ba);
+    assert(comp_desc_sort_ba.type().scalarType() == ScalarType::Int);
+    CHECK_INPUT(merge_pairings);
+    assert(merge_pairings.type().scalarType() == ScalarType::Long);
+    
     int boundary_array_needs_resize = 0;
     int* h_boundary_array_needs_resize = &boundary_array_needs_resize;    
 
@@ -442,10 +456,15 @@ Tensor merge_columns_cuda(
 #pragma region read_barcodes
 
 
-std::vector<std::vector<Tensor> > read_barcodes_cuda(
+std::vector<std::vector<Tensor> > read_barcodes(
   Tensor pivots, 
   Tensor simplex_dimension, 
   int max_dimension){
+
+    CHECK_INPUT(pivots);
+    assert(pivots.type().scalarType() == ScalarType::Int);
+    CHECK_INPUT(simplex_dimension);
+    assert(simplex_dimension.type().scalarType() == ScalarType::Int);
     std::vector<Tensor> ret_non_ess; 
     std::vector<Tensor> ret_ess;
     simplex_dimension = simplex_dimension.unsqueeze(1);    
@@ -492,13 +511,24 @@ std::vector<std::vector<Tensor> > read_barcodes_cuda(
 #pragma endregion 
 
 
-std::vector<std::vector<Tensor> > calculate_persistence_cuda(  
-  Tensor comp_desc_sort_ba, 
-  Tensor ind_not_reduced, //TODO rename parameter accordingly to python binding 
-  Tensor simplex_dimension,
-  int max_dimension,
-  int max_pairs = -1
-  ) {
+std::vector<std::vector<Tensor> > calculate_persistence(   
+    Tensor comp_desc_sort_ba, 
+    Tensor ind_not_reduced, //TODO rename parameter accordingly to python binding 
+    Tensor simplex_dimension,
+    int max_dimension,
+    int max_pairs = -1
+    ) {
+
+  CHECK_INPUT(comp_desc_sort_ba);
+  assert(comp_desc_sort_ba.type().scalarType() == ScalarType::Int);
+  CHECK_INPUT(ind_not_reduced);
+  assert(ind_not_reduced.type().scalarType() == ScalarType::Long);
+  CHECK_INPUT(simplex_dimension);
+  assert(simplex_dimension.type().scalarType() == ScalarType::Int);
+
+  assert(comp_desc_sort_ba.size(0) == ind_not_reduced.size(0));
+  assert(ind_not_reduced.ndimension() == 1);
+  assert(simplex_dimension.ndimension() == 1);
   
   int iterations = 0;
 
@@ -523,7 +553,7 @@ std::vector<std::vector<Tensor> > calculate_persistence_cuda(
 
     try{
 
-      merge_pairings = find_merge_pairings_cuda(pivots, max_pairs);   
+      merge_pairings = find_merge_pairings(pivots, max_pairs);   
 
     }
     catch(NoPairsException& e){
@@ -533,7 +563,7 @@ std::vector<std::vector<Tensor> > calculate_persistence_cuda(
 
     }
 
-    comp_desc_sort_ba = merge_columns_cuda(comp_desc_sort_ba, merge_pairings);
+    comp_desc_sort_ba = merge_columns(comp_desc_sort_ba, merge_pairings);
 
     new_ind_not_reduced = comp_desc_sort_ba.type()
       .toScalarType(ScalarType::Long).tensor({comp_desc_sort_ba.size(0), 1});
@@ -558,21 +588,12 @@ std::vector<std::vector<Tensor> > calculate_persistence_cuda(
   );
   real_pivots.index_copy_(0, ind_not_reduced, pivots); 
 
-  auto barcodes = read_barcodes_cuda(real_pivots, simplex_dimension, max_dimension);
+  auto barcodes = read_barcodes(real_pivots, simplex_dimension, max_dimension);
   return barcodes;
 }
 
-//-----------devel
 
-// namespace {
-//   __global__ void my_test_kernel(Tensor t){
-//     int x = 0;
-//     auto index = blockIdx.x * blockDim.x + threadIdx.x; 
-//     t[index][2] = 1;
-//   }
-// }
-
-Tensor my_test_f_cuda(Tensor t){
+Tensor my_test_f(Tensor t){
   auto ret = zeros_like(t);
 
   // my_test_kernel<<<1, 32>>>(t);
@@ -580,4 +601,5 @@ Tensor my_test_f_cuda(Tensor t){
   return ret;
 }
 
-//-----------
+
+} // namespace CalcPersCuda
