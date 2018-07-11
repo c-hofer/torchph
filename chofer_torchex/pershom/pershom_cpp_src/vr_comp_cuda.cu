@@ -274,8 +274,9 @@ std::tuple<Tensor, Tensor> get_boundary_and_filtration_info_dim_1(
     const Tensor & point_cloud, 
     double max_ball_radius){
 
+    Tensor ba_dim_1, filt_val_vec_dim_1; 
     auto n_edges = binom_coeff_cpu(point_cloud.size(0), 2); 
-    auto ba_dim_1 = point_cloud.type().toScalarType(ScalarType::Long).tensor({n_edges, 2}); 
+    ba_dim_1 = point_cloud.type().toScalarType(ScalarType::Long).tensor({n_edges, 2}); 
 
     write_combinations_table_to_tensor(ba_dim_1, 0, 0, point_cloud.size(0)/*=max_n*/, 2/*=r*/);
 
@@ -288,16 +289,16 @@ std::tuple<Tensor, Tensor> get_boundary_and_filtration_info_dim_1(
     auto y_indices = ba_dim_1.slice(1, 1, 2); 
 
     // filling filtration vector with edge filtration values ... 
-    auto filt_val_vec_dim_1 = distance_matrix.index_select(0, x_indices);
+    filt_val_vec_dim_1 = distance_matrix.index_select(0, x_indices);
     filt_val_vec_dim_1 = filt_val_vec_dim_1.gather(1, y_indices);
     filt_val_vec_dim_1 = filt_val_vec_dim_1.squeeze(); // 
 
     // reduce to edges with filtration value <= max_ball_radius...
     if (max_ball_radius > 0){
         auto i_select = filt_val_vec_dim_1.le(point_cloud.type().scalarTensor(max_ball_radius)).nonzero().squeeze(); 
-
         if (i_select.numel() ==  0){
             ba_dim_1 = ba_dim_1.type().tensor({0});
+            filt_val_vec_dim_1 = filt_val_vec_dim_1.type().tensor({0}); 
         }
         else{
             ba_dim_1 = ba_dim_1.index_select(0, i_select);
@@ -357,16 +358,21 @@ std::vector<Tensor> vr_l1_generate_calculate_persistence_args(
 
     CHECK_INPUT(point_cloud);
     CHECK_SMALLER_EQ(max_dimension + 1, point_cloud.size(0)); 
+    CHECK_SMALLER_EQ(0, max_ball_radius);
+
 
     std::vector<Tensor> ret;
+    Type& Long = point_cloud.type().toScalarType(ScalarType::Long);
 
     // 1. generate boundaries and filtration values ...
+
+    // boundary_and_filtration_info_by_dim[i] == (enumerated boundary combinations, filtration values) of 
+    // dimension i + 1. 
     std::vector<std::tuple<Tensor, Tensor>> boundary_and_filtration_by_dim;
 
     boundary_and_filtration_by_dim.push_back(
         get_boundary_and_filtration_info_dim_1(point_cloud, max_ball_radius)
     );
-
 
     for (int dim = 2; dim <= max_dimension; dim++){
         auto filt_vals_prev_dim = std::get<1>(boundary_and_filtration_by_dim.at(dim - 1 - 1));
@@ -376,26 +382,7 @@ std::vector<Tensor> vr_l1_generate_calculate_persistence_args(
         );
     }
 
-    // 2. Make simplex id's compatible within dimensions ... 
-    //
-    //in order to keep indices in the boundary info tensors 
-    //compatible within dimensions we have to add an offset
-    //to the enumerated combinations, starting with 
-    //dimension 2 simplices (the boundaries of dim 1 simplices are vertices, 
-    //hence the enumeration of the boundary combinations is valid a priori)
-
-    // the offset starts with the number of vertices
-    auto index_offset = point_cloud.type().toScalarType(ScalarType::Long).scalarTensor(point_cloud.size(0));
-    for (int i=1; i < boundary_and_filtration_by_dim.size(); i++){
-        auto boundary_info = std::get<0>(boundary_and_filtration_by_dim.at(i)); 
-        boundary_info.add_(index_offset); 
-
-        auto n_simplices_in_prev_dim = std::get<0>(boundary_and_filtration_by_dim.at(i-1)).size(0); 
-        index_offset += n_simplices_in_prev_dim;
-    }
-
-    
-    // 3. Create helper structure which contains meta info about simplex numbers ... 
+    // 2. Create helper structure which contains meta info about simplex numbers ... 
     int64_t n_non_vertex_simplices = 0;
     int64_t n_simplices = point_cloud.size(0); 
     std::vector<int64_t> n_simplices_by_dim; 
@@ -408,21 +395,44 @@ std::vector<Tensor> vr_l1_generate_calculate_persistence_args(
         n_simplices_by_dim.push_back(boundary_info.size(0)); 
     }
 
+    // If there are only vertices, we return the empty vector 
+    // and let the caller handle the problem ... 
+    if (n_non_vertex_simplices == 0){
+        return ret; 
+    }
+
+    // 3. Make simplex id's compatible within dimensions ... 
+    /*    
+    In order to keep indices in the boundary info tensors 
+    compatible within dimensions we have to add an offset
+    to the enumerated combinations, starting with 
+    dimension 2 simplices (the boundaries of dim 1 simplices are vertices, 
+    hence the enumeration of the boundary combinations is valid)
+    */
+    auto index_offset = n_simplices_by_dim.at(0);
+    for (int i=1; i < boundary_and_filtration_by_dim.size(); i++){
+        auto boundary_info = std::get<0>(boundary_and_filtration_by_dim.at(i)); 
+        boundary_info.add_(index_offset); 
+
+        auto n_simplices_in_prev_dim = std::get<0>(boundary_and_filtration_by_dim.at(i-1)).size(0); 
+        index_offset += n_simplices_in_prev_dim;
+    }    
+
 
     // 4. Create simplex_dimension vector ... 
-    auto simplex_dimension = point_cloud.type().toScalarType(ScalarType::Long)
-        .tensor(n_non_vertex_simplices + n_simplices_by_dim.at(0)); 
+    auto simplex_dimension = Long.tensor(n_non_vertex_simplices + n_simplices_by_dim.at(0)); 
 
-    int64_t copy_offset_1 = 0; 
-    for (int i = 0; i <= max_dimension; i++){
-        simplex_dimension.slice(0, copy_offset_1, copy_offset_1 + n_simplices_by_dim.at(i)).fill_(i); 
-        copy_offset_1 += n_simplices_by_dim.at(i); 
+    {
+        int64_t copy_offset = 0; 
+        for (int i = 0; i <= max_dimension; i++){
+            simplex_dimension.slice(0, copy_offset, copy_offset + n_simplices_by_dim.at(i)).fill_(i); 
+            copy_offset += n_simplices_by_dim.at(i); 
+        }
     }
 
 
     // 5. Create filtration vector ... 
-    auto filtration_values_vector = point_cloud.type()
-        .tensor({n_non_vertex_simplices}); 
+    auto filtration_values_vector = point_cloud.type().tensor({n_non_vertex_simplices});
 
     // This is a dirty hack to ensure that simplices do not occour before their boundaries 
     // in the filtration. As the filtration is raised to higher dimensional simplices by 
@@ -436,17 +446,18 @@ std::vector<Tensor> vr_l1_generate_calculate_persistence_args(
     
     {
         int64_t copy_offset = 0; 
-
+        
         copy_offset = 0; 
-        for (int i = 0; i < max_dimension; i++){
+        for (int i = 0; i < boundary_and_filtration_by_dim.size(); i++){
         
             auto filt_vals = std::get<1>(boundary_and_filtration_by_dim.at(i));
+
             filtration_values_vector.slice(0, copy_offset, copy_offset + filt_vals.size(0)) = filt_vals; 
 
             copy_offset += filt_vals.size(0); 
         }        
 
-        if (max_dimension >= 2){
+        if (max_dimension >= 2 && n_simplices_by_dim.at(2) > 0){
             
             // we take epsilon of float to ensure that it is well defined even if 
             // we decide to alter the floating point type of the filtration values 
@@ -468,12 +479,13 @@ std::vector<Tensor> vr_l1_generate_calculate_persistence_args(
     }
 
     //6 Do sorting ...
+    
     auto sort_filt_res = filtration_values_vector.sort(0);
     auto sorted_filtration_values_vector = std::get<0>(sort_filt_res);
     auto sort_i_filt = std::get<1>(sort_filt_res); 
 
     // revert filtration hack if necessary ...
-    if (max_dimension >= 2){
+    if (max_dimension >= 2 && n_simplices_by_dim.at(2) > 0){
         filt_add_hack_values = filt_add_hack_values.index_select(0, sort_i_filt); 
         sorted_filtration_values_vector -= filt_add_hack_values;
     }
@@ -483,13 +495,11 @@ std::vector<Tensor> vr_l1_generate_calculate_persistence_args(
     // As filtration_value_vector so far starts with edges we have to take care of this. 
     auto dim_0_filt_values = sorted_filtration_values_vector.type().tensor({n_simplices_by_dim.at(0)}).fill_(0); 
     sorted_filtration_values_vector = cat({dim_0_filt_values, sorted_filtration_values_vector}, 0); 
-
   
 
     // Sort simplex_dimension ...
     simplex_dimension.slice(0, n_simplices_by_dim.at(0)) = 
         simplex_dimension.slice(0, n_simplices_by_dim.at(0)).index_select(0, sort_i_filt);
-
 
     // Copy boundary_info of each dimension into the final boundary array ... 
     auto boundary_array = point_cloud.type().toScalarType(ScalarType::Long)
@@ -524,6 +534,11 @@ std::vector<Tensor> vr_l1_generate_calculate_persistence_args(
             for (int i = 1; i < max_dimension; i++){
 
                 auto boundary_info = std::get<0>(boundary_and_filtration_by_dim.at(i)); 
+
+                if (boundary_info.size(0) == 0){
+                    continue; 
+                }
+
                 auto look_up_table = look_up_table_row.expand({boundary_info.size(0), look_up_table_row.size(0)});  
 
                 // Apply ordering to row content ... 
@@ -543,17 +558,19 @@ std::vector<Tensor> vr_l1_generate_calculate_persistence_args(
     // Sort boundary_array rows ...
     boundary_array = boundary_array.index_select(0, sort_i_filt);  
 
-    //8. generate ba_row_i_to_bm_col_i
+    //7. generate ba_row_i_to_bm_col_i
     auto ba_row_i_to_bm_col_i = boundary_array.type().tensor({boundary_array.size(0)});
     TensorUtils::fill_range_cuda_(ba_row_i_to_bm_col_i); 
     ba_row_i_to_bm_col_i += n_simplices_by_dim.at(0); 
 
+    //8. returning ... 
     ret.push_back(boundary_array); 
     ret.push_back(ba_row_i_to_bm_col_i);
     ret.push_back(simplex_dimension); 
     ret.push_back(sorted_filtration_values_vector);  
 
-    auto x = point_cloud.type().tensor({0});
+    // std::cout << cat({sorted_filtration_values_vector.slice(0, 0, 5), sorted_filtration_values_vector.type().tensor({0})}, 0) << std::endl; 
+    // std::cout << boundary_array.slice(0,0,0).fill_(0) << std::endl; 
 
     return ret;
 }

@@ -12,16 +12,16 @@ point_cloud = torch.tensor([(0, 0), (1, 0), (0, 0.5), (1, 1.5)], device='cuda', 
 print(point_cloud)
 
 time_start = time.time()
-r = pershom_backend.__C.VRCompCuda__vr_l1_generate_calculate_persistence_args(point_cloud, 3, 0)
+r = pershom_backend.__C.VRCompCuda__vr_l1_generate_calculate_persistence_args(point_cloud, 2, 1.0)
 
 
 for x in r:
     print(x.size())
 
 print("===")
-# torch.set_printoptions(threshold=5000)
-# for x in r:
-#     print(x)
+torch.set_printoptions(threshold=5000)
+for x in r:
+    print(x)
 
 print("===")
 ba = r[0]

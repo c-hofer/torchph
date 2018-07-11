@@ -81,12 +81,13 @@ def test_vr_l1_generate_calculate_persistence_args__sanity():
             assert cycle_filt_val >= sorted_filtration_values_vector[boundary_id]
 
 
-@pytest.mark.parametrize("max_ball_radius", [0, 0.5, 1.0, 1.5, 2.0, 2.5])  
-def test_vr_l1_generate_calculate_persistence_args__max_ball_radius(max_ball_radius):
+# Cases where is at least one edge possible ... 
+@pytest.mark.parametrize("max_ball_radius", [0, 1.0, 1.5, 2.0, 2.5])  
+def test_vr_l1_generate_calculate_persistence_args__max_ball_radius_1(max_ball_radius):
     point_cloud = [(0, 0), (1, 0), (0, 0.5), (1, 1.5)]
     point_cloud = torch.tensor(point_cloud, device='cuda', dtype=torch.float)
 
-    max_dimension = 1
+    max_dimension = 2
 
     n_0 = point_cloud.size(0)
 
@@ -110,18 +111,18 @@ def test_vr_l1_generate_calculate_persistence_args__max_ball_radius(max_ball_rad
 
     ba, ba_row_i_to_bm_col_i, simplex_dimension, sorted_filtration_values_vector = args
 
-    assert ba.size(0) + n_0 == n_0 + n_1 
+    assert ba.size(0) + n_0 == n_0 + n_1 + n_2
 
 
+# Cases were no edge is possible ...
+@pytest.mark.parametrize("max_ball_radius", [0.1])
+def test_vr_l1_generate_calculate_persistence_args__max_ball_radius_2(max_ball_radius):
+    point_cloud = [(0, 0), (1, 0), (0, 0.5), (1, 1.5)]
+    point_cloud = torch.tensor(point_cloud, device='cuda', dtype=torch.float)
+
+    max_dimension = 2
     
+    args = __C.VRCompCuda__vr_l1_generate_calculate_persistence_args(
+        point_cloud, max_dimension, max_ball_radius)
 
-
-
-
-
-
-
-
-
-
-
+    assert len(args) == 0
