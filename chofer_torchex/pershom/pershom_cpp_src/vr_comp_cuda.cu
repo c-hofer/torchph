@@ -326,8 +326,6 @@ std::tuple<Tensor, Tensor> get_boundary_and_filtration_info(
         new_filt_vals = new_filt_vals.squeeze(); 
     }
 
-    std::cout << new_filt_vals << std::endl;
-
     return std::make_tuple(new_boundary_info, new_filt_vals); 
 }
 
@@ -436,7 +434,7 @@ std::vector<std::vector<Tensor>> vr_l1_persistence(
             // we take epsilon of float to ensure that it is well defined even if 
             // we decide to alter the floating point type of the filtration values 
             // realm 
-            float add_const_base_value = std::numeric_limits<float>::epsilon(); 
+            float add_const_base_value = 100 * std::numeric_limits<float>::epsilon(); // multily with 100 to be save against rounding issues
             copy_offset = n_simplices_by_dim.at(1); 
 
             for (int dim = 2; dim <= max_dimension; dim++){
@@ -453,7 +451,7 @@ std::vector<std::vector<Tensor>> vr_l1_persistence(
     }
 
     //6.2 Do sorting ...
-    auto sort_filt_res = filtration_values_vector.sort();
+    auto sort_filt_res = filtration_values_vector.sort(0);
     auto sorted_filtration_values_vector = std::get<0>(sort_filt_res);
     auto sort_i_filt = std::get<1>(sort_filt_res); 
 
@@ -469,9 +467,6 @@ std::vector<std::vector<Tensor>> vr_l1_persistence(
     auto dim_0_filt_values = sorted_filtration_values_vector.type().tensor({n_simplices_by_dim.at(0)}).fill_(0); 
     sorted_filtration_values_vector = cat({dim_0_filt_values, sorted_filtration_values_vector}, 0); 
 
-    auto dummy_sort_indices = sort_i_filt.type().tensor({n_simplices_by_dim.at(0)}).fill_(-1);
-    auto sort_i_filt_with_vertices = sort_i_filt + n_simplices_by_dim.at(0); 
-    sort_i_filt_with_vertices = cat({dummy_sort_indices, sort_i_filt_with_vertices}, 0); 
   
 
     // Sort simplex_dimension ...
@@ -492,15 +487,36 @@ std::vector<std::vector<Tensor>> vr_l1_persistence(
 
         // copy higher dimensional simplices
         if (max_dimension >= 2){
+            // we need a look up table which lets us change the simplex ids we get from the initial 
+            // enumeration (write_combinations_table_to_tensor) to the id the have w.r.t. the ordering
+            // of the filtration values. We create this table now ...
+
+            // This gives us the mapping id -> new_id w.r.t. sorting by filtration values ...
+            auto look_up_table_row = std::get<1>(sort_i_filt.sort(0));
+
+            // look_up_table_row is yet based on id's without vertices, we adapt theis now ...
+            auto dummy_sort_indices = sort_i_filt.type().tensor({n_simplices_by_dim.at(0)}).fill_(std::numeric_limits<int64_t>::max());
+            look_up_table_row = look_up_table_row + n_simplices_by_dim.at(0); 
+
+            // as vertices have no boundary we will never select a value of the first #vertices entries, 
+            // but we need look_up_table_row.size(0) == #simplices in order to get a consistent mapping...
+            look_up_table_row = cat({dummy_sort_indices, look_up_table_row}, 0); 
+
             int64_t copy_offset = n_simplices_by_dim.at(1);             
 
             for (int i = 1; i < max_dimension; i++){
+
                 auto boundary_info = std::get<0>(boundary_and_filtration_by_dim.at(i)); 
-                auto look_up_table = sort_i_filt_with_vertices.expand({boundary_info.size(0), sort_i_filt_with_vertices.size(0)}); 
+                auto look_up_table = look_up_table_row.expand({boundary_info.size(0), look_up_table_row.size(0)});  
 
                 // Apply ordering to row content ... 
                 boundary_info = look_up_table.gather(1, boundary_info); 
-                boundary_array.slice(0, copy_offset, copy_offset + boundary_info.size(0)).slice(1, 0, boundary_info.size(1)) = boundary_info; 
+
+                // Apply ordering to rows ...
+                boundary_info = std::get<0>(boundary_info.sort(1, /*descending=*/true));
+
+                boundary_array.slice(0, copy_offset, copy_offset + boundary_info.size(0)).slice(1, 0, boundary_info.size(1))
+                     = boundary_info; 
 
                 copy_offset += boundary_info.size(0); 
             }
