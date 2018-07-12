@@ -8,6 +8,7 @@
 
 #include "param_checks_cuda.cuh"
 #include "tensor_utils.cuh"
+#include "calc_pers_cuda.cuh"
 
 using namespace at;
 
@@ -432,7 +433,18 @@ std::vector<Tensor> vr_l1_generate_calculate_persistence_args(
 
 
     // 5. Create filtration vector ... 
-    auto filtration_values_vector = point_cloud.type().tensor({n_non_vertex_simplices});
+    Tensor filtration_values_vector;
+    {
+        std::vector<Tensor> filt_values_non_vertex_simplices; 
+        for (int i = 0; i < boundary_and_filtration_by_dim.size(); i++){
+        
+            auto filt_vals = std::get<1>(boundary_and_filtration_by_dim.at(i));
+
+            filt_values_non_vertex_simplices.push_back(filt_vals);  
+        } 
+
+        filtration_values_vector = cat(filt_values_non_vertex_simplices, 0); 
+    }
 
     // This is a dirty hack to ensure that simplices do not occour before their boundaries 
     // in the filtration. As the filtration is raised to higher dimensional simplices by 
@@ -445,25 +457,13 @@ std::vector<Tensor> vr_l1_generate_calculate_persistence_args(
     auto filt_add_hack_values = filtration_values_vector.type().tensor({filtration_values_vector.size(0)}).fill_(0);
     
     {
-        int64_t copy_offset = 0; 
-        
-        copy_offset = 0; 
-        for (int i = 0; i < boundary_and_filtration_by_dim.size(); i++){
-        
-            auto filt_vals = std::get<1>(boundary_and_filtration_by_dim.at(i));
-
-            filtration_values_vector.slice(0, copy_offset, copy_offset + filt_vals.size(0)) = filt_vals; 
-
-            copy_offset += filt_vals.size(0); 
-        }        
-
         if (max_dimension >= 2 && n_simplices_by_dim.at(2) > 0){
             
             // we take epsilon of float to ensure that it is well defined even if 
             // we decide to alter the floating point type of the filtration values 
             // realm 
             float add_const_base_value = 100 * std::numeric_limits<float>::epsilon(); // multily with 100 to be save against rounding issues
-            copy_offset = n_simplices_by_dim.at(1); 
+            auto copy_offset = n_simplices_by_dim.at(1); 
 
             for (int dim = 2; dim <= max_dimension; dim++){
                 filt_add_hack_values.slice(0, copy_offset, copy_offset + n_simplices_by_dim.at(dim))
@@ -475,6 +475,8 @@ std::vector<Tensor> vr_l1_generate_calculate_persistence_args(
 
             filtration_values_vector += filt_add_hack_values;
         }
+
+        filt_add_hack_values = filt_add_hack_values.clone();
     
     }
 
@@ -493,7 +495,7 @@ std::vector<Tensor> vr_l1_generate_calculate_persistence_args(
 
     // Simplex ids in boundary_array entries include vertices.
     // As filtration_value_vector so far starts with edges we have to take care of this. 
-    auto dim_0_filt_values = sorted_filtration_values_vector.type().tensor({n_simplices_by_dim.at(0)}).fill_(0); 
+    auto dim_0_filt_values = sorted_filtration_values_vector.type().zeros({n_simplices_by_dim.at(0)}); 
     sorted_filtration_values_vector = cat({dim_0_filt_values, sorted_filtration_values_vector}, 0); 
   
 
@@ -587,9 +589,39 @@ std::vector<std::vector<Tensor>> vr_l1_persistence(
         point_cloud, max_dimension, max_ball_radius
     );
 
-    ret.push_back(tmp); 
+    auto pers = CalcPersCuda::calculate_persistence(
+        tmp.at(0), tmp.at(1), tmp.at(2), max_dimension, -1
+    );
+
+    auto filt_vals = tmp.at(3); 
+
+    auto non_essentials = pers.at(0);
+    auto essentials = pers.at(1); 
+
+    std::vector<Tensor> non_essential_barcodes; 
+    Tensor birth_death_i, births, birth_i, deaths, death_i; 
+    for (int i = 0; i < non_essentials.size(); i++){
+
+        birth_death_i = non_essentials.at(i); 
+
+        if(birth_death_i.numel() == 0){
+            non_essential_barcodes.push_back(filt_vals.type().tensor({0, 2})); 
+        }
+        else {
+            birth_i = birth_death_i.slice(1, 0, 1).squeeze(); 
+            births = filt_vals.index_select(0, birth_i);
+
+            death_i = birth_death_i.slice(1, 1, 2).squeeze();
+            deaths = filt_vals.index_select(0, death_i); 
+
+            non_essential_barcodes.push_back(stack({births, deaths}, 1)); 
+        }
+    }
+
+    ret.push_back(non_essential_barcodes);    
 
     return ret; 
 }
+
 
 } // namespace VRCompCuda 
