@@ -12,6 +12,5 @@
 #define CHECK_SMALLER_EQ(x, y) AT_ASSERTM(x <= y, "expected" #x "<=" #y)
 #define CHECK_EQUAL(x, y) AT_ASSERTM(x == y, "expected " #x "==" #y)
 
- 
 
 #define PRINT(x) std::cout << x << std::endl

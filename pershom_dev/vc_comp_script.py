@@ -8,42 +8,46 @@ from scipy.special import binom
 
  #torch.tensor([[-0.6690,  1.5059], [ 0.4220,  1.2434], [-0.3436, -0.0053], [-0.1569,  0.0627]], device='cuda', requires_grad=True).float()
 # point_cloud = torch.randn(4,3, device='cuda', requires_grad=True).float()
-point_cloud = torch.tensor([(0, 0), (1, 0), (0, 0.5), (1, 1.5)], device='cuda', requires_grad=True).double()
+point_cloud = torch.tensor([(0, 0), (1, 0), (0, 0.5), (1, 1.5)], device='cuda', requires_grad=True)
 print(point_cloud)
 
 time_start = time.time()
-r = pershom_backend.__C.VRCompCuda__vr_l1_generate_calculate_persistence_args(point_cloud, 2, 1.0)
+r = pershom_backend.__C.VRCompCuda__vr_l1_persistence(point_cloud, 2, 0)
+non_essentials = r[0]
 
-
-for x in r:
+for x in non_essentials:
     print(x.size())
 
 print("===")
 torch.set_printoptions(threshold=5000)
-for x in r:
+for x in non_essentials:
     print(x)
 
+loss = non_essentials[0].sum()
+loss.backward()
+print(point_cloud.grad)
+
 print("===")
-ba = r[0]
-simp_dim = r[2]
-filt_val = r[3]
+# ba = r[0]
+# simp_dim = r[2]
+# filt_val = r[3]
 
-dim = 3
-for simp_id, boundaries in enumerate(ba):
-    simp_filt_val = filt_val[simp_id + point_cloud.size(0)]
+# dim = 3
+# for simp_id, boundaries in enumerate(ba):
+#     simp_filt_val = filt_val[simp_id + point_cloud.size(0)]
 
-    for boundary in boundaries.tolist():
-        if boundary == -1: continue         
-        cond = True 
-        cond = cond and (simp_dim[simp_id + point_cloud.size(0)] - 1 == simp_dim[boundary])
-        cond = cond and filt_val[boundary] <= simp_filt_val
+#     for boundary in boundaries.tolist():
+#         if boundary == -1: continue         
+#         cond = True 
+#         cond = cond and (simp_dim[simp_id + point_cloud.size(0)] - 1 == simp_dim[boundary])
+#         cond = cond and filt_val[boundary] <= simp_filt_val
 
-        if not cond:
-            print("{}, {}".format(simp_id, boundary))
-            print(ba[simp_id])
-            print(simp_dim[simp_id + point_cloud.size(0)], simp_dim[boundary])
+#         if not cond:
+#             print("{}, {}".format(simp_id, boundary))
+#             print(ba[simp_id])
+#             print(simp_dim[simp_id + point_cloud.size(0)], simp_dim[boundary])
 
-            raise Exception()
+#             raise Exception()
 
 
 

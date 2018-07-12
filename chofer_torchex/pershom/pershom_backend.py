@@ -121,7 +121,7 @@ def calculate_persistence(
     
     Returns:
         [[Tensor], [Tensor]] -- [ret[0][i] = non essential barcodes of dimension i
-                                 ret[1][i] = birth-times of essential classes]
+                                 ret[1][i] = birth-times of essential classes of dimension i]
     """
     return __C.CalcPersCuda__calculate_persistence(
         compr_desc_sort_ba, ba_row_i_to_bm_col_i, simplex_dimension, max_dimension, max_pairs)
