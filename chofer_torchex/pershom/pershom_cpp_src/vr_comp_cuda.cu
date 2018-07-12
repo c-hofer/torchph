@@ -356,7 +356,7 @@ std::vector<Tensor> vr_l1_generate_calculate_persistence_args(
     double max_ball_radius
     ){
 
-    CHECK_INPUT(point_cloud);
+    CHECK_TENSOR_CUDA_CONTIGUOUS(point_cloud);
     CHECK_SMALLER_EQ(max_dimension + 1, point_cloud.size(0)); 
     CHECK_SMALLER_EQ(0, max_ball_radius);
 

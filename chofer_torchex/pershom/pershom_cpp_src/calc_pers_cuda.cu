@@ -11,15 +11,10 @@
 
 using namespace at;
 
-//TODO do proper namespacing and make header file
-
 //TODO resolve template chaos should we always use long and never int? YES
 
 //TODO change from by value args to by reference args
 
-//TODO remove corresponding cpp file and insert checked call wrappers in cu file
-
-//TODO refactor python bindings in new file
 
 //TODO more assertions
 #pragma region find_merge_pairings
@@ -256,7 +251,7 @@ Tensor find_merge_pairings(
     int max_pairs = -1)
 {
 
-    CHECK_INPUT(pivots);
+    CHECK_TENSOR_CUDA_CONTIGUOUS(pivots);
     assert(pivots.type().scalarType() == ScalarType::Int);
 
     if (max_pairs < 1)
@@ -436,9 +431,9 @@ Tensor merge_columns(
     Tensor merge_pairings)
 {
 
-    CHECK_INPUT(comp_desc_sort_ba);
+    CHECK_TENSOR_CUDA_CONTIGUOUS(comp_desc_sort_ba);
     assert(comp_desc_sort_ba.type().scalarType() == ScalarType::Int);
-    CHECK_INPUT(merge_pairings);
+    CHECK_TENSOR_CUDA_CONTIGUOUS(merge_pairings);
     assert(merge_pairings.type().scalarType() == ScalarType::Long);
 
     int boundary_array_needs_resize = 0;
@@ -467,9 +462,9 @@ std::vector<std::vector<Tensor>> read_barcodes(
     int max_dimension)
 {
 
-    CHECK_INPUT(pivots);
+    CHECK_TENSOR_CUDA_CONTIGUOUS(pivots);
     assert(pivots.type().scalarType() == ScalarType::Int);
-    CHECK_INPUT(simplex_dimension);
+    CHECK_TENSOR_CUDA_CONTIGUOUS(simplex_dimension);
     assert(simplex_dimension.type().scalarType() == ScalarType::Int);
     std::vector<Tensor> ret_non_ess;
     std::vector<Tensor> ret_ess;
@@ -524,11 +519,11 @@ std::vector<std::vector<Tensor>> calculate_persistence(
     int max_pairs = -1)
 {
 
-    CHECK_INPUT(comp_desc_sort_ba);
+    CHECK_TENSOR_CUDA_CONTIGUOUS(comp_desc_sort_ba);
     assert(comp_desc_sort_ba.type().scalarType() == ScalarType::Int);
-    CHECK_INPUT(ind_not_reduced);
+    CHECK_TENSOR_CUDA_CONTIGUOUS(ind_not_reduced);
     assert(ind_not_reduced.type().scalarType() == ScalarType::Long);
-    CHECK_INPUT(simplex_dimension);
+    CHECK_TENSOR_CUDA_CONTIGUOUS(simplex_dimension);
     assert(simplex_dimension.type().scalarType() == ScalarType::Int);
 
     assert(comp_desc_sort_ba.size(0) == ind_not_reduced.size(0));
