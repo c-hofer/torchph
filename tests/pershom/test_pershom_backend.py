@@ -9,7 +9,7 @@ from collections import Counter
 
 class Test_find_merge_pairings:
     @pytest.mark.parametrize("device, dtype", [
-        (torch.device('cuda'), torch.int32)
+        (torch.device('cuda'), torch.int64)
     ]) 
     def test_return_value_dtype(self, device, dtype):
         pivots = torch.tensor([1, 1], device=device, dtype=dtype)
@@ -20,7 +20,7 @@ class Test_find_merge_pairings:
 
 
     @pytest.mark.parametrize("device, dtype", [
-        (torch.device('cuda'), torch.int32)
+        (torch.device('cuda'), torch.int64)
     ]) 
     def test_parameter_max_pairs(self, device, dtype):
         pivots = torch.tensor([1]*1000, device=device, dtype=dtype).unsqueeze(1)
@@ -31,7 +31,7 @@ class Test_find_merge_pairings:
 
 
     @pytest.mark.parametrize("device, dtype", [
-        (torch.device('cuda'), torch.int32)
+        (torch.device('cuda'), torch.int64)
     ])
     def test_break_exeption(self, device, dtype):
         pivots = torch.tensor(list(range(100)), device=device, dtype=dtype).unsqueeze(1)
@@ -41,7 +41,7 @@ class Test_find_merge_pairings:
 
 
     @pytest.mark.parametrize("device, dtype", [
-        (torch.device('cuda'), torch.int32)
+        (torch.device('cuda'), torch.int64)
     ])    
     def test_result_1(self, device, dtype):
         pivots = [6, 3, 3, 3 ,5, 6, 6, 0, 5, 5]
@@ -61,7 +61,7 @@ class Test_find_merge_pairings:
 
 
     @pytest.mark.parametrize("device, dtype", [
-        (torch.device('cuda'), torch.int32)
+        (torch.device('cuda'), torch.int64)
     ])  
     def test_result_2(self, device, dtype):
         pivots = sum([100*[i] for i in range(100)], [])
@@ -102,7 +102,7 @@ class Test_calculate_persistence:
 
     def test_simple_1(self):
         device = torch.device('cuda')
-        dtype = torch.int32
+        dtype = torch.int64
 
         ba = torch.empty((1, 4))
         ba.fill_(-1)
@@ -126,7 +126,7 @@ class Test_calculate_persistence:
 
     def test_random_simplicial_complexes(self):
         device = torch.device('cuda')
-        dtype = torch.int32
+        dtype = torch.int64
 
         for sp_path in glob.glob('test_pershom_backend_data/random_simplicial_complexes/*'):
 

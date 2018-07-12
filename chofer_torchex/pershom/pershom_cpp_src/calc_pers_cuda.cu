@@ -13,9 +13,6 @@ using namespace at;
 
 //TODO resolve template chaos should we always use long and never int? YES
 
-//TODO change from by value args to by reference args
-
-
 //TODO more assertions
 #pragma region find_merge_pairings
 
@@ -129,7 +126,7 @@ namespace
  */
 __global__ void extract_slicings_cuda_kernel(
     int64_t *p_input,
-    int32_t *p_slicings,
+    int64_t *p_slicings,
     int64_t *p_return_value,
     int64_t return_value_size_0,
     int64_t return_value_size_1)
@@ -168,7 +165,7 @@ __global__ void format_extracted_sorted_slicings_to_merge_pairs_kernel(
     int64_t *extracted_slices,
     int64_t extracted_slices_size_0,
     int64_t extracted_slices_size_1,
-    int32_t *lengths,
+    int64_t *lengths,
     int64_t *row_offset_for_thread,
     int64_t *return_value)
 {
@@ -213,7 +210,7 @@ Tensor sorted_pivot_indices_to_merge_pairs_cuda_kernel_call(
     const int blocks_apply_slicings = slicings.size(0) / threads_per_block_apply_slicings + 1;
     extract_slicings_cuda_kernel<<<threads_per_block_apply_slicings, blocks_apply_slicings>>>(
         input.data<int64_t>(),
-        slicings.data<int32_t>(),
+        slicings.data<int64_t>(),
         extracted_slicings.data<int64_t>(),
         extracted_slicings.size(0),
         extracted_slicings.size(1));
@@ -234,7 +231,7 @@ Tensor sorted_pivot_indices_to_merge_pairs_cuda_kernel_call(
         extracted_slicings_sorted.data<int64_t>(),
         extracted_slicings_sorted.size(0),
         extracted_slicings_sorted.size(1),
-        lengths.data<int32_t>(),
+        lengths.data<int64_t>(),
         row_offset_for_thread.data<int64_t>(),
         merge_pairings.data<int64_t>());
 
@@ -254,7 +251,7 @@ Tensor find_merge_pairings(
 {
 
     CHECK_TENSOR_CUDA_CONTIGUOUS(pivots);
-    assert(pivots.type().scalarType() == ScalarType::Int);
+    assert(pivots.type().scalarType() == ScalarType::Long);
 
     if (max_pairs < 1)
     {
@@ -264,7 +261,7 @@ Tensor find_merge_pairings(
     auto sort_val = std::get<0>(sort_res);
     auto sort_ind = std::get<1>(sort_res);
 
-    auto slicings = find_slicing_indices_cuda_kernel_call<int32_t>(sort_val).contiguous();
+    auto slicings = find_slicing_indices_cuda_kernel_call<int64_t>(sort_val).contiguous();
 
     Tensor merge_pairs;
     if (slicings.size(0) != 0)
@@ -304,7 +301,7 @@ __device__ void merge_one_column_s(
     scalar_t *p_merger,
     scalar_t *p_target,       // the position of the target column, set to -1
     scalar_t *p_target_cache, // contains the copied values of target column
-    int boundary_array_size_1,
+    int64_t boundary_array_size_1,
     int *d_boundary_array_needs_resize)
 {
     // Assertion: comp_desc_sort_ba[:, -1] == -1
@@ -370,7 +367,7 @@ __global__ void merge_columns_cuda_kernel(
         const int filt_id_merger = merge_pairings[thread_id * 2];
         const int filt_id_target = merge_pairings[thread_id * 2 + 1];
 
-        merge_one_column_s<int32_t>(
+        merge_one_column_s<int64_t>(
             comp_desc_sort_ba + (filt_id_merger * descending_sorted_boundary_array_size_1),
             comp_desc_sort_ba + (filt_id_target * descending_sorted_boundary_array_size_1),
             cache + (thread_id * descending_sorted_boundary_array_size_1),
@@ -405,10 +402,10 @@ void merge_columns_cuda_kernel_call(
     // reset content of target columns
     comp_desc_sort_ba.index_fill_(0, targets, -1);
 
-    merge_columns_cuda_kernel<int32_t><<<blocks, threads_per_block>>>(
-        comp_desc_sort_ba.data<int32_t>(),
+    merge_columns_cuda_kernel<int64_t><<<blocks, threads_per_block>>>(
+        comp_desc_sort_ba.data<int64_t>(),
         comp_desc_sort_ba.size(1),
-        cache.data<int32_t>(),
+        cache.data<int64_t>(),
         merge_pairings.data<int64_t>(),
         merge_pairings.size(0),
         d_boundary_array_needs_resize);
@@ -434,14 +431,14 @@ Tensor merge_columns(
 {
 
     CHECK_TENSOR_CUDA_CONTIGUOUS(comp_desc_sort_ba);
-    assert(comp_desc_sort_ba.type().scalarType() == ScalarType::Int);
+    assert(comp_desc_sort_ba.type().scalarType() == ScalarType::Long);
     CHECK_TENSOR_CUDA_CONTIGUOUS(merge_pairings);
     assert(merge_pairings.type().scalarType() == ScalarType::Long);
 
     int boundary_array_needs_resize = 0;
     int *h_boundary_array_needs_resize = &boundary_array_needs_resize;
 
-    merge_columns_cuda_kernel_call<int32_t>(
+    merge_columns_cuda_kernel_call<int64_t>(
         comp_desc_sort_ba,
         merge_pairings,
         h_boundary_array_needs_resize);
@@ -465,9 +462,9 @@ std::vector<std::vector<Tensor>> read_barcodes(
 {
 
     CHECK_TENSOR_CUDA_CONTIGUOUS(pivots);
-    assert(pivots.type().scalarType() == ScalarType::Int);
+    assert(pivots.type().scalarType() == ScalarType::Long);
     CHECK_TENSOR_CUDA_CONTIGUOUS(simplex_dimension);
-    assert(simplex_dimension.type().scalarType() == ScalarType::Int);
+    assert(simplex_dimension.type().scalarType() == ScalarType::Long);
     std::vector<Tensor> ret_non_ess;
     std::vector<Tensor> ret_ess;
     simplex_dimension = simplex_dimension.unsqueeze(1);
@@ -522,11 +519,11 @@ std::vector<std::vector<Tensor>> calculate_persistence(
 {
 
     CHECK_TENSOR_CUDA_CONTIGUOUS(comp_desc_sort_ba);
-    assert(comp_desc_sort_ba.type().scalarType() == ScalarType::Int);
+    assert(comp_desc_sort_ba.type().scalarType() == ScalarType::Long);
     CHECK_TENSOR_CUDA_CONTIGUOUS(ind_not_reduced);
     assert(ind_not_reduced.type().scalarType() == ScalarType::Long);
     CHECK_TENSOR_CUDA_CONTIGUOUS(simplex_dimension);
-    assert(simplex_dimension.type().scalarType() == ScalarType::Int);
+    assert(simplex_dimension.type().scalarType() == ScalarType::Long);
 
     assert(comp_desc_sort_ba.size(0) == ind_not_reduced.size(0));
     assert(ind_not_reduced.ndimension() == 1);
