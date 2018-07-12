@@ -7,7 +7,7 @@
 #define CHECK_TENSOR_CUDA_CONTIGUOUS(x) \
     CHECK_CUDA(x);     \
     CHECK_CONTIGUOUS(x)
-#define CHECK_TENSOR_INT64(x) AT_ASSERTM(x.type().scalarType() == scalarType::Long, "expected " #x "to be of scalar type int64")
+#define CHECK_TENSOR_INT64(x) AT_ASSERTM(x.type().scalarType() == ScalarType::Long, "expected " #x "to be of scalar type int64")
 
 #define CHECK_SMALLER_EQ(x, y) AT_ASSERTM(x <= y, "expected" #x "<=" #y)
 #define CHECK_EQUAL(x, y) AT_ASSERTM(x == y, "expected " #x "==" #y)

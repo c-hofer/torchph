@@ -11,9 +11,7 @@
 
 using namespace at;
 
-//TODO resolve template chaos should we always use long and never int? YES
 
-//TODO more assertions
 #pragma region find_merge_pairings
 
 namespace CalcPersCuda
@@ -251,7 +249,7 @@ Tensor find_merge_pairings(
 {
 
     CHECK_TENSOR_CUDA_CONTIGUOUS(pivots);
-    assert(pivots.type().scalarType() == ScalarType::Long);
+    CHECK_TENSOR_INT64(pivots);
 
     if (max_pairs < 1)
     {
@@ -431,9 +429,9 @@ Tensor merge_columns(
 {
 
     CHECK_TENSOR_CUDA_CONTIGUOUS(comp_desc_sort_ba);
-    assert(comp_desc_sort_ba.type().scalarType() == ScalarType::Long);
+    CHECK_TENSOR_INT64(comp_desc_sort_ba);
     CHECK_TENSOR_CUDA_CONTIGUOUS(merge_pairings);
-    assert(merge_pairings.type().scalarType() == ScalarType::Long);
+    CHECK_TENSOR_INT64(merge_pairings);
 
     int boundary_array_needs_resize = 0;
     int *h_boundary_array_needs_resize = &boundary_array_needs_resize;
@@ -462,9 +460,9 @@ std::vector<std::vector<Tensor>> read_barcodes(
 {
 
     CHECK_TENSOR_CUDA_CONTIGUOUS(pivots);
-    assert(pivots.type().scalarType() == ScalarType::Long);
+    CHECK_TENSOR_INT64(pivots);
     CHECK_TENSOR_CUDA_CONTIGUOUS(simplex_dimension);
-    assert(simplex_dimension.type().scalarType() == ScalarType::Long);
+    CHECK_TENSOR_INT64(simplex_dimension);
     std::vector<Tensor> ret_non_ess;
     std::vector<Tensor> ret_ess;
     simplex_dimension = simplex_dimension.unsqueeze(1);
@@ -519,15 +517,15 @@ std::vector<std::vector<Tensor>> calculate_persistence(
 {
 
     CHECK_TENSOR_CUDA_CONTIGUOUS(comp_desc_sort_ba);
-    assert(comp_desc_sort_ba.type().scalarType() == ScalarType::Long);
+    CHECK_TENSOR_INT64(comp_desc_sort_ba);
     CHECK_TENSOR_CUDA_CONTIGUOUS(ind_not_reduced);
-    assert(ind_not_reduced.type().scalarType() == ScalarType::Long);
+    CHECK_TENSOR_INT64(ind_not_reduced);
     CHECK_TENSOR_CUDA_CONTIGUOUS(simplex_dimension);
-    assert(simplex_dimension.type().scalarType() == ScalarType::Long);
+    CHECK_TENSOR_INT64(simplex_dimension);
 
-    assert(comp_desc_sort_ba.size(0) == ind_not_reduced.size(0));
-    assert(ind_not_reduced.ndimension() == 1);
-    assert(simplex_dimension.ndimension() == 1);
+    CHECK_TENSOR_INT64(comp_desc_sort_ba);
+    CHECK_TENSOR_INT64(ind_not_reduced);
+    CHECK_TENSOR_INT64(simplex_dimension);
 
     int iterations = 0;
 
