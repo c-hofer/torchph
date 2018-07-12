@@ -90,7 +90,7 @@ __global__ void find_right_slicings_indices_cuda_kernel(
  */
 template <typename scalar_t>
 Tensor find_slicing_indices_cuda_kernel_call(
-    Tensor pivots)
+    const Tensor & pivots)
 {
     Tensor output = zeros_like(pivots).fill_(-1);
     const int threads_per_block = 256;
@@ -193,7 +193,9 @@ __global__ void format_extracted_sorted_slicings_to_merge_pairs_kernel(
 
 } //namespace
 
-Tensor sorted_pivot_indices_to_merge_pairs_cuda_kernel_call(Tensor input, Tensor slicings)
+Tensor sorted_pivot_indices_to_merge_pairs_cuda_kernel_call(
+    const Tensor & input, 
+    const Tensor & slicings)
 {
     // ASSERTION input.dtype() == int64
     // ASSERTION slicings.dtype() == int32
@@ -247,8 +249,8 @@ class NoPairsException
 };
 
 Tensor find_merge_pairings(
-    Tensor pivots,
-    int max_pairs = -1)
+    const Tensor & pivots,
+    int64_t max_pairs = -1)
 {
 
     CHECK_TENSOR_CUDA_CONTIGUOUS(pivots);
@@ -381,8 +383,8 @@ __global__ void merge_columns_cuda_kernel(
 
 template <typename scalar_t>
 void merge_columns_cuda_kernel_call(
-    Tensor comp_desc_sort_ba,
-    Tensor merge_pairings,
+    Tensor & comp_desc_sort_ba,
+    const Tensor & merge_pairings,
     int *h_boundary_array_needs_resize)
 {
     const int threads_per_block = 32;
@@ -418,7 +420,7 @@ void merge_columns_cuda_kernel_call(
 }
 
 Tensor resize_boundary_array(
-    Tensor comp_desc_sort_ba)
+    const Tensor & comp_desc_sort_ba)
 {
     auto tmp = empty_like(comp_desc_sort_ba);
     tmp.fill_(-1);
@@ -427,8 +429,8 @@ Tensor resize_boundary_array(
 }
 
 Tensor merge_columns(
-    Tensor comp_desc_sort_ba,
-    Tensor merge_pairings)
+    Tensor & comp_desc_sort_ba,
+    const Tensor & merge_pairings)
 {
 
     CHECK_TENSOR_CUDA_CONTIGUOUS(comp_desc_sort_ba);
@@ -457,9 +459,9 @@ Tensor merge_columns(
 #pragma region read_barcodes
 
 std::vector<std::vector<Tensor>> read_barcodes(
-    Tensor pivots,
-    Tensor simplex_dimension,
-    int max_dimension)
+    const Tensor & pivots,
+    Tensor & simplex_dimension,
+    int64_t  max_dimension)
 {
 
     CHECK_TENSOR_CUDA_CONTIGUOUS(pivots);
@@ -512,11 +514,11 @@ std::vector<std::vector<Tensor>> read_barcodes(
 #pragma endregion
 
 std::vector<std::vector<Tensor>> calculate_persistence(
-    Tensor comp_desc_sort_ba,
-    Tensor ind_not_reduced, //TODO rename parameter accordingly to python binding
-    Tensor simplex_dimension,
-    int max_dimension,
-    int max_pairs = -1)
+    Tensor & comp_desc_sort_ba,
+    Tensor & ind_not_reduced, //TODO rename parameter accordingly to python binding
+    Tensor & simplex_dimension,
+    int64_t max_dimension,
+    int64_t max_pairs = -1)
 {
 
     CHECK_TENSOR_CUDA_CONTIGUOUS(comp_desc_sort_ba);
