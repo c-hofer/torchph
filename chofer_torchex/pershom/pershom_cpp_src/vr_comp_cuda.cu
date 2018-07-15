@@ -335,8 +335,9 @@ std::tuple<Tensor, Tensor> get_boundary_and_filtration_info(
         write_combinations_table_to_tensor(new_boundary_info, 0, 0, n_simplices_prev_dim, dim + 1); 
         cudaStreamSynchronize(0); 
 
+        auto bi_cloned = new_boundary_info.clone(); // we have to clone here other wise auto-grad does not work!
         new_filt_vals = filt_vals_prev_dim.expand({n_new_simplices, filt_vals_prev_dim.size(0)});
-        new_filt_vals = new_filt_vals.gather(1, new_boundary_info); 
+        new_filt_vals = new_filt_vals.gather(1, bi_cloned); 
         new_filt_vals = std::get<0>(new_filt_vals.max(1));
 
         // If we have just one simplex of the current dimension this
@@ -439,12 +440,11 @@ std::vector<Tensor> vr_l1_generate_calculate_persistence_args(
         for (int i = 0; i < boundary_and_filtration_by_dim.size(); i++){
         
             auto filt_vals = std::get<1>(boundary_and_filtration_by_dim.at(i));
-
             filt_values_non_vertex_simplices.push_back(filt_vals);  
         } 
 
         filtration_values_vector = cat(filt_values_non_vertex_simplices, 0); 
-    }
+    }    
 
     // This is a dirty hack to ensure that simplices do not occour before their boundaries 
     // in the filtration. As the filtration is raised to higher dimensional simplices by 
@@ -571,9 +571,6 @@ std::vector<Tensor> vr_l1_generate_calculate_persistence_args(
     ret.push_back(simplex_dimension); 
     ret.push_back(sorted_filtration_values_vector);  
 
-    // std::cout << cat({sorted_filtration_values_vector.slice(0, 0, 5), sorted_filtration_values_vector.type().tensor({0})}, 0) << std::endl; 
-    // std::cout << boundary_array.slice(0,0,0).fill_(0) << std::endl; 
-
     return ret;
 }
 
@@ -599,27 +596,58 @@ std::vector<std::vector<Tensor>> vr_l1_persistence(
     auto essentials = pers.at(1); 
 
     std::vector<Tensor> non_essential_barcodes; 
-    Tensor birth_death_i, births, birth_i, deaths, death_i; 
-    for (int i = 0; i < non_essentials.size(); i++){
+    {
+        Tensor birth_death_i, births, birth_i, deaths, death_i, barcodes, i_birth_ne_death; 
+        for (int i = 0; i < non_essentials.size(); i++){
 
-        birth_death_i = non_essentials.at(i); 
+            birth_death_i = non_essentials.at(i); 
 
-        if(birth_death_i.numel() == 0){
-            non_essential_barcodes.push_back(filt_vals.type().tensor({0, 2})); 
+            if(birth_death_i.numel() == 0){
+                barcodes = filt_vals.type().tensor({0, 2}); 
+            }
+            else {
+                birth_i = birth_death_i.slice(1, 0, 1).squeeze(); 
+                births = filt_vals.index_select(0, birth_i);
+
+                death_i = birth_death_i.slice(1, 1, 2).squeeze();
+                deaths = filt_vals.index_select(0, death_i);
+
+                i_birth_ne_death = births.ne(deaths).nonzero().squeeze(); 
+
+                PRINT(deaths.sizes()); 
+                PRINT(filt_vals.sizes()); 
+                PRINT(i_birth_ne_death.sizes()); 
+                //TODO filtering for equal filt values !
+                births = births.index_select(0, i_birth_ne_death);
+                deaths = deaths.index_select(0, i_birth_ne_death);
+
+                barcodes = stack({births, deaths}, 1); 
+
+                
+            }
+            non_essential_barcodes.push_back(barcodes); 
         }
-        else {
-            birth_i = birth_death_i.slice(1, 0, 1).squeeze(); 
-            births = filt_vals.index_select(0, birth_i);
-
-            death_i = birth_death_i.slice(1, 1, 2).squeeze();
-            deaths = filt_vals.index_select(0, death_i); 
-
-            non_essential_barcodes.push_back(stack({births, deaths}, 1)); 
-        }
+        ret.push_back(non_essential_barcodes);    
     }
 
-    ret.push_back(non_essential_barcodes);    
+    std::vector<Tensor> essential_barcodes; 
+    {   
+        Tensor birth_i, births, barcodes; 
+        for (int i = 0; i < essentials.size(); i++){
 
+            birth_i = essentials.at(i).squeeze(); 
+
+            if (birth_i.numel() == 0){
+                barcodes = filt_vals.type().tensor({0, 1});
+            }
+            else {
+                barcodes = filt_vals.index_select(0, birth_i); 
+            }
+            
+            essential_barcodes.push_back(barcodes); 
+        }
+        ret.push_back(essential_barcodes); 
+    }
     return ret; 
 }
 

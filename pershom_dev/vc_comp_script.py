@@ -7,27 +7,38 @@ from scipy.special import binom
 
 
  #torch.tensor([[-0.6690,  1.5059], [ 0.4220,  1.2434], [-0.3436, -0.0053], [-0.1569,  0.0627]], device='cuda', requires_grad=True).float()
-# point_cloud = torch.randn(4,3, device='cuda', requires_grad=True).float()
-point_cloud = torch.tensor([(0, 0), (1, 0), (0, 0.5), (1, 1.5)], device='cuda', requires_grad=True)
+
+
+point_cloud = torch.randn(10,3, device='cuda', requires_grad=True).float()
+# point_cloud = torch.tensor([(0, 0), (1, 0), (0, 0.5), (1, 1.5)], device='cuda', requires_grad=True)
+
+# x = pershom_backend.__C.CalcPersCuda__my_test_f(point_cloud)
+
+# loss = x.sum()
+# loss.backward()
+# print(point_cloud.grad)
+
+
 print(point_cloud)
 
-time_start = time.time()
-r = pershom_backend.__C.VRCompCuda__vr_l1_persistence(point_cloud, 2, 0)
+# time_start = time.time()
+r = pershom_backend.__C.VRCompCuda__vr_l1_persistence(point_cloud, 2, 0.5)
 non_essentials = r[0]
+essentials = r[1]
 
-for x in non_essentials:
-    print(x.size())
+print(len(non_essentials), len(essentials))
 
-print("===")
-torch.set_printoptions(threshold=5000)
-for x in non_essentials:
-    print(x)
+print("=== non-essentials ===")
+for x in non_essentials: print(x)
 
+print("=== essentials ===")
+for x in essentials: print(x) 
+
+print("=== grad ===")
 loss = non_essentials[0].sum()
 loss.backward()
 print(point_cloud.grad)
 
-print("===")
 # ba = r[0]
 # simp_dim = r[2]
 # filt_val = r[3]
@@ -69,4 +80,4 @@ print("===")
 # for row_i in range(t.size(0)):
 #     for col_i in range(t.size(1)):
 #         assert int(t[row_i, col_i]) == binom(col_i, row_i+1)
-print(time.time() - time_start)
+# print(time.time() - time_start)

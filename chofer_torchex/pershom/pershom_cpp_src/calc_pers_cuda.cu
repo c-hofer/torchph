@@ -588,11 +588,13 @@ std::vector<std::vector<Tensor>> calculate_persistence(
     return barcodes;
 }
 
-Tensor my_test_f(Tensor t)
+Tensor my_test_f(const Tensor & t)
 {
-    auto ret = zeros_like(t);
-
-    // my_test_kernel<<<1, 32>>>(t);
+    auto x = CUDA(kLong).ones_like(t); 
+    
+    x = x.toType(t.type().toScalarType(ScalarType::Long));
+    
+    auto ret = t.gather(1, x); 
 
     return ret;
 }

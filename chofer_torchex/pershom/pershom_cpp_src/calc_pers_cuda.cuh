@@ -27,6 +27,6 @@ std::vector<std::vector<Tensor>> calculate_persistence(
     int64_t max_dimension,
     int64_t max_pairs);
 
-Tensor my_test_f(Tensor t);
+Tensor my_test_f(const Tensor & t);
 
 } // namespace CalcPersCuda
