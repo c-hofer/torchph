@@ -112,6 +112,9 @@ def test_vr_l1_generate_calculate_persistence_args__max_ball_radius_1(max_ball_r
     ba, ba_row_i_to_bm_col_i, simplex_dimension, sorted_filtration_values_vector = args
 
     assert ba.size(0) + n_0 == n_0 + n_1 + n_2
+    assert simplex_dimension.dim() == 1
+    assert sorted_filtration_values_vector.dim() == 1
+    assert simplex_dimension.size(0) == sorted_filtration_values_vector.size(0)
 
 
 # Cases were no edge is possible ...
@@ -125,4 +128,12 @@ def test_vr_l1_generate_calculate_persistence_args__max_ball_radius_2(max_ball_r
     args = __C.VRCompCuda__vr_l1_generate_calculate_persistence_args(
         point_cloud, max_dimension, max_ball_radius)
 
-    assert len(args) == 0
+    ba, ba_row_i_to_bm_col_i, simplex_dimension, sorted_filtration_values_vector = args
+
+    assert ba.numel() == 0
+    assert ba_row_i_to_bm_col_i.numel() == 0 
+    assert simplex_dimension.dim() == 1
+    assert all(simplex_dimension == 0)
+    assert sorted_filtration_values_vector.dim() == 1
+    assert all(sorted_filtration_values_vector == 0)
+    assert simplex_dimension.size(0) == sorted_filtration_values_vector.size(0)

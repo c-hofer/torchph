@@ -10,18 +10,17 @@ from scipy.special import binom
 # point_cloud = torch.randn(10,3, device='cuda', requires_grad=True).float()
 point_cloud = torch.tensor([(0, 0), (1, 0), (0, 0.5), (1, 1.5)], device='cuda', requires_grad=True)
 
-# x = pershom_backend.__C.CalcPersCuda__my_test_f(point_cloud)
-
 # loss = x.sum()
 # loss.backward()
 # print(point_cloud.grad)
 
 
 print(point_cloud)
+# pershom_backend.__C.CalcPersCuda__my_test_f(point_cloud).sum().backward(); 
 
 # time_start = time.time()
 try:
-    r = pershom_backend.__C.VRCompCuda__vr_l1_persistence(point_cloud, 2, 0.25)
+    r = pershom_backend.__C.VRCompCuda__vr_l1_persistence(point_cloud, 2, 0.1)
 
 except Exception as ex: 
     print("=== Error ===")
@@ -40,7 +39,7 @@ print("=== essentials ===")
 for x in essentials: print(x) 
 
 print("=== grad ===")
-loss = non_essentials[0].sum()
+loss = essentials[0].sum()
 loss.backward()
 print(point_cloud.grad)
 

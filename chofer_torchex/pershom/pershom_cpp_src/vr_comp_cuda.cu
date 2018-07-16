@@ -352,6 +352,78 @@ std::tuple<Tensor, Tensor> get_boundary_and_filtration_info(
 }
 
 
+void make_simplex_ids_compatible_within_dimensions(
+    std::vector<int64_t> & n_simplices_by_dim, 
+    std::vector<std::tuple<Tensor, Tensor>> & boundary_and_filtration_by_dim
+    ){
+    auto index_offset = n_simplices_by_dim.at(0);
+    for (int i=1; i < boundary_and_filtration_by_dim.size(); i++){
+        auto boundary_info = std::get<0>(boundary_and_filtration_by_dim.at(i)); 
+        boundary_info.add_(index_offset); 
+
+        auto n_simplices_in_prev_dim = std::get<0>(boundary_and_filtration_by_dim.at(i-1)).size(0); 
+        index_offset += n_simplices_in_prev_dim;
+    }
+}
+
+
+Tensor get_simplex_dimension_tensor(
+    int64_t n_non_vertex_simplices, 
+    std::vector<int64_t> & n_simplices_by_dim, 
+    int64_t max_dimension, 
+    Type& type
+    ){
+
+    auto ret = type.tensor(n_non_vertex_simplices + n_simplices_by_dim.at(0)); 
+   
+    int64_t copy_offset = 0; 
+    for (int i = 0; i <= max_dimension; i++){
+        ret.slice(0, copy_offset, copy_offset + n_simplices_by_dim.at(i)).fill_(i); 
+        copy_offset += n_simplices_by_dim.at(i); 
+    }
+
+    return ret; 
+}
+
+
+Tensor get_filtrations_values_vector(
+    std::vector<std::tuple<Tensor, Tensor>> & boundary_and_filtration_by_dim
+    ){
+    
+    std::vector<Tensor> filt_values_non_vertex_simplices; 
+    for (int i = 0; i < boundary_and_filtration_by_dim.size(); i++){
+    
+        auto filt_vals = std::get<1>(boundary_and_filtration_by_dim.at(i));
+        filt_values_non_vertex_simplices.push_back(filt_vals);  
+    } 
+
+    return cat(filt_values_non_vertex_simplices, 0);     
+}
+
+
+std::vector<Tensor> get_calculate_persistence_args_simplices_only(
+    int64_t n_vertices, 
+    int64_t max_dimension,
+    Type & ba_type, 
+    const Tensor & point_cloud
+    ){
+
+    std::vector<Tensor> ret; 
+    ret.push_back(ba_type.tensor({0, 2*(max_dimension + 1)}));
+    ret.push_back(ba_type.tensor({0}));
+    ret.push_back(ba_type.zeros({n_vertices}));
+
+    // We generate the 0-vector in this way to ensure that point_cloud
+    // will have zero gradients instead of None after a backward call
+    // in pytorch ... 
+    auto filtration_values = point_cloud.slice(1, 0, 1).squeeze().clone();
+    filtration_values.fill_(0); 
+    ret.push_back(filtration_values);
+
+    return ret; 
+}
+
+
 //TODO refactor 
 std::vector<Tensor> vr_l1_generate_calculate_persistence_args(
     const Tensor& point_cloud,
@@ -368,7 +440,6 @@ std::vector<Tensor> vr_l1_generate_calculate_persistence_args(
     Type& Long = point_cloud.type().toScalarType(ScalarType::Long);
 
     // 1. generate boundaries and filtration values ...
-
     // boundary_and_filtration_info_by_dim[i] == (enumerated boundary combinations, filtration values) of 
     // dimension i + 1. 
     std::vector<std::tuple<Tensor, Tensor>> boundary_and_filtration_by_dim;
@@ -385,7 +456,7 @@ std::vector<Tensor> vr_l1_generate_calculate_persistence_args(
         );
     }
 
-    // 2. Create helper structure which contains meta info about simplex numbers ... 
+    // 2. Create helper variables which contain meta info about simplex numbers ... 
     int64_t n_non_vertex_simplices = 0;
     int64_t n_simplices = point_cloud.size(0); 
     std::vector<int64_t> n_simplices_by_dim; 
@@ -399,10 +470,15 @@ std::vector<Tensor> vr_l1_generate_calculate_persistence_args(
     }
 
     // TODO returning in mid of function is not nice. Can we improve this? 
-    // If there are only vertices, we return the empty vector 
-    // and let the caller handle the problem ... 
+    // If there are only vertices, we omit the rest of the function and 
+    // return the arguments for calculate_persistence directly ... 
     if (n_non_vertex_simplices == 0){
-        return ret; 
+        return get_calculate_persistence_args_simplices_only(
+            n_simplices_by_dim.at(0), 
+            max_dimension, 
+            Long, 
+            point_cloud
+        );
     }
 
     // 3. Make simplex id's compatible within dimensions ... 
@@ -413,49 +489,25 @@ std::vector<Tensor> vr_l1_generate_calculate_persistence_args(
     dimension 2 simplices (the boundaries of dim 1 simplices are vertices, 
     hence the enumeration of the boundary combinations is valid)
     */
-    auto index_offset = n_simplices_by_dim.at(0);
-    for (int i=1; i < boundary_and_filtration_by_dim.size(); i++){
-        auto boundary_info = std::get<0>(boundary_and_filtration_by_dim.at(i)); 
-        boundary_info.add_(index_offset); 
-
-        auto n_simplices_in_prev_dim = std::get<0>(boundary_and_filtration_by_dim.at(i-1)).size(0); 
-        index_offset += n_simplices_in_prev_dim;
-    }    
-
+    make_simplex_ids_compatible_within_dimensions(n_simplices_by_dim, boundary_and_filtration_by_dim);
 
     // 4. Create simplex_dimension vector ... 
-    auto simplex_dimension = Long.tensor(n_non_vertex_simplices + n_simplices_by_dim.at(0)); 
-
-    {
-        int64_t copy_offset = 0; 
-        for (int i = 0; i <= max_dimension; i++){
-            simplex_dimension.slice(0, copy_offset, copy_offset + n_simplices_by_dim.at(i)).fill_(i); 
-            copy_offset += n_simplices_by_dim.at(i); 
-        }
-    }
-
+    auto simplex_dimension = get_simplex_dimension_tensor(n_non_vertex_simplices, n_simplices_by_dim, max_dimension, Long);
 
     // 5. Create filtration vector ... 
-    Tensor filtration_values_vector;
-    {
-        std::vector<Tensor> filt_values_non_vertex_simplices; 
-        for (int i = 0; i < boundary_and_filtration_by_dim.size(); i++){
-        
-            auto filt_vals = std::get<1>(boundary_and_filtration_by_dim.at(i));
-            filt_values_non_vertex_simplices.push_back(filt_vals);  
-        } 
+    Tensor filtration_values_vector = get_filtrations_values_vector(boundary_and_filtration_by_dim);
+       
 
-        filtration_values_vector = cat(filt_values_non_vertex_simplices, 0); 
-    }    
-
-    // This is a dirty hack to ensure that simplices do not occour before their boundaries 
-    // in the filtration. As the filtration is raised to higher dimensional simplices by 
-    // taking the maxium of the involved edge filtration values and sorting does not guarantee
-    // a specific ordering in case of equal values we are forced to ensure a well defined 
-    // filtration by adding an increasing epsilon to each dimension. Later this has to be 
-    // substracted again. 
-    // Example: f([1,2,3]) = max(f([1,2]), f([3,1]), f([2,3])) --> w.l.o.g. f([1,2,3]) == f([1,2])
-    // Hence we set f([1,2,3]) = f([1,2]) + epsilon
+    /* 
+    This is a dirty hack to ensure that simplices do not occour before their boundaries 
+    in the filtration. As the filtration is raised to higher dimensional simplices by 
+    taking the maxium of the involved edge filtration values and sorting does not guarantee
+    a specific ordering in case of equal values we are forced to ensure a well defined 
+    filtration by adding an increasing epsilon to each dimension. Later this has to be 
+    substracted again. 
+    Example: f([1,2,3]) = max(f([1,2]), f([3,1]), f([2,3])) --> w.l.o.g. f([1,2,3]) == f([1,2])
+    Hence we set f([1,2,3]) = f([1,2]) + epsilon
+    */
     auto filt_add_hack_values = filtration_values_vector.type().tensor({filtration_values_vector.size(0)}).fill_(0);
     
     {
@@ -640,9 +692,7 @@ std::vector<std::vector<Tensor>> calculate_persistence_output_to_barcode_tensors
 std::vector<std::vector<Tensor>> vr_l1_persistence(
     const Tensor& point_cloud,
     int64_t max_dimension, 
-    double max_ball_radius){
-
-    
+    double max_ball_radius){    
 
     auto tmp = vr_l1_generate_calculate_persistence_args(
         point_cloud, max_dimension, max_ball_radius
