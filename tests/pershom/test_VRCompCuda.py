@@ -40,37 +40,48 @@ def test_vr_l1_generate_calculate_persistence_args__ground_truth_1():
     assert sorted_filtration_values_vector.equal(sorted_filtration_values_vector_expected)
 
 
-def test_vr_l1_generate_calculate_persistence_args__sanity():
+@pytest.mark.parametrize("max_dimension", [0, 1, 2, 3]) 
+def test_vr_l1_generate_calculate_persistence_args__sanity(max_dimension):
+    def expected_ba_size():
+        n_0 = 4
+        n_1 = binom(n_0, 2)
+        n_2 = binom(n_1, 3)
+        n_3 = binom(n_2, 4) 
+
+        if max_dimension == 0:
+            return n_1
+        elif max_dimension == 1:
+            return n_1
+        elif max_dimension == 2:
+            return n_1 + n_2
+        elif max_dimension == 3:
+            return n_1 + n_2 + n_3 
+
+
+
     point_cloud = [(0, 0), (1, 0), (0, 0.5), (1, 1.5)]
     point_cloud = torch.tensor(point_cloud, device='cuda', dtype=torch.float)
-
-    max_dimension = 3
 
     args = __C.VRCompCuda__vr_l1_generate_calculate_persistence_args(
         point_cloud, max_dimension, 0)
 
     ba, ba_row_i_to_bm_col_i, simplex_dimension, sorted_filtration_values_vector = args
 
-    n_0 = 4
-    n_1 = binom(n_0, 2)
-    n_2 = binom(n_1, 3)
-    n_3 = binom(n_2, 4) 
-
     # check dimensions of output ...
-    assert ba.size(0) == n_1 + n_2 + n_3 
-    assert ba.size(1) == 2*(max_dimension+1)
+    assert ba.size(0) == expected_ba_size()
+    assert ba.size(1) == 2*((max_dimension if max_dimension != 0 else 1)+1)
     assert ba_row_i_to_bm_col_i.size(0) == ba.size(0)
-    assert simplex_dimension.size(0) == ba.size(0) + n_0
-    assert sorted_filtration_values_vector.size(0) == ba.size(0) + n_0
+    assert simplex_dimension.size(0) == ba.size(0) + point_cloud.size(0)
+    assert sorted_filtration_values_vector.size(0) == ba.size(0) + point_cloud.size(0)
 
 
     # sanity check ...
-    ba = ba[:, :max_dimension + 1].tolist()
+    ba = ba[:, :(max_dimension if max_dimension != 0 else 1) + 1].tolist()
     simplex_dimension = simplex_dimension.tolist()
     sorted_filtration_values_vector = sorted_filtration_values_vector.tolist()
 
     for i, row_i in enumerate(ba):
-        cycle_id = i + n_0
+        cycle_id = i + point_cloud.size(0)
         cycle_dim = simplex_dimension[cycle_id]
         cycle_filt_val = sorted_filtration_values_vector[cycle_id]
 

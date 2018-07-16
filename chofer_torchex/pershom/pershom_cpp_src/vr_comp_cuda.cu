@@ -377,7 +377,7 @@ Tensor get_simplex_dimension_tensor(
     auto ret = type.tensor(n_non_vertex_simplices + n_simplices_by_dim.at(0)); 
    
     int64_t copy_offset = 0; 
-    for (int i = 0; i <= max_dimension; i++){
+    for (int i = 0; i <= (max_dimension == 0 ? 1 : max_dimension) ; i++){
         ret.slice(0, copy_offset, copy_offset + n_simplices_by_dim.at(i)).fill_(i); 
         copy_offset += n_simplices_by_dim.at(i); 
     }
@@ -559,7 +559,8 @@ std::vector<Tensor> vr_l1_generate_calculate_persistence_args(
 
     // Copy boundary_info of each dimension into the final boundary array ... 
     auto boundary_array = point_cloud.type().toScalarType(ScalarType::Long)
-        .tensor({n_non_vertex_simplices, 2*(max_dimension + 1)});
+        .tensor({n_non_vertex_simplices, 
+                 2*((max_dimension == 0 ? 1:max_dimension) + 1)});
 
     {
         boundary_array.fill_(-1); 

@@ -193,7 +193,7 @@ Tensor sorted_pivot_indices_to_merge_pairs_cuda_kernel_call(
     const Tensor & slicings)
 {
     // ASSERTION input.dtype() == int64
-    // ASSERTION slicings.dtype() == int32
+    // ASSERTION slicings.dtype() == int64
     // ASSERTION all(input.ge(0))
     // ASSERTION all(slicings.ge(0))
     // ASSERTION all(slicings[:, 0].leq(slicings[:, 1]))
@@ -528,7 +528,9 @@ std::vector<std::vector<Tensor>> calculate_persistence(
 
     if (comp_desc_sort_ba.numel() != 0){
         CHECK_EQUAL(comp_desc_sort_ba.dim(), 2);
-        CHECK_SMALLER_EQ(comp_desc_sort_ba.size(0), simplex_dimension.size(0));  
+        CHECK_SMALLER_EQ(comp_desc_sort_ba.size(0), simplex_dimension.size(0)); 
+
+        CHECK_EQUAL((Scalar(simplex_dimension.max()).to<int64_t>()+1)*2, comp_desc_sort_ba.size(1)); 
     }
 
     int iterations = 0;
