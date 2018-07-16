@@ -18,13 +18,13 @@ void merge_columns(
 std::vector<std::vector<Tensor>> read_barcodes(
     const Tensor & pivots,
     Tensor & simplex_dimension,
-    int64_t max_dimension);
+    int64_t max_dim_to_read_of_reduced_ba);
 
 std::vector<std::vector<Tensor>> calculate_persistence(
     Tensor &  compr_desc_sort_ba,
     Tensor & ba_row_i_to_bm_col_i,
     Tensor & simplex_dimension,
-    int64_t max_dimension,
+    int64_t max_dim_to_read_of_reduced_ba,
     int64_t max_pairs);
 
 Tensor my_test_f(const Tensor & t);

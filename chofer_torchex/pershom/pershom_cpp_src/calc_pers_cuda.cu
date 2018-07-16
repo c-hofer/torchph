@@ -453,7 +453,7 @@ Tensor merge_columns(
 std::vector<std::vector<Tensor>> read_barcodes(
     const Tensor & pivots,
     Tensor & simplex_dimension,
-    int64_t  max_dimension)
+    int64_t  max_dim_to_read_of_reduced_ba)
 {
 
     CHECK_TENSOR_CUDA_CONTIGUOUS(pivots);
@@ -484,7 +484,7 @@ std::vector<std::vector<Tensor>> read_barcodes(
 
     auto mask_ess = mask_no_pivot.__and__(mask_rows_with_no_lowest_one);
 
-    for (int dim = 0; dim <= max_dimension; dim++)
+    for (int dim = 0; dim <= max_dim_to_read_of_reduced_ba; dim++)
     {
 
         // non essentials ...
@@ -511,7 +511,7 @@ std::vector<std::vector<Tensor>> calculate_persistence(
     Tensor & comp_desc_sort_ba,
     Tensor & ind_not_reduced, //TODO rename parameter accordingly to python binding
     Tensor & simplex_dimension,
-    int64_t max_dimension,
+    int64_t max_dim_to_read_of_reduced_ba,
     int64_t max_pairs = -1)
 {
 
@@ -595,7 +595,7 @@ std::vector<std::vector<Tensor>> calculate_persistence(
     if (comp_desc_sort_ba.numel() != 0){
         real_pivots.index_copy_(0, ind_not_reduced, pivots);
     }
-    auto barcodes = read_barcodes(real_pivots, simplex_dimension, max_dimension);
+    auto barcodes = read_barcodes(real_pivots, simplex_dimension, max_dim_to_read_of_reduced_ba);
     return barcodes;
 }
 

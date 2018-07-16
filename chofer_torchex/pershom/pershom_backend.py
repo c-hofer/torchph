@@ -76,7 +76,7 @@ def merge_columns_(
 def read_barcodes(
     pivots: Tensor, 
     simplex_dimension: Tensor, 
-    max_dimension: int
+    max_dim_to_read_of_reduced_ba: int
     )->[[Tensor], [Tensor]]:
     """Reads the barcodes using the pivot of a reduced boundary array
     
@@ -87,20 +87,21 @@ def read_barcodes(
         simplex_dimension {Tensor} -- [Vector whose i-th entry is 
         the dimension if the i-th simplex in the given filtration]
 
-        max_dimension {int} -- [dimension of the filtrated simplicial complex]
+        max_dim_to_read_of_reduced_ba {int} -- [features up to max_dim_to_read_of_reduced_ba are 
+        read from the reduced boundary array]
     
     Returns:
         [[Tensor], [Tensor]] -- [ret[0][i] = non essential barcodes of dimension i
                                  ret[1][i] = birth-times of essential classes]
     """
-    return __C.CalcPersCuda__read_barcodes(pivots, simplex_dimension, max_dimension)
+    return __C.CalcPersCuda__read_barcodes(pivots, simplex_dimension, max_dim_to_read_of_reduced_ba)
 
 
 def calculate_persistence(
     compr_desc_sort_ba: Tensor,
     ba_row_i_to_bm_col_i: Tensor, 
     simplex_dimension: Tensor,
-    max_dimension: int,
+    max_dim_to_read_of_reduced_ba: int,
     max_pairs: int = -1
     )->[Tensor]:
     """Returns the barcodes of the given encoded boundary array
@@ -117,14 +118,15 @@ def calculate_persistence(
 
         max_pairs {int} -- [see find merge pairings]
 
-        max_dimension {int} -- [dimension of the filtrated simplicial complex]
+        max_dim_to_read_of_reduced_ba {int} -- [features up to max_dim_to_read_of_reduced_ba are 
+        read from the reduced boundary array]
     
     Returns:
         [[Tensor], [Tensor]] -- [ret[0][i] = non essential barcodes of dimension i
                                  ret[1][i] = birth-times of essential classes of dimension i]
     """
     return __C.CalcPersCuda__calculate_persistence(
-        compr_desc_sort_ba, ba_row_i_to_bm_col_i, simplex_dimension, max_dimension, max_pairs)
+        compr_desc_sort_ba, ba_row_i_to_bm_col_i, simplex_dimension, max_dim_to_read_of_reduced_ba, max_pairs)
 
 
 
