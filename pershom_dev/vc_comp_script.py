@@ -4,13 +4,11 @@ import time
 from scipy.special import binom
 
 
-
-
  #torch.tensor([[-0.6690,  1.5059], [ 0.4220,  1.2434], [-0.3436, -0.0053], [-0.1569,  0.0627]], device='cuda', requires_grad=True).float()
 
 
-point_cloud = torch.randn(10,3, device='cuda', requires_grad=True).float()
-# point_cloud = torch.tensor([(0, 0), (1, 0), (0, 0.5), (1, 1.5)], device='cuda', requires_grad=True)
+# point_cloud = torch.randn(10,3, device='cuda', requires_grad=True).float()
+point_cloud = torch.tensor([(0, 0), (1, 0), (0, 0.5), (1, 1.5)], device='cuda', requires_grad=True)
 
 # x = pershom_backend.__C.CalcPersCuda__my_test_f(point_cloud)
 
@@ -22,7 +20,14 @@ point_cloud = torch.randn(10,3, device='cuda', requires_grad=True).float()
 print(point_cloud)
 
 # time_start = time.time()
-r = pershom_backend.__C.VRCompCuda__vr_l1_persistence(point_cloud, 2, 0.5)
+try:
+    r = pershom_backend.__C.VRCompCuda__vr_l1_persistence(point_cloud, 2, 0.25)
+
+except Exception as ex: 
+    print("=== Error ===")
+    print(ex)
+    exit()
+
 non_essentials = r[0]
 essentials = r[1]
 

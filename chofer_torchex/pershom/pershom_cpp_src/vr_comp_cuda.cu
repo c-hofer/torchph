@@ -352,6 +352,7 @@ std::tuple<Tensor, Tensor> get_boundary_and_filtration_info(
 }
 
 
+//TODO refactor 
 std::vector<Tensor> vr_l1_generate_calculate_persistence_args(
     const Tensor& point_cloud,
     int64_t max_dimension, 
@@ -397,6 +398,7 @@ std::vector<Tensor> vr_l1_generate_calculate_persistence_args(
         n_simplices_by_dim.push_back(boundary_info.size(0)); 
     }
 
+    // TODO returning in mid of function is not nice. Can we improve this? 
     // If there are only vertices, we return the empty vector 
     // and let the caller handle the problem ... 
     if (n_non_vertex_simplices == 0){
@@ -575,49 +577,30 @@ std::vector<Tensor> vr_l1_generate_calculate_persistence_args(
 }
 
 
-std::vector<std::vector<Tensor>> vr_l1_persistence(
-    const Tensor& point_cloud,
-    int64_t max_dimension, 
-    double max_ball_radius){
-
+std::vector<std::vector<Tensor>> calculate_persistence_output_to_barcode_tensors(
+    const std::vector<std::vector<Tensor>>& calculate_persistence_output,
+    const Tensor & filtration_values){
     std::vector<std::vector<Tensor>> ret; 
-
-    auto tmp = vr_l1_generate_calculate_persistence_args(
-        point_cloud, max_dimension, max_ball_radius
-    );
-
-    auto pers = CalcPersCuda::calculate_persistence(
-        tmp.at(0), tmp.at(1), tmp.at(2), max_dimension, -1
-    );
-
-    auto filt_vals = tmp.at(3); 
-
-    auto non_essentials = pers.at(0);
-    auto essentials = pers.at(1); 
 
     std::vector<Tensor> non_essential_barcodes; 
     {
+        auto non_essentials = calculate_persistence_output.at(0);
         Tensor birth_death_i, births, birth_i, deaths, death_i, barcodes, i_birth_ne_death; 
         for (int i = 0; i < non_essentials.size(); i++){
 
             birth_death_i = non_essentials.at(i); 
 
             if(birth_death_i.numel() == 0){
-                barcodes = filt_vals.type().tensor({0, 2}); 
+                barcodes = filtration_values.type().tensor({0, 2}); 
             }
             else {
                 birth_i = birth_death_i.slice(1, 0, 1).squeeze(); 
-                births = filt_vals.index_select(0, birth_i);
+                births = filtration_values.index_select(0, birth_i);
 
                 death_i = birth_death_i.slice(1, 1, 2).squeeze();
-                deaths = filt_vals.index_select(0, death_i);
+                deaths = filtration_values.index_select(0, death_i);
 
                 i_birth_ne_death = births.ne(deaths).nonzero().squeeze(); 
-
-                PRINT(deaths.sizes()); 
-                PRINT(filt_vals.sizes()); 
-                PRINT(i_birth_ne_death.sizes()); 
-                //TODO filtering for equal filt values !
                 births = births.index_select(0, i_birth_ne_death);
                 deaths = deaths.index_select(0, i_birth_ne_death);
 
@@ -632,23 +615,47 @@ std::vector<std::vector<Tensor>> vr_l1_persistence(
 
     std::vector<Tensor> essential_barcodes; 
     {   
+        auto essentials = calculate_persistence_output.at(1); 
         Tensor birth_i, births, barcodes; 
         for (int i = 0; i < essentials.size(); i++){
 
             birth_i = essentials.at(i).squeeze(); 
 
             if (birth_i.numel() == 0){
-                barcodes = filt_vals.type().tensor({0, 1});
+                barcodes = filtration_values.type().tensor({0, 1});
             }
             else {
-                barcodes = filt_vals.index_select(0, birth_i); 
+                barcodes = filtration_values.index_select(0, birth_i); 
             }
             
             essential_barcodes.push_back(barcodes); 
         }
         ret.push_back(essential_barcodes); 
     }
+
     return ret; 
+}
+
+
+std::vector<std::vector<Tensor>> vr_l1_persistence(
+    const Tensor& point_cloud,
+    int64_t max_dimension, 
+    double max_ball_radius){
+
+    
+
+    auto tmp = vr_l1_generate_calculate_persistence_args(
+        point_cloud, max_dimension, max_ball_radius
+    );
+
+    auto pers = CalcPersCuda::calculate_persistence(
+        tmp.at(0), tmp.at(1), tmp.at(2), max_dimension, -1
+    );
+
+    auto filtration_values = tmp.at(3); 
+    auto ret = calculate_persistence_output_to_barcode_tensors(pers, filtration_values); 
+
+    return ret;
 }
 
 

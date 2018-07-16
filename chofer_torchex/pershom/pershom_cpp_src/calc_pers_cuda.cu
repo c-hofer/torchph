@@ -12,6 +12,11 @@
 using namespace at;
 
 
+//TODO what happens if we start with an already reduced boundary array (comp_bound_arr = empty tensor)?
+
+//TODO get rid of exceptio to break loop in reduction
+
+
 #pragma region find_merge_pairings
 
 namespace CalcPersCuda
