@@ -241,13 +241,6 @@ Tensor sorted_pivot_indices_to_merge_pairs_cuda_kernel_call(
     return merge_pairings;
 }
 
-class NoPairsException
-{
-  public:
-    NoPairsException() {}
-    ~NoPairsException() {}
-};
-
 Tensor find_merge_pairings(
     const Tensor & pivots,
     int64_t max_pairs = -1)
@@ -255,11 +248,15 @@ Tensor find_merge_pairings(
 
     CHECK_TENSOR_CUDA_CONTIGUOUS(pivots);
     CHECK_TENSOR_INT64(pivots);
+    CHECK_GREATER_EQ(pivots.size(0), 1); 
 
+    // If max_pairs < 1 we do not want to restrict the maximum number of 
+    // mergings per iteration ...
     if (max_pairs < 1)
     {
         max_pairs = std::numeric_limits<int>::max();
     }
+    
     auto sort_res = pivots.sort(0);
     auto sort_val = std::get<0>(sort_res);
     auto sort_ind = std::get<1>(sort_res);
@@ -286,7 +283,7 @@ Tensor find_merge_pairings(
     }
     else
     {
-        throw NoPairsException();
+        merge_pairs = pivots.type().tensor({0, 2});
     }
 
     return merge_pairs;
@@ -486,7 +483,9 @@ std::vector<std::vector<Tensor>> read_barcodes(
     auto mask_rows_with_no_lowest_one = ones_like(mask_no_pivot);
     auto row_indices_with_lowest_one = pivots.masked_select(mask_pivot).toType(ScalarType::Long);
 
-    mask_rows_with_no_lowest_one.index_fill_(0, row_indices_with_lowest_one, 0);
+    if (row_indices_with_lowest_one.numel() != 0){
+        mask_rows_with_no_lowest_one.index_fill_(0, row_indices_with_lowest_one, 0);
+    }
 
     auto mask_ess = mask_no_pivot.__and__(mask_rows_with_no_lowest_one);
 
@@ -532,6 +531,11 @@ std::vector<std::vector<Tensor>> calculate_persistence(
     CHECK_TENSOR_INT64(ind_not_reduced);
     CHECK_TENSOR_INT64(simplex_dimension);
 
+    if (comp_desc_sort_ba.numel() != 0){
+        CHECK_EQUAL(comp_desc_sort_ba.dim(), 2);
+        CHECK_SMALLER_EQ(comp_desc_sort_ba.size(0), simplex_dimension.size(0));  
+    }
+
     int iterations = 0;
 
     // auto ind_not_reduced = comp_desc_sort_ba.type()
@@ -549,21 +553,22 @@ std::vector<std::vector<Tensor>> calculate_persistence(
     //   comp_desc_sort_ba.index_select(0, ind_not_reduced).contiguous();
 
     Tensor mask_not_reduced, pivots, merge_pairings, new_ind_not_reduced;
-    while (true)
+    bool continue_loop = true; 
+
+    // Empty initial compressed boundary array means there are just 
+    // simplices in the complex. Hence we need no reduction ... 
+    if (comp_desc_sort_ba.numel() == 0){
+        continue_loop = false; 
+    }
+    while (continue_loop)
     {
 
-        pivots = comp_desc_sort_ba.slice(1, 0, 1).contiguous();
+        pivots = comp_desc_sort_ba.slice(1, 0, 1).contiguous();      
 
-        try
-        {
+        merge_pairings = find_merge_pairings(pivots, max_pairs);
 
-            merge_pairings = find_merge_pairings(pivots, max_pairs);
-        }
-        catch (NoPairsException &e)
-        {
-
-            std::cout << "Reached end of reduction after " << iterations << " iterations" << std::endl;
-            break;
+        if (merge_pairings.numel() == 0){
+            break; 
         }
 
         comp_desc_sort_ba = merge_columns(comp_desc_sort_ba, merge_pairings);
@@ -586,9 +591,13 @@ std::vector<std::vector<Tensor>> calculate_persistence(
         iterations++;
     }
 
-    auto real_pivots = pivots.type().tensor({simplex_dimension.size(0), 1}).fill_(pivots.type().scalarTensor(-1));
-    real_pivots.index_copy_(0, ind_not_reduced, pivots);
+    std::cout << "Reached end of reduction after " << iterations << " iterations" << std::endl;
 
+    auto real_pivots = comp_desc_sort_ba.type().tensor({simplex_dimension.size(0), 1}).fill_(-1);
+
+    if (comp_desc_sort_ba.numel() != 0){
+        real_pivots.index_copy_(0, ind_not_reduced, pivots);
+    }
     auto barcodes = read_barcodes(real_pivots, simplex_dimension, max_dimension);
     return barcodes;
 }

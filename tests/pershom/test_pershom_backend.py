@@ -33,11 +33,10 @@ class Test_find_merge_pairings:
     @pytest.mark.parametrize("device, dtype", [
         (torch.device('cuda'), torch.int64)
     ])
-    def test_break_exeption(self, device, dtype):
+    def test_no_merge_pairs(self, device, dtype):
         pivots = torch.tensor(list(range(100)), device=device, dtype=dtype).unsqueeze(1)
-
-        with pytest.raises(Exception):
-            pershom_backend.find_merge_pairings(pivots)
+        
+        assert pershom_backend.find_merge_pairings(pivots).numel() == 0     
 
 
     @pytest.mark.parametrize("device, dtype", [
@@ -75,8 +74,6 @@ class Test_find_merge_pairings:
         assert expected_result.equal(result)
 
 
-
-
 class Test_calculate_persistence:
 
     @staticmethod
@@ -99,6 +96,24 @@ class Test_calculate_persistence:
             ret.append(dgm)
 
         return ret
+
+
+    @pytest.mark.parametrize("device, dtype", [
+        (torch.device('cuda'), torch.int64)
+    ])
+    def test_empty_input(self, device, dtype):
+        ba = torch.empty([0], device=device, dtype=dtype)
+        ba_row_i_to_bm_col_i = ba
+        simplex_dimension = torch.zeros(10, device=device, dtype=dtype)
+
+        not_ess, ess = pershom_backend.calculate_persistence(ba, ba_row_i_to_bm_col_i, simplex_dimension, 2, -1)
+
+        for pairings in not_ess: assert len(pairings) == 0
+
+        assert len(ess[0]) == 10
+
+        for birth_i in ess[1:]: assert len(birth_i) == 0 
+
 
     def test_simple_1(self):
         device = torch.device('cuda')

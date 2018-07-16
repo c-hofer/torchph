@@ -9,8 +9,9 @@
     CHECK_CONTIGUOUS(x)
 #define CHECK_TENSOR_INT64(x) AT_ASSERTM(x.type().scalarType() == ScalarType::Long, "expected " #x "to be of scalar type int64")
 
-#define CHECK_SMALLER_EQ(x, y) AT_ASSERTM(x <= y, "expected" #x "<=" #y)
+#define CHECK_SMALLER_EQ(x, y) AT_ASSERTM(x <= y, "expected " #x "<=" #y)
 #define CHECK_EQUAL(x, y) AT_ASSERTM(x == y, "expected " #x "==" #y)
+#define CHECK_GREATER_EQ(x, y) AT_ASSERTM(x >= y, "expected " #x ">=" #y)
 
 
 #define PRINT(x) std::cout << x << std::endl
