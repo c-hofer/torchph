@@ -421,7 +421,7 @@ Tensor resize_boundary_array(
 }
 
 Tensor merge_columns(
-    Tensor & comp_desc_sort_ba,
+    const Tensor & comp_desc_sort_ba,
     const Tensor & merge_pairings)
 {
 
@@ -430,20 +430,21 @@ Tensor merge_columns(
     CHECK_TENSOR_CUDA_CONTIGUOUS(merge_pairings);
     CHECK_TENSOR_INT64(merge_pairings);
 
+    auto ba = comp_desc_sort_ba; 
     int boundary_array_needs_resize = 0;
     int *h_boundary_array_needs_resize = &boundary_array_needs_resize;
 
     merge_columns_cuda_kernel_call<int64_t>(
-        comp_desc_sort_ba,
+        ba,
         merge_pairings,
         h_boundary_array_needs_resize);
 
     if (*h_boundary_array_needs_resize == 1)
     {
-        comp_desc_sort_ba = resize_boundary_array(comp_desc_sort_ba);
+        ba = resize_boundary_array(ba);
     }
 
-    return comp_desc_sort_ba;
+    return ba;
 }
 
 #pragma endregion
@@ -512,9 +513,9 @@ std::vector<std::vector<Tensor>> read_barcodes(
 #pragma endregion
 
 std::vector<std::vector<Tensor>> calculate_persistence(
-    Tensor & comp_desc_sort_ba,
-    Tensor & ind_not_reduced, //TODO rename parameter accordingly to python binding
-    Tensor & simplex_dimension,
+    const Tensor & comp_desc_sort_ba,
+    const Tensor & ind_not_reduced, //TODO rename parameter accordingly to python binding
+    const Tensor & simplex_dimension,
     int64_t max_dim_to_read_of_reduced_ba,
     int64_t max_pairs = -1)
 {
@@ -537,34 +538,38 @@ std::vector<std::vector<Tensor>> calculate_persistence(
         CHECK_EQUAL((Scalar(simplex_dimension.max()).to<int64_t>()+1)*2, comp_desc_sort_ba.size(1)); 
     }
 
+    auto ba = comp_desc_sort_ba;
+    auto ind_not_red = ind_not_reduced;
+    auto simp_dim = simplex_dimension; 
+
     int iterations = 0;
 
-    // auto ind_not_reduced = comp_desc_sort_ba.type()
-    //   .toScalarType(ScalarType::Long).tensor({simplex_dimension.size(0), 1});
-    // fill_range_cuda_(ind_not_reduced);
+    // auto ind_not_red = ba.type()
+    //   .toScalarType(ScalarType::Long).tensor({simp_dim.size(0), 1});
+    // fill_range_cuda_(ind_not_red);
 
-    // auto tmp_pivots = comp_desc_sort_ba.slice(1, 0, 1).contiguous();
-    auto scalar_0 = comp_desc_sort_ba.type().scalarTensor(0);
+    // auto tmp_pivots = ba.slice(1, 0, 1).contiguous();
+    auto scalar_0 = ba.type().scalarTensor(0);
 
     // Tensor mask_not_reduced = tmp_pivots.ge(scalar_0);
 
-    // ind_not_reduced = ind_not_reduced.masked_select(mask_not_reduced).contiguous();
+    // ind_not_red = ind_not_red.masked_select(mask_not_reduced).contiguous();
 
-    // comp_desc_sort_ba =
-    //   comp_desc_sort_ba.index_select(0, ind_not_reduced).contiguous();
+    // ba =
+    //   ba.index_select(0, ind_not_red).contiguous();
 
-    Tensor mask_not_reduced, pivots, merge_pairings, new_ind_not_reduced;
+    Tensor mask_not_reduced, pivots, merge_pairings, new_ind_not_red;
     bool continue_loop = true; 
 
     // Empty initial compressed boundary array means there are just 
     // simplices in the complex. Hence we need no reduction ... 
-    if (comp_desc_sort_ba.numel() == 0){
+    if (ba.numel() == 0){
         continue_loop = false; 
     }
     while (continue_loop)
     {
 
-        pivots = comp_desc_sort_ba.slice(1, 0, 1).contiguous();      
+        pivots = ba.slice(1, 0, 1).contiguous();      
 
         merge_pairings = find_merge_pairings(pivots, max_pairs);
 
@@ -572,34 +577,34 @@ std::vector<std::vector<Tensor>> calculate_persistence(
             break; 
         }
 
-        comp_desc_sort_ba = merge_columns(comp_desc_sort_ba, merge_pairings);
+        ba = merge_columns(ba, merge_pairings);
 
-        new_ind_not_reduced = comp_desc_sort_ba.type()
+        new_ind_not_red = ba.type()
                                   .toScalarType(ScalarType::Long)
-                                  .tensor({comp_desc_sort_ba.size(0), 1});
-        TensorUtils::fill_range_cuda_(new_ind_not_reduced);
+                                  .tensor({ba.size(0), 1});
+        TensorUtils::fill_range_cuda_(new_ind_not_red);
 
-        pivots = comp_desc_sort_ba.slice(1, 0, 1).contiguous();
+        pivots = ba.slice(1, 0, 1).contiguous();
         mask_not_reduced = pivots.ge(scalar_0);
-        new_ind_not_reduced = new_ind_not_reduced.masked_select(mask_not_reduced).contiguous();
+        new_ind_not_red = new_ind_not_red.masked_select(mask_not_reduced).contiguous();
 
-        comp_desc_sort_ba =
-            comp_desc_sort_ba.index_select(0, new_ind_not_reduced).contiguous();
-        // pivots = pivots.index_select(0, new_ind_not_reduced).contiguous();
+        ba =
+            ba.index_select(0, new_ind_not_red).contiguous();
+        // pivots = pivots.index_select(0, new_ind_not_red).contiguous();
 
-        ind_not_reduced = ind_not_reduced.index_select(0, new_ind_not_reduced);
+        ind_not_red = ind_not_red.index_select(0, new_ind_not_red);
 
         iterations++;
     }
 
     std::cout << "Reached end of reduction after " << iterations << " iterations" << std::endl;
 
-    auto real_pivots = comp_desc_sort_ba.type().tensor({simplex_dimension.size(0), 1}).fill_(-1);
+    auto real_pivots = ba.type().tensor({simp_dim.size(0), 1}).fill_(-1);
 
-    if (comp_desc_sort_ba.numel() != 0){
-        real_pivots.index_copy_(0, ind_not_reduced, pivots);
+    if (ba.numel() != 0){
+        real_pivots.index_copy_(0, ind_not_red, pivots);
     }
-    auto barcodes = read_barcodes(real_pivots, simplex_dimension, max_dim_to_read_of_reduced_ba);
+    auto barcodes = read_barcodes(real_pivots, simp_dim, max_dim_to_read_of_reduced_ba);
     return barcodes;
 }
 
