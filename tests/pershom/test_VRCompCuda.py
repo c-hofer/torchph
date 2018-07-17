@@ -71,6 +71,7 @@ def test_vr_l1_generate_calculate_persistence_args__sanity(max_dimension):
     assert ba.size(0) == expected_ba_size()
     assert ba.size(1) == 2*((max_dimension if max_dimension != 0 else 1)+1)
     assert ba_row_i_to_bm_col_i.size(0) == ba.size(0)
+    assert simplex_dimension.dim() == 1
     assert simplex_dimension.size(0) == ba.size(0) + point_cloud.size(0)
     assert sorted_filtration_values_vector.size(0) == ba.size(0) + point_cloud.size(0)
 
@@ -85,12 +86,20 @@ def test_vr_l1_generate_calculate_persistence_args__sanity(max_dimension):
         cycle_dim = simplex_dimension[cycle_id]
         cycle_filt_val = sorted_filtration_values_vector[cycle_id]
 
+        boundary_filt_vals = []
+        number_of_boundary_entries = 0
+
         for boundary_id in row_i: 
             if boundary_id == -1: continue
 
             assert cycle_dim - 1 == simplex_dimension[boundary_id]
-            assert cycle_filt_val >= sorted_filtration_values_vector[boundary_id]
 
+            number_of_boundary_entries += 1
+            boundary_filt_vals.append(sorted_filtration_values_vector[boundary_id])
+
+        assert number_of_boundary_entries == cycle_dim + 1
+        if cycle_dim > 1 :
+            assert max(boundary_filt_vals) == cycle_filt_val
 
 # Cases where is at least one edge possible ... 
 @pytest.mark.parametrize("max_ball_radius", [0, 1.0, 1.5, 2.0, 2.5])  
