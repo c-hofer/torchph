@@ -452,7 +452,7 @@ Tensor merge_columns(
 
 std::vector<std::vector<Tensor>> read_barcodes(
     const Tensor & pivots,
-    Tensor & simplex_dimension,
+    const Tensor & simplex_dimension,
     int64_t  max_dim_to_read_of_reduced_ba)
 {
 
@@ -460,9 +460,11 @@ std::vector<std::vector<Tensor>> read_barcodes(
     CHECK_TENSOR_INT64(pivots);
     CHECK_TENSOR_CUDA_CONTIGUOUS(simplex_dimension);
     CHECK_TENSOR_INT64(simplex_dimension);
+
+    CHECK_EQUAL(simplex_dimension.dim(), 1); 
     std::vector<Tensor> ret_non_ess;
     std::vector<Tensor> ret_ess;
-    simplex_dimension = simplex_dimension.unsqueeze(1);
+    auto simp_dim = simplex_dimension.unsqueeze(1);
 
     auto range = empty_like(pivots);
     TensorUtils::fill_range_cuda_(range);
@@ -488,14 +490,14 @@ std::vector<std::vector<Tensor>> read_barcodes(
     {
 
         // non essentials ...
-        auto mask_dim = simplex_dimension.eq(dim + 1);
+        auto mask_dim = simp_dim.eq(dim + 1);
         auto mask_non_essential_dim = mask_non_essential.__and__(mask_dim.expand({-1, 2}));
         auto barcodes_non_essential_dim = pool_for_barcodes_non_essential.masked_select(mask_non_essential_dim).view({-1, 2});
 
         ret_non_ess.push_back(barcodes_non_essential_dim);
 
         // essentials ...
-        auto mask_dim_ess = simplex_dimension.eq(dim);
+        auto mask_dim_ess = simp_dim.eq(dim);
         auto mask_essential_dim = mask_ess.__and__(mask_dim_ess);
         auto barcode_birth_times_essential_dim = range.masked_select(mask_essential_dim).view({-1, 1});
 

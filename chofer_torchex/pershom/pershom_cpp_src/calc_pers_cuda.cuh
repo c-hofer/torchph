@@ -17,7 +17,7 @@ void merge_columns(
 
 std::vector<std::vector<Tensor>> read_barcodes(
     const Tensor & pivots,
-    Tensor & simplex_dimension,
+    const Tensor & simplex_dimension,
     int64_t max_dim_to_read_of_reduced_ba);
 
 std::vector<std::vector<Tensor>> calculate_persistence(
