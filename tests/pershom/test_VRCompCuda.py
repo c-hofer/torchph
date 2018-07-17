@@ -2,13 +2,38 @@ import pytest
 import torch
 import chofer_torchex.pershom.pershom_backend as pershom_backend
 
+from itertools import combinations
 from scipy.special import binom
 from itertools import combinations
 
 __C = pershom_backend.__C
 
 
-    
+def test_l2_distance_matrix():
+    point_cloud = [(0, 0), (1, 0), (0, 0.5), (1, 1.5)]
+    point_cloud = torch.tensor(point_cloud, device='cuda', dtype=torch.float)
+
+    D = __C.VRCompCuda__l2_norm_distance_matrix(point_cloud)
+
+    for i, j in combinations(range(point_cloud.size(0)),2):
+        l2_dist = (point_cloud[i] - point_cloud[j]).pow(2).sum().sqrt()
+        l2_dist = float(l2_dist)
+
+        assert float(D[i, j]) == l2_dist
+
+
+def test_l1_distance_matrix():
+    point_cloud = [(0, 0), (1, 0), (0, 0.5), (1, 1.5)]
+    point_cloud = torch.tensor(point_cloud, device='cuda', dtype=torch.float)
+
+    D = __C.VRCompCuda__l1_norm_distance_matrix(point_cloud)
+
+    for i, j in combinations(range(point_cloud.size(0)),2):
+        l1_dist = (point_cloud[i] - point_cloud[j]).abs().sum()
+        l1_dist = float(l1_dist)
+
+        assert float(D[i, j]) == l1_dist
+
 
 def test_vr_l1_generate_calculate_persistence_args__ground_truth_1():
 
@@ -88,6 +113,7 @@ def test_vr_l1_generate_calculate_persistence_args__sanity(max_dimension):
 
         boundary_filt_vals = []
         number_of_boundary_entries = 0
+        assert row_i == sorted(row_i, reverse=True)
 
         for boundary_id in row_i: 
             if boundary_id == -1: continue
