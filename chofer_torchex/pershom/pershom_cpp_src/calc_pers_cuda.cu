@@ -462,6 +462,8 @@ std::vector<std::vector<Tensor>> read_barcodes(
     CHECK_TENSOR_INT64(simplex_dimension);
 
     CHECK_EQUAL(simplex_dimension.dim(), 1); 
+    CHECK_GREATER_EQ(simplex_dimension.size(0), 1); 
+
     std::vector<Tensor> ret_non_ess;
     std::vector<Tensor> ret_ess;
     auto simp_dim = simplex_dimension.unsqueeze(1);
@@ -566,7 +568,7 @@ std::vector<std::vector<Tensor>> calculate_persistence(
 
         merge_pairings = find_merge_pairings(pivots, max_pairs);
 
-        if (merge_pairings.numel() == 0){
+        if (merge_pairings.size(0) == 0){
             break; 
         }
 
