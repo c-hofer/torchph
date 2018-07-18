@@ -9,6 +9,7 @@
 #include "param_checks_cuda.cuh"
 #include "tensor_utils.cuh"
 #include "calc_pers_cuda.cuh"
+#include "vr_comp_cuda.cuh"
 
 using namespace at;
 
@@ -689,9 +690,231 @@ std::vector<std::vector<Tensor>> calculate_persistence_output_to_barcode_tensors
             
             essential_barcodes.push_back(barcodes); 
         }
+
         ret.push_back(essential_barcodes); 
     }
 
+    return ret; 
+}
+
+
+PointCloud2VR PointCloud2VR_factory(const std::string & distance){
+    return PointCloud2VR(&l1_norm_distance_matrix); 
+}
+
+
+void PointCloud2VR::init_state(
+    const Tensor & point_cloud, 
+    int64_t max_dimension, 
+    double max_ball_radius
+    ){
+        CHECK_TENSOR_CUDA_CONTIGUOUS(point_cloud);
+        CHECK_SMALLER_EQ(max_dimension + 1, point_cloud.size(0)); 
+        CHECK_SMALLER_EQ(0, max_ball_radius);
+
+        this->RealType = &point_cloud.type();
+        this->IntegerType = &point_cloud.type().toScalarType(this->IntegerScalarType); 
+
+        this->point_cloud = point_cloud;
+        this->max_dimension = max_dimension;
+        this->max_ball_radius = max_ball_radius; 
+
+        this->n_simplices_by_dim.push_back(point_cloud.size(0));
+        this->filtration_values_by_dim.push_back(
+            this->RealType->tensor({point_cloud.size(0)}).fill_(0)
+            );
+}
+
+
+void PointCloud2VR::make_boundary_info_edges(){
+    Tensor ba_dim_1, filt_val_vec_dim_1; 
+    auto n_edges = binom_coeff_cpu(point_cloud.size(0), 2); 
+    ba_dim_1 = this->IntegerType->tensor({n_edges, 2}); 
+
+    write_combinations_table_to_tensor(ba_dim_1, 0, 0, point_cloud.size(0)/*=max_n*/, 2/*=r*/);
+
+    auto distance_matrix = this->get_distance_matrix(point_cloud); 
+
+    cudaStreamSynchronize(0); // ensure that write_combinations_table_to_tensor call has finished
+    // building the vector containing the filtraiton values of the edges 
+    // in the same order as they appear in ba_dim_1...
+    auto x_indices = ba_dim_1.slice(1, 0, 1).squeeze(); 
+    auto y_indices = ba_dim_1.slice(1, 1, 2); 
+
+    // filling filtration vector with edge filtration values ... 
+    filt_val_vec_dim_1 = distance_matrix.index_select(0, x_indices);
+    filt_val_vec_dim_1 = filt_val_vec_dim_1.gather(1, y_indices);
+    filt_val_vec_dim_1 = filt_val_vec_dim_1.squeeze(); // 
+
+    // reduce to edges with filtration value <= max_ball_radius...
+    if (max_ball_radius > 0){
+        auto i_select = filt_val_vec_dim_1.le(point_cloud.type().scalarTensor(max_ball_radius)).nonzero().squeeze(); 
+        if (i_select.numel() ==  0){
+            ba_dim_1 = ba_dim_1.type().tensor({0});
+            filt_val_vec_dim_1 = filt_val_vec_dim_1.type().tensor({0}); 
+        }
+        else{
+            ba_dim_1 = ba_dim_1.index_select(0, i_select);
+            filt_val_vec_dim_1 = filt_val_vec_dim_1.index_select(0, i_select); 
+        }
+    }
+
+    this->boundary_info_non_vertices.push_back(ba_dim_1);
+    this->filtration_values_by_dim.push_back(filt_val_vec_dim_1); 
+    this->n_simplices_by_dim.push_back(ba_dim_1.size(0)); 
+}
+
+
+void PointCloud2VR::make_boundary_info_non_edges(){
+
+
+    Tensor filt_vals_prev_dim;
+    int64_t n_dim_min_one_simplices; 
+    Tensor new_boundary_info, new_filt_vals;
+    int64_t n_new_simplices;
+
+    for (int dim = 2; dim <= this->max_dimension; dim++){
+
+        filt_vals_prev_dim = this->filtration_values_by_dim.at(dim - 1);
+        n_dim_min_one_simplices = filt_vals_prev_dim.size(0); 
+
+        if (n_dim_min_one_simplices < dim + 1){
+            // There are not enough dim-1 simplices ...
+            new_boundary_info = filt_vals_prev_dim.type().toScalarType(ScalarType::Long).tensor({0, dim + 1});
+            new_filt_vals = filt_vals_prev_dim.type().tensor({0});
+        }
+        else{
+            // There are enough dim-1 simplices ...
+            n_new_simplices = binom_coeff_cpu(n_dim_min_one_simplices, dim + 1); 
+
+            new_boundary_info = filt_vals_prev_dim.type().toScalarType(ScalarType::Long).tensor({n_new_simplices, dim + 1}); 
+
+            // write combinations ... 
+            write_combinations_table_to_tensor(new_boundary_info, 0, 0, n_dim_min_one_simplices, dim + 1); 
+            cudaStreamSynchronize(0); 
+
+
+            auto bi_cloned = new_boundary_info.clone(); // we have to clone here other wise auto-grad does not work!
+            new_filt_vals = filt_vals_prev_dim.expand({n_new_simplices, filt_vals_prev_dim.size(0)});
+
+            new_filt_vals = new_filt_vals.gather(1, bi_cloned); 
+            new_filt_vals = std::get<0>(new_filt_vals.max(1));
+
+            // If we have just one simplex of the current dimension this
+            // condition avoids that new_filt_vals is squeezed to a 0-dim 
+            // Tensor
+            if (new_filt_vals.ndimension() != 1){      
+                new_filt_vals = new_filt_vals.squeeze(); 
+            }
+        }
+        this->n_simplices_by_dim.push_back(new_boundary_info.size(0)); 
+        this->boundary_info_non_vertices.push_back(new_boundary_info);
+        this->filtration_values_by_dim.push_back(new_filt_vals);
+
+    }
+}
+
+
+void PointCloud2VR::make_simplex_ids_compatible_within_dimensions(){
+    
+    auto index_offset = this->n_simplices_by_dim.at(0);
+    int dim; 
+    for (int i=1; i < this->boundary_info_non_vertices.size(); i++){
+
+        dim = i + 1;
+        auto boundary_info = this->boundary_info_non_vertices.at(i); 
+        boundary_info.add_(index_offset); 
+        
+        index_offset += this->n_simplices_by_dim.at(dim-1);
+    }
+}
+
+
+void PointCloud2VR::make_simplex_dimension_vector(){
+    int64_t n_simplices = 0;
+    for (int i = 0; i < this->n_simplices_by_dim.size(); i++){
+        n_simplices += this->n_simplices_by_dim.at(i); 
+    }
+
+    simplex_dimension_vector = this->IntegerType->tensor({n_simplices}); 
+    auto max_dimension = this->max_dimension; 
+   
+    int64_t copy_offset = 0; 
+    for (int i = 0; i <= (max_dimension == 0 ? 1 : max_dimension) ; i++){
+        simplex_dimension_vector
+            .slice(0, copy_offset, copy_offset + this->n_simplices_by_dim.at(i))
+            .fill_(i); 
+
+        copy_offset += n_simplices_by_dim.at(i); 
+    }
+
+    this->simplex_dimension_vector = simplex_dimension_vector; 
+}
+
+
+void PointCloud2VR::make_filtration_values_vector_without_vertices(){
+    
+    std::vector<Tensor> filt_values_non_vertex_simplices; 
+    for (int i = 1; i < this->filtration_values_by_dim.size(); i++){
+    
+        auto filt_vals = this->filtration_values_by_dim.at(i); 
+        filt_values_non_vertex_simplices.push_back(filt_vals);  
+    } 
+
+    this->filtration_values_vector_without_vertices = cat(filt_values_non_vertex_simplices, 0);     
+}
+
+
+void PointCloud2VR::do_filtration_add_eps_hack(){
+    /* 
+    This is a dirty hack to ensure that simplices do not occour before their boundaries 
+    in the filtration. As the filtration is raised to higher dimensional simplices by 
+    taking the maxium of the involved edge filtration values and sorting does not guarantee
+    a specific ordering in case of equal values we are forced to ensure a well defined 
+    filtration by adding an increasing epsilon to each dimension. Later this has to be 
+    substracted again. 
+    Example: f([1,2,3]) = max(f([1,2]), f([3,1]), f([2,3])) --> w.l.o.g. f([1,2,3]) == f([1,2])
+    Hence we set f([1,2,3]) = f([1,2]) + epsilon
+    */    
+    if (this->max_dimension >= 2 && this->n_simplices_by_dim.at(2) > 0){
+        auto filt_add_hack_values = this->RealType->tensor(
+            {this->filtration_values_vector_without_vertices.size(0)}).fill_(0);
+        
+        // we take epsilon of float to ensure that it is well defined even if 
+        // we decide to alter the floating point type of the filtration values 
+        // realm 
+        float add_const_base_value = 100 * std::numeric_limits<float>::epsilon(); // multily with 100 to be save against rounding issues
+        auto copy_offset = this->n_simplices_by_dim.at(1); 
+
+        for (int dim = 2; dim <= max_dimension; dim++){
+            filt_add_hack_values.slice(0, copy_offset, copy_offset + this->n_simplices_by_dim.at(dim))
+                .fill_(add_const_base_value); 
+
+            add_const_base_value += add_const_base_value; 
+            copy_offset += this->n_simplices_by_dim.at(dim); 
+        }
+
+        this->filtration_values_vector_without_vertices += filt_add_hack_values;
+        this->filtration_add_eps_hack_values = filt_add_hack_values;
+    }
+
+}
+
+
+std::vector<Tensor> PointCloud2VR::operator()(
+    const Tensor & point_cloud, 
+    int64_t max_dimension, 
+    double max_ball_radius){
+
+    this->init_state(point_cloud, max_dimension, max_ball_radius); 
+    this->make_boundary_info_edges(); 
+    this->make_boundary_info_non_edges(); 
+    this->make_simplex_ids_compatible_within_dimensions(); 
+    this->make_simplex_dimension_vector(); 
+    this->make_filtration_values_vector_without_vertices(); 
+    this->do_filtration_add_eps_hack(); 
+
+    std::vector<Tensor> ret; 
     return ret; 
 }
 

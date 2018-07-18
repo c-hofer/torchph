@@ -27,5 +27,51 @@ namespace VRCompCuda {
     Tensor l1_norm_distance_matrix(const Tensor & points); 
     
     Tensor l2_norm_distance_matrix(const Tensor & points);
+
+    class PointCloud2VR
+    {
+        public:
+
+        Type * RealType; 
+        Type * IntegerType; 
+        ScalarType IntegerScalarType = ScalarType::Long;
+
+        Tensor point_cloud; 
+        int64_t max_dimension;
+        double max_ball_radius; 
+
+        std::function<Tensor(const Tensor &)> get_distance_matrix; 
+        std::vector<Tensor> boundary_info_non_vertices;
+        std::vector<Tensor> filtration_values_by_dim; 
+        std::vector<int64_t> n_simplices_by_dim; 
+
+        Tensor simplex_dimension_vector; 
+        Tensor filtration_values_vector_without_vertices; 
+        Tensor filtration_add_eps_hack_values;
+        
+        PointCloud2VR(const std::function<Tensor(const Tensor &)> get_distance_matrix)
+            : get_distance_matrix(get_distance_matrix){}
+
+
+        std::vector<Tensor> operator()(
+            const Tensor & point_cloud, 
+            int64_t max_dimension, 
+            double max_ball_radius);
+
+        void init_state(
+            const Tensor & point_cloud, 
+            int64_t max_dimension, 
+            double max_ball_radius
+            );
+
+        void make_boundary_info_edges(); 
+        void make_boundary_info_non_edges();
+        void make_simplex_ids_compatible_within_dimensions();
+        void make_simplex_dimension_vector(); 
+        void make_filtration_values_vector_without_vertices();
+        void do_filtration_add_eps_hack();
+    };
+
+    PointCloud2VR PointCloud2VR_factory(const std::string & distance);
 }
 
