@@ -101,6 +101,7 @@ def test_vr_l1_generate_calculate_persistence_args__sanity(max_dimension):
     assert sorted_filtration_values_vector.size(0) == ba.size(0) + point_cloud.size(0)
 
 
+
     # sanity check ...
     ba = ba[:, :(max_dimension if max_dimension != 0 else 1) + 1].tolist()
     simplex_dimension = simplex_dimension.tolist()
@@ -114,6 +115,7 @@ def test_vr_l1_generate_calculate_persistence_args__sanity(max_dimension):
         boundary_filt_vals = []
         number_of_boundary_entries = 0
         assert row_i == sorted(row_i, reverse=True)
+        assert sorted([sorted_filtration_values_vector[x] for x in row_i], reverse=True) == [sorted_filtration_values_vector[x] for x in row_i]
 
         for boundary_id in row_i: 
             if boundary_id == -1: continue

@@ -23,4 +23,9 @@ namespace VRCompCuda {
         const Tensor& point_cloud,
         int64_t max_dimension, 
         double max_ball_radius); 
+
+    Tensor l1_norm_distance_matrix(const Tensor & points); 
+    
+    Tensor l2_norm_distance_matrix(const Tensor & points);
 }
+

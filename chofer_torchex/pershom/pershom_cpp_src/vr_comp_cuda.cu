@@ -271,6 +271,12 @@ Tensor l1_norm_distance_matrix(const Tensor& points){
 }
 
 
+Tensor l2_norm_distance_matrix(const Tensor & points){
+    auto x = points.unsqueeze(1).expand({points.size(0), points.size(0), points.size(1)});
+    return (x.transpose(0,1) - x).pow(2).sum(2).sqrt(); 
+}
+
+
 std::tuple<Tensor, Tensor> get_boundary_and_filtration_info_dim_1(
     const Tensor & point_cloud, 
     double max_ball_radius){
@@ -374,7 +380,7 @@ Tensor get_simplex_dimension_tensor(
     Type& type
     ){
 
-    auto ret = type.tensor(n_non_vertex_simplices + n_simplices_by_dim.at(0)); 
+    auto ret = type.tensor({n_non_vertex_simplices + n_simplices_by_dim.at(0)}); 
    
     int64_t copy_offset = 0; 
     for (int i = 0; i <= (max_dimension == 0 ? 1 : max_dimension) ; i++){
@@ -449,7 +455,7 @@ std::vector<Tensor> vr_l1_generate_calculate_persistence_args(
     );
 
     for (int dim = 2; dim <= max_dimension; dim++){
-        auto filt_vals_prev_dim = std::get<1>(boundary_and_filtration_by_dim.at(dim - 1 - 1));
+        auto filt_vals_prev_dim = std::get<1>(boundary_and_filtration_by_dim.at(dim - 2));
 
         boundary_and_filtration_by_dim.push_back(
             get_boundary_and_filtration_info(filt_vals_prev_dim, dim)
@@ -698,13 +704,18 @@ std::vector<std::vector<Tensor>> vr_l1_persistence(
     auto tmp = vr_l1_generate_calculate_persistence_args(
         point_cloud, max_dimension, max_ball_radius
     );
-
     auto pers = CalcPersCuda::calculate_persistence(
         tmp.at(0), tmp.at(1), tmp.at(2), max_dimension, -1
     );
 
+    cudaStreamSynchronize(0);
+
     auto filtration_values = tmp.at(3); 
     auto ret = calculate_persistence_output_to_barcode_tensors(pers, filtration_values); 
+
+    //debug info
+    ret.push_back(tmp); 
+    ret.push_back(pers.at(0)); 
 
     return ret;
 }
