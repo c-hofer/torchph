@@ -48,10 +48,17 @@ namespace VRCompCuda {
         Tensor simplex_dimension_vector; 
         Tensor filtration_values_vector_without_vertices; 
         Tensor filtration_add_eps_hack_values;
+
+        Tensor sort_indices_without_vertices;
+        Tensor sort_indices_without_vertices_inverse; 
+        Tensor sorted_filtration_values_vector;
+
+        Tensor boundary_array; 
+
+        Tensor ba_row_i_to_bm_col_i_vector; 
         
         PointCloud2VR(const std::function<Tensor(const Tensor &)> get_distance_matrix)
             : get_distance_matrix(get_distance_matrix){}
-
 
         std::vector<Tensor> operator()(
             const Tensor & point_cloud, 
@@ -70,6 +77,12 @@ namespace VRCompCuda {
         void make_simplex_dimension_vector(); 
         void make_filtration_values_vector_without_vertices();
         void do_filtration_add_eps_hack();
+        void make_sorting_infrastructure(); 
+        void undo_filtration_add_eps_hack(); 
+        void make_sorted_filtration_values_vector(); 
+        void make_boundary_array_rows_unsorted(); 
+        void apply_sorting_to_rows();
+        void make_ba_row_i_to_bm_col_i_vector(); 
     };
 
     PointCloud2VR PointCloud2VR_factory(const std::string & distance);

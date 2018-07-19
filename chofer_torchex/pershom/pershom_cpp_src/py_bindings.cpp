@@ -31,6 +31,15 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m)
         .def_readwrite("simplex_dimension_vector", &VRCompCuda::PointCloud2VR::simplex_dimension_vector)
         .def_readwrite("filtration_values_vector_without_vertices", &VRCompCuda::PointCloud2VR::filtration_values_vector_without_vertices)
         .def_readwrite("filtration_add_eps_hack_values", &VRCompCuda::PointCloud2VR::filtration_add_eps_hack_values)
+
+        .def_readwrite("sort_indices_without_vertices", &VRCompCuda::PointCloud2VR::sort_indices_without_vertices)
+        .def_readwrite("sort_indices_without_vertices_inverse", &VRCompCuda::PointCloud2VR::sort_indices_without_vertices_inverse)
+
+        .def_readwrite("sorted_filtration_values_vector", &VRCompCuda::PointCloud2VR::sorted_filtration_values_vector)
+
+        .def_readwrite("boundary_array", &VRCompCuda::PointCloud2VR::boundary_array)
+        .def_readwrite("ba_row_i_to_bm_col_i_vector", &VRCompCuda::PointCloud2VR::ba_row_i_to_bm_col_i_vector)
+
         .def("__call__", &VRCompCuda::PointCloud2VR::operator())
 
         .def("init_state", &VRCompCuda::PointCloud2VR::init_state, "")
@@ -40,6 +49,12 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m)
         .def("make_simplex_dimension_vector", &VRCompCuda::PointCloud2VR::make_simplex_dimension_vector, "")
         .def("make_filtration_values_vector_without_vertices", &VRCompCuda::PointCloud2VR::make_filtration_values_vector_without_vertices, "")
         .def("do_filtration_add_eps_hack", &VRCompCuda::PointCloud2VR::do_filtration_add_eps_hack, "")
+        .def("make_sorting_infrastructure", &VRCompCuda::PointCloud2VR::make_sorting_infrastructure, "")
+        .def("undo_filtration_add_eps_hack", &VRCompCuda::PointCloud2VR::undo_filtration_add_eps_hack, "")
+        .def("make_sorted_filtration_values_vector", &VRCompCuda::PointCloud2VR::make_sorted_filtration_values_vector, "")
+        .def("make_boundary_array_rows_unsorted", &VRCompCuda::PointCloud2VR::make_boundary_array_rows_unsorted, "")
+        .def("apply_sorting_to_rows", &VRCompCuda::PointCloud2VR::apply_sorting_to_rows, "")
+        .def("make_ba_row_i_to_bm_col_i_vector", &VRCompCuda::PointCloud2VR::make_ba_row_i_to_bm_col_i_vector, "")
         // .def("", &VRCompCuda::PointCloud2VR::, "")
         ; 
 

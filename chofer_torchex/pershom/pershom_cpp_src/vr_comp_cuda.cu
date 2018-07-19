@@ -901,6 +901,117 @@ void PointCloud2VR::do_filtration_add_eps_hack(){
 }
 
 
+void PointCloud2VR::make_sorting_infrastructure(){
+    auto sort_ret = this->filtration_values_vector_without_vertices.sort(0); 
+    this->sort_indices_without_vertices = std::get<1>(sort_ret);
+    this->sort_indices_without_vertices_inverse = 
+        std::get<1>(this->sort_indices_without_vertices.sort(0));
+}
+
+
+void PointCloud2VR::undo_filtration_add_eps_hack(){
+    this->filtration_values_vector_without_vertices -=
+        this->filtration_add_eps_hack_values; 
+}
+
+
+void PointCloud2VR::make_sorted_filtration_values_vector(){
+    auto dim_0_filt_values = this->RealType->empty({n_simplices_by_dim.at(0)});
+    dim_0_filt_values.fill_(0);
+
+    auto tmp = this->filtration_values_vector_without_vertices
+        .index_select(0, this->sort_indices_without_vertices);
+
+    tmp = cat({dim_0_filt_values, tmp}); 
+
+    this->sorted_filtration_values_vector = tmp;  
+}
+
+
+void PointCloud2VR::make_boundary_array_rows_unsorted(){
+    auto n_non_vertex_simplices = 0;
+    for (int i=1; i < this->n_simplices_by_dim.size(); i++){
+        n_non_vertex_simplices += this->n_simplices_by_dim.at(i); 
+    }
+
+    auto ba = this->IntegerType->empty({
+        n_non_vertex_simplices, 
+        (this->max_dimension == 0 ? 4 : (max_dimension + 1)*2)
+    });
+
+    ba.fill_(-1);
+
+    // copy edges ...
+    auto edge_boundary_info = this->boundary_info_non_vertices.at(0);
+    ba.slice(0, 0, this->n_simplices_by_dim.at(1)).slice(1, 0, 2)
+         = edge_boundary_info; 
+
+    if (this->max_dimension >= 2){ 
+
+        auto look_up_table_row = this->sort_indices_without_vertices_inverse;
+
+        // adapt to indexation with vertices ... 
+        look_up_table_row += this->n_simplices_by_dim.at(0); 
+
+        // ensure length is according to indexation with vertices ...
+        auto dummy_vals = 
+            look_up_table_row.type().tensor({n_simplices_by_dim.at(0)})
+            .fill_(std::numeric_limits<int64_t>::max());
+
+        look_up_table_row = cat({dummy_vals, look_up_table_row}, 0);
+
+        int64_t copy_offset = this->n_simplices_by_dim.at(1);  
+
+
+        for (int dim = 2; dim <= this->max_dimension; dim++){
+
+            auto boundary_info = this->boundary_info_non_vertices.at(dim-1); 
+
+            if (boundary_info.size(0) == 0){
+                        continue; 
+            }
+            
+            auto look_up_table = look_up_table_row.expand(
+                {boundary_info.size(0), look_up_table_row.size(0)});  
+
+            // Apply ordering to row content ... 
+            boundary_info = look_up_table.gather(1, boundary_info); 
+
+            // Ensure row contents are descendingly ordered ...
+            boundary_info = std::get<0>(boundary_info.sort(1, /*descending=*/true));
+
+            ba.slice(0, copy_offset, copy_offset + boundary_info.size(0))
+                        .slice(1, 0, boundary_info.size(1))
+                = boundary_info; 
+
+            copy_offset += boundary_info.size(0);
+        }
+    }
+
+    this->boundary_array = ba; 
+}
+
+
+void PointCloud2VR::apply_sorting_to_rows(){
+    this->boundary_array = boundary_array.index_select(
+        0,
+        this->sort_indices_without_vertices
+    );
+
+    auto simp_dim_slice = this->simplex_dimension_vector.slice(0, this->n_simplices_by_dim.at(0));
+    
+    simp_dim_slice.copy_(simp_dim_slice.index_select(0, this->sort_indices_without_vertices)); 
+}
+
+
+void PointCloud2VR::make_ba_row_i_to_bm_col_i_vector(){
+    auto tmp = this->IntegerType->tensor({this->boundary_array.size(0)});
+    TensorUtils::fill_range_cuda_(tmp); 
+    tmp += this->n_simplices_by_dim.at(0); 
+
+    this->ba_row_i_to_bm_col_i_vector = tmp; 
+}
+
 std::vector<Tensor> PointCloud2VR::operator()(
     const Tensor & point_cloud, 
     int64_t max_dimension, 
@@ -913,8 +1024,19 @@ std::vector<Tensor> PointCloud2VR::operator()(
     this->make_simplex_dimension_vector(); 
     this->make_filtration_values_vector_without_vertices(); 
     this->do_filtration_add_eps_hack(); 
+    this->make_sorting_infrastructure(); 
+    this->undo_filtration_add_eps_hack(); 
+    this->make_sorted_filtration_values_vector();
+    this->make_boundary_array_rows_unsorted(); 
+    this->apply_sorting_to_rows(); 
+    this->make_ba_row_i_to_bm_col_i_vector();
 
     std::vector<Tensor> ret; 
+
+    ret.push_back(this->boundary_array);
+    ret.push_back(this->ba_row_i_to_bm_col_i_vector);
+    ret.push_back(this->simplex_dimension_vector);
+    ret.push_back(this->sorted_filtration_values_vector);
     return ret; 
 }
 
