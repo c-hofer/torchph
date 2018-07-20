@@ -789,7 +789,6 @@ void PointCloud2VR::make_boundary_info_non_edges(){
     Tensor filt_vals_prev_dim;
     int64_t n_dim_min_one_simplices; 
     Tensor new_boundary_info, new_filt_vals;
-    int64_t n_new_simplices;
 
     for (int dim = 2; dim <= this->max_dimension; dim++){
 
@@ -803,16 +802,17 @@ void PointCloud2VR::make_boundary_info_non_edges(){
         }
         else{
             // There are enough dim - 1 simplices ...
-            n_new_simplices = binom_coeff_cpu(n_dim_min_one_simplices, dim + 1); 
-
-            new_boundary_info = filt_vals_prev_dim.type().toScalarType(ScalarType::Long).tensor({n_new_simplices, dim + 1}); 
+            auto combinations = filt_vals_prev_dim.type().toScalarType(ScalarType::Long).tensor(
+                {binom_coeff_cpu(n_dim_min_one_simplices, dim + 1), dim + 1}); 
 
             // write combinations ... 
-            write_combinations_table_to_tensor(new_boundary_info, 0, 0, n_dim_min_one_simplices, dim + 1); 
+            write_combinations_table_to_tensor(combinations, 0, 0, n_dim_min_one_simplices, dim + 1); 
             cudaStreamSynchronize(0); 
 
+            new_boundary_info = co_faces_from_combinations(combinations, this->boundary_info_non_vertices.at(dim - 2)); 
+            cudaStreamSynchronize(0); 
             auto bi_cloned = new_boundary_info.clone(); // we have to clone here other wise auto-grad does not work!
-            new_filt_vals = filt_vals_prev_dim.expand({n_new_simplices, filt_vals_prev_dim.size(0)});
+            new_filt_vals = filt_vals_prev_dim.expand({new_boundary_info.size(0), filt_vals_prev_dim.size(0)});
 
             new_filt_vals = new_filt_vals.gather(1, bi_cloned); 
             new_filt_vals = std::get<0>(new_filt_vals.max(1));
@@ -919,7 +919,7 @@ void PointCloud2VR::do_filtration_add_eps_hack(){
 
 
 void PointCloud2VR::make_sorting_infrastructure(){
-    auto sort_ret = this->filtration_values_vector_without_vertices.sort(0); 
+    auto sort_ret = this->filtration_values_vector_without_vertices.sort(0);     
     this->sort_indices_without_vertices = std::get<1>(sort_ret);
     this->sort_indices_without_vertices_inverse = 
         std::get<1>(this->sort_indices_without_vertices.sort(0));
@@ -927,8 +927,10 @@ void PointCloud2VR::make_sorting_infrastructure(){
 
 
 void PointCloud2VR::undo_filtration_add_eps_hack(){
-    this->filtration_values_vector_without_vertices -=
-        this->filtration_add_eps_hack_values; 
+    if (this->max_dimension >= 2 && this->n_simplices_by_dim.at(2) > 0){
+        this->filtration_values_vector_without_vertices -=
+            this->filtration_add_eps_hack_values; 
+    }
 }
 
 
@@ -1033,27 +1035,44 @@ std::vector<Tensor> PointCloud2VR::operator()(
     const Tensor & point_cloud, 
     int64_t max_dimension, 
     double max_ball_radius){
+    
+    std::vector<Tensor> ret; 
 
     this->init_state(point_cloud, max_dimension, max_ball_radius); 
     this->make_boundary_info_edges(); 
-    this->make_boundary_info_non_edges(); 
-    this->make_simplex_ids_compatible_within_dimensions(); 
-    this->make_simplex_dimension_vector(); 
-    this->make_filtration_values_vector_without_vertices(); 
-    this->do_filtration_add_eps_hack(); 
-    this->make_sorting_infrastructure(); 
-    this->undo_filtration_add_eps_hack(); 
-    this->make_sorted_filtration_values_vector();
-    this->make_boundary_array_rows_unsorted(); 
-    this->apply_sorting_to_rows(); 
-    this->make_ba_row_i_to_bm_col_i_vector();
 
-    std::vector<Tensor> ret; 
+    if (this->n_simplices_by_dim.at(1) > 0){
+        this->make_boundary_info_non_edges(); 
+        this->make_simplex_ids_compatible_within_dimensions(); 
+        this->make_simplex_dimension_vector(); 
+        this->make_filtration_values_vector_without_vertices(); 
+        this->do_filtration_add_eps_hack(); 
+        this->make_sorting_infrastructure(); 
+        this->undo_filtration_add_eps_hack(); 
+        this->make_sorted_filtration_values_vector();
+        this->make_boundary_array_rows_unsorted(); 
+        this->apply_sorting_to_rows(); 
+        this->make_ba_row_i_to_bm_col_i_vector();
 
-    ret.push_back(this->boundary_array);
-    ret.push_back(this->ba_row_i_to_bm_col_i_vector);
-    ret.push_back(this->simplex_dimension_vector);
-    ret.push_back(this->sorted_filtration_values_vector);
+
+        ret.push_back(this->boundary_array);
+        ret.push_back(this->ba_row_i_to_bm_col_i_vector);
+        ret.push_back(this->simplex_dimension_vector);
+        ret.push_back(this->sorted_filtration_values_vector);
+    }
+    else
+    {
+        ret.push_back(this->IntegerType->tensor({0, 2*(max_dimension + 1)}));
+        ret.push_back(this->IntegerType->tensor({0}));
+        ret.push_back(this->IntegerType->zeros({point_cloud.size(0)}));
+
+        // We generate the 0-vector in this way to ensure that point_cloud
+        // will have zero gradients instead of None after a backward call
+        // in pytorch ... 
+        auto filtration_values = point_cloud.slice(1, 0, 1).squeeze().clone();
+        filtration_values.fill_(0); 
+        ret.push_back(filtration_values);
+    }
     return ret; 
 }
 
