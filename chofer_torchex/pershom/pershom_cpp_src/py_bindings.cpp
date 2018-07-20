@@ -15,7 +15,8 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m)
 
     m.def("VRCompCuda__vr_l1_persistence", &VRCompCuda::vr_l1_persistence, "");
     m.def("VRCompCuda__write_combinations_table_to_tensor", &VRCompCuda::write_combinations_table_to_tensor, ""),
-        m.def("VRCompCuda__vr_l1_generate_calculate_persistence_args", &VRCompCuda::vr_l1_generate_calculate_persistence_args, "");
+    m.def("VRCompCuda__co_faces_from_combinations", &VRCompCuda::co_faces_from_combinations, "");
+    // m.def("VRCompCuda__vr_l1_generate_calculate_persistence_args", &VRCompCuda::vr_l1_generate_calculate_persistence_args, "");
 
     m.def("VRCompCuda__l1_norm_distance_matrix", &VRCompCuda::l1_norm_distance_matrix, "");
     m.def("VRCompCuda__l2_norm_distance_matrix", &VRCompCuda::l2_norm_distance_matrix, "");
