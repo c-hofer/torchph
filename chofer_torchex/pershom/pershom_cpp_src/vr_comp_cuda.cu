@@ -717,7 +717,12 @@ Tensor co_faces_from_combinations(
 #pragma endregion
 
 PointCloud2VR PointCloud2VR_factory(const std::string & distance){
+    if (distance.compare("l1") == 0)
     return PointCloud2VR(&l1_norm_distance_matrix); 
+    if (distance.compare("l2") == 0) return PointCloud2VR(&l2_norm_distance_matrix); 
+    
+    throw std::range_error("Expected 'l1' or 'l2'!");
+    
 }
 
 
@@ -1099,13 +1104,16 @@ std::vector<std::vector<Tensor>> calculate_persistence_output_to_barcode_tensors
 
                 death_i = birth_death_i.slice(1, 1, 2).squeeze();
                 deaths = filtration_values.index_select(0, death_i);
-
                 i_birth_ne_death = births.ne(deaths).nonzero().squeeze(); 
-                births = births.index_select(0, i_birth_ne_death);
-                deaths = deaths.index_select(0, i_birth_ne_death);
 
-                barcodes = stack({births, deaths}, 1); 
-
+                if (i_birth_ne_death.numel() != 0){
+                    births = births.index_select(0, i_birth_ne_death);
+                    deaths = deaths.index_select(0, i_birth_ne_death);
+                    barcodes = stack({births, deaths}, 1); 
+                }
+                else{
+                    barcodes = filtration_values.type().empty({0, 2}); 
+                }
                 
             }
             non_essential_barcodes.push_back(barcodes); 
@@ -1138,27 +1146,25 @@ std::vector<std::vector<Tensor>> calculate_persistence_output_to_barcode_tensors
 }
 
 
-std::vector<std::vector<Tensor>> vr_l1_persistence(
+std::vector<std::vector<Tensor>> vr_persistence(
     const Tensor& point_cloud,
     int64_t max_dimension, 
-    double max_ball_radius){    
+    double max_ball_radius, 
+    const std::string & metric){    
     
     std::vector<std::vector<Tensor>> ret; 
-    // auto tmp = vr_l1_generate_calculate_persistence_args(
-    //     point_cloud, max_dimension, max_ball_radius
-    // );
-    // auto pers = CalcPersCuda::calculate_persistence(
-    //     tmp.at(0), tmp.at(1), tmp.at(2), max_dimension, -1
-    // );
+    auto args_generator = PointCloud2VR_factory(metric);
 
-    // cudaStreamSynchronize(0);
+    auto args = args_generator(point_cloud, max_dimension, max_ball_radius);
+    
+    auto pers = CalcPersCuda::calculate_persistence(
+        args.at(0), args.at(1), args.at(2), max_dimension, -1
+    );
 
-    // auto filtration_values = tmp.at(3); 
-    // ret = calculate_persistence_output_to_barcode_tensors(pers, filtration_values); 
+    cudaStreamSynchronize(0);
 
-    // //debug info
-    // ret.push_back(tmp); 
-    // ret.push_back(pers.at(0)); 
+    auto filtration_values = args.at(3); 
+    ret = calculate_persistence_output_to_barcode_tensors(pers, filtration_values); 
 
     return ret;
 }

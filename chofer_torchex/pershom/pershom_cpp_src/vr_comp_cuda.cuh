@@ -7,10 +7,11 @@ using namespace at;
 
 
 namespace VRCompCuda {
-    std::vector<std::vector<Tensor>> vr_l1_persistence(
+    std::vector<std::vector<Tensor>> vr_persistence(
         const Tensor& point_cloud, 
         int64_t max_dimension, 
-        double max_ball_radius);
+        double max_ball_radius,         
+        const std::string & metric);
 
     void write_combinations_table_to_tensor(
         const Tensor& out, 
