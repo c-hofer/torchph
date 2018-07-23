@@ -1,13 +1,18 @@
 import pytest
 import torch
 import chofer_torchex.pershom.pershom_backend as pershom_backend
+import glob
+import os
+import numpy
 
 from itertools import combinations
 from scipy.special import binom
 from itertools import combinations
 from collections import Counter
 
+
 __C = pershom_backend.__C
+EPSILON = 0.0001
 
 
 def test_l2_distance_matrix():
@@ -105,161 +110,9 @@ def test_co_faces_from_combinations__result(n_vertices, dim_faces):
 
     assert expected_result == result
 
-# def test_vr_l1_generate_calculate_persistence_args__ground_truth_1():
-
-#     point_cloud = [(0, 0), (1, 0), (0, 0.5)]
-#     point_cloud = torch.tensor(point_cloud, device='cuda', dtype=torch.float)
-
-#     ba_expected = torch.tensor(
-#         [[ 2,  0, -1, -1, -1, -1],
-#         [ 1,  0, -1, -1, -1, -1],
-#         [ 2,  1, -1, -1, -1, -1],
-#         [ 5,  4,  3, -1, -1, -1]], device='cuda', dtype=torch.int64
-#     )
-
-#     ba_row_i_to_bm_col_i_expected = torch.tensor([3, 4, 5, 6], device='cuda', dtype=torch.int64)
-
-#     simplex_dimension_expected = torch.tensor([0, 0, 0, 1, 1, 1, 2], device='cuda', dtype=torch.int64)
-
-#     sorted_filtration_values_vector_expected = torch.tensor([0.0, 0.0, 0.0, 0.5, 1.0, 1.5, 1.5], device='cuda', dtype=torch.float)
-
-    
-#     args = __C.VRCompCuda__vr_l1_generate_calculate_persistence_args(
-#         point_cloud,2, 0)
-
-#     ba, ba_row_i_to_bm_col_i, simplex_dimension, sorted_filtration_values_vector = args
-
-#     assert ba.equal(ba_expected)
-#     assert ba_row_i_to_bm_col_i.equal(ba_row_i_to_bm_col_i_expected)
-#     assert simplex_dimension.equal(simplex_dimension_expected)
-#     assert sorted_filtration_values_vector.equal(sorted_filtration_values_vector_expected)
-
-
-# @pytest.mark.parametrize("max_dimension", [0, 1, 2, 3]) 
-# def test_vr_l1_generate_calculate_persistence_args__sanity(max_dimension):
-#     def expected_ba_size():
-#         n_0 = 4
-#         n_1 = binom(n_0, 2)
-#         n_2 = binom(n_1, 3)
-#         n_3 = binom(n_2, 4) 
-
-#         if max_dimension == 0:
-#             return n_1
-#         elif max_dimension == 1:
-#             return n_1
-#         elif max_dimension == 2:
-#             return n_1 + n_2
-#         elif max_dimension == 3:
-#             return n_1 + n_2 + n_3 
-
-
-
-#     point_cloud = [(0, 0), (1, 0), (0, 0.5), (1, 1.5)]
-#     point_cloud = torch.tensor(point_cloud, device='cuda', dtype=torch.float)
-
-#     args = __C.VRCompCuda__vr_l1_generate_calculate_persistence_args(
-#         point_cloud, max_dimension, 0)
-
-#     ba, ba_row_i_to_bm_col_i, simplex_dimension, sorted_filtration_values_vector = args
-
-#     # check dimensions of output ...
-#     assert ba.size(0) == expected_ba_size()
-#     assert ba.size(1) == 2*((max_dimension if max_dimension != 0 else 1)+1)
-#     assert ba_row_i_to_bm_col_i.size(0) == ba.size(0)
-#     assert simplex_dimension.dim() == 1
-#     assert simplex_dimension.size(0) == ba.size(0) + point_cloud.size(0)
-#     assert sorted_filtration_values_vector.size(0) == ba.size(0) + point_cloud.size(0)
-
-
-
-#     # sanity check ...
-#     ba = ba[:, :(max_dimension if max_dimension != 0 else 1) + 1].tolist()
-#     simplex_dimension = simplex_dimension.tolist()
-#     sorted_filtration_values_vector = sorted_filtration_values_vector.tolist()
-
-#     for i, row_i in enumerate(ba):
-#         cycle_id = i + point_cloud.size(0)
-#         cycle_dim = simplex_dimension[cycle_id]
-#         cycle_filt_val = sorted_filtration_values_vector[cycle_id]
-
-#         boundary_filt_vals = []
-#         number_of_boundary_entries = 0
-#         assert row_i == sorted(row_i, reverse=True)
-#         assert sorted([sorted_filtration_values_vector[x] for x in row_i], reverse=True) == [sorted_filtration_values_vector[x] for x in row_i]
-
-#         for boundary_id in row_i: 
-#             if boundary_id == -1: continue
-
-#             assert cycle_dim - 1 == simplex_dimension[boundary_id]
-
-#             number_of_boundary_entries += 1
-#             boundary_filt_vals.append(sorted_filtration_values_vector[boundary_id])
-
-#         assert number_of_boundary_entries == cycle_dim + 1
-#         if cycle_dim > 1 :
-#             assert max(boundary_filt_vals) == cycle_filt_val
-
-# # Cases where is at least one edge possible ... 
-# @pytest.mark.parametrize("max_ball_radius", [0, 1.0, 1.5, 2.0, 2.5])  
-# def test_vr_l1_generate_calculate_persistence_args__max_ball_radius_1(max_ball_radius):
-#     point_cloud = [(0, 0), (1, 0), (0, 0.5), (1, 1.5)]
-#     point_cloud = torch.tensor(point_cloud, device='cuda', dtype=torch.float)
-
-#     max_dimension = 2
-
-#     n_0 = point_cloud.size(0)
-
-#     if max_ball_radius == 0:
-
-#         n_1 = binom(n_0, 2)
-
-#     else:   
-#         n_1 = 0
-#         for i, j in combinations(range(point_cloud.size(0)), 2):
-#             x = point_cloud[i]
-#             y = point_cloud[j]
-#             d = (x-y).norm(p=1)
-
-#             if d <= max_ball_radius: n_1 += 1
-
-#     n_2 = binom(n_1, 3)
-    
-#     args = __C.VRCompCuda__vr_l1_generate_calculate_persistence_args(
-#         point_cloud, max_dimension, max_ball_radius)
-
-#     ba, ba_row_i_to_bm_col_i, simplex_dimension, sorted_filtration_values_vector = args
-
-#     assert ba.size(0) + n_0 == n_0 + n_1 + n_2
-#     assert simplex_dimension.dim() == 1
-#     assert sorted_filtration_values_vector.dim() == 1
-#     assert simplex_dimension.size(0) == sorted_filtration_values_vector.size(0)
-
-
-# # Cases were no edge is possible ...
-# @pytest.mark.parametrize("max_ball_radius", [0.1])
-# def test_vr_l1_generate_calculate_persistence_args__max_ball_radius_2(max_ball_radius):
-#     point_cloud = [(0, 0), (1, 0), (0, 0.5), (1, 1.5)]
-#     point_cloud = torch.tensor(point_cloud, device='cuda', dtype=torch.float)
-
-#     max_dimension = 2
-    
-#     args = __C.VRCompCuda__vr_l1_generate_calculate_persistence_args(
-#         point_cloud, max_dimension, max_ball_radius)
-
-#     ba, ba_row_i_to_bm_col_i, simplex_dimension, sorted_filtration_values_vector = args
-
-#     assert ba.numel() == 0
-#     assert ba_row_i_to_bm_col_i.numel() == 0 
-#     assert simplex_dimension.dim() == 1
-#     assert all(simplex_dimension == 0)
-#     assert sorted_filtration_values_vector.dim() == 1
-#     assert all(sorted_filtration_values_vector == 0)
-#     assert simplex_dimension.size(0) == sorted_filtration_values_vector.size(0)
-
-
 
 @pytest.mark.parametrize("max_dimension, max_ball_radius", 
-[ (2, 0.0), (2, 1.0), (2, 2.0)])
+[ (2, 0.0), (2, 1.0), (2, 2.0), (3, 0.0), (3, 1.0), (3, 2.0)])
 def test_PointCloud2VR__l1_excessive_state_testing_of_all_intermediate_steps(max_dimension, max_ball_radius):
     # ASSERTS that the number of edges is > 0!!!
     point_cloud = [(0, 0), (1, 0), (0, 0.5), (1, 1.5)]
@@ -499,3 +352,89 @@ def test_PointCloud2VR__l1_excessive_state_testing_of_all_intermediate_steps(max
     expected_ba_row_i_to_bm_col_i_vector = list(expected_ba_row_i_to_bm_col_i_vector)
     expected_ba_row_i_to_bm_col_i_vector = torch.tensor(expected_ba_row_i_to_bm_col_i_vector, device='cuda')
     assert testee.ba_row_i_to_bm_col_i_vector.equal(expected_ba_row_i_to_bm_col_i_vector)
+
+
+random_point_clouds = []
+for pth in glob.glob(os.path.join(os.path.dirname(__file__), "test_pershom_backend_data/random_point_clouds/*.txt")):
+    X = numpy.loadtxt(pth).tolist()
+    X = torch.tensor(X, device='cuda', dtype=torch.float)
+    random_point_clouds.append(X)
+
+
+@pytest.mark.parametrize("test_args", random_point_clouds)
+def test_PointCloud2VR__l1_valid_calculate_persistence_args(test_args):
+    point_cloud = test_args
+    point_cloud = torch.tensor(point_cloud, device='cuda', dtype=torch.float)
+    max_dimension = 2
+    max_ball_radius = 0
+
+    testee = pershom_backend.__C.VRCompCuda__PointCloud2VR_factory("l1")
+    ba, ba_row_i_to_bm_col_i, simplex_dimension, sorted_filtration_values_vector = testee(point_cloud, max_dimension, max_ball_radius)
+
+    if ba.size(0) > 0:
+
+        assert ba.dim() == 2
+
+        assert ba_row_i_to_bm_col_i.dim() == 1
+        assert ba.size(0) == ba_row_i_to_bm_col_i.size(0)
+        n_simplices = point_cloud.size(0) + ba.size(0)
+
+        assert simplex_dimension.dim() == 1
+        assert simplex_dimension.size(0) == n_simplices
+
+        assert sorted_filtration_values_vector.dim() == 1
+        assert sorted_filtration_values_vector.size(0) == n_simplices
+
+        # discard right half of columns, which are filled with -1 ...  
+        content_column_border = (max_dimension if max_dimension != 0 else 1) + 1
+        ba_right = ba[:, content_column_border:].contiguous()
+        ba_right = ba_right.view(ba_right.numel())
+        ba = ba[:, :content_column_border].tolist()
+        # ba = [[x for x in row if x != -1] for row in ba]
+
+        assert all(x == -1 for x in ba_right) 
+
+        simplex_dimension = simplex_dimension.tolist()
+        assert max(simplex_dimension) == max_dimension
+
+        ba_row_i_to_bm_col_i = ba_row_i_to_bm_col_i.tolist()
+        sorted_filtration_values_vector = sorted_filtration_values_vector.tolist()
+
+        for i, row_i in enumerate(ba):
+            simplex_id = i + point_cloud.size(0)
+            simplex_dim = simplex_dimension[simplex_id]
+            simplex_filt_val = sorted_filtration_values_vector[simplex_id]        
+            
+            # sorted descendingly by id?
+            assert row_i == sorted(row_i, reverse=True)
+            boundary_ids = [x for x in row_i if x != -1]
+
+            # dim n simplex has n+1 boundaries?
+            assert len(boundary_ids) == simplex_dim + 1
+            boundary_filt_vals = [sorted_filtration_values_vector[x] for x in boundary_ids]
+
+            # boundary filtration values are coherent with ids?
+            assert boundary_filt_vals == sorted(boundary_filt_vals, reverse=True)
+
+            # simplex_filt_val is maximum of boundary filtration values?
+            if simplex_dim > 1 : 
+                assert abs(max(boundary_filt_vals) - simplex_filt_val) < EPSILON
+            
+
+            # boundary of simplex has dim - 1 ? 
+            boundary_dims = [simplex_dimension[b_id] for b_id in boundary_ids]
+            assert all(list(dim == simplex_dim - 1 for dim in boundary_dims))
+
+            if simplex_dim > 1:
+                boundary_of_boundaries = sum([ba[b_id - point_cloud.size(0)] for b_id in boundary_ids], [])
+                boundary_of_boundaries = [x for x in boundary_of_boundaries if x != -1]
+                
+                c = Counter(boundary_of_boundaries)
+
+                assert all(list(v == 2 for v in c.values()))
+
+    else: #ba.size(0) == 0
+
+        assert ba_row_i_to_bm_col_i.numel() == 0
+        assert simplex_dimension.tolist() == [0]*point_cloud.size(0)
+        assert sorted_filtration_values_vector.tolist() == [0]*point_cloud.size(0)
