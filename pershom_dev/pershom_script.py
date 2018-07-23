@@ -5,7 +5,7 @@ from simplicial_complex import *
 from cpu_sorted_boundary_array_implementation import SortedListBoundaryMatrix
 import torch 
 from time import time
-from pershombox import toplex_persistence_diagrams
+# from pershombox import toplex_persistence_diagrams
 import chofer_torchex.pershom.pershom_backend as pershom_backend
 import yep 
 from chofer_torchex.pershom.calculate_persistence import calculate_persistence
@@ -98,12 +98,21 @@ def test():
         assert(dgm_test == dgm_true)
 
 
-# x = torch.ones((10,10), device='cuda')
-# pershom_backend.__C.my_test_f(x)
+def vr_l1_persistence_performance_test():
+    pc = torch.randn(20,3)
+    pc = torch.tensor(pc, device='cuda', dtype=torch.float)
+
+    max_dimension = 2
+    max_ball_radius = 0 
+
+    yep.start('profiling_pershom/profile.google-pprof')
+    time_start = time()
+    res = pershom_backend.__C.VRCompCuda__vr_persistence(pc, max_dimension, max_ball_radius, 'l1')
+    print(time() - time_start)
+    yep.stop()
+    print(res[0][0])
 
 
 
     
-
-
-test()
+vr_l1_persistence_performance_test()
