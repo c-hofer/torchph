@@ -543,20 +543,7 @@ std::vector<std::vector<Tensor>> calculate_persistence(
     auto simp_dim = simplex_dimension; 
 
     int iterations = 0;
-
-    // auto ind_not_red = ba.type()
-    //   .toScalarType(ScalarType::Long).tensor({simp_dim.size(0), 1});
-    // fill_range_cuda_(ind_not_red);
-
-    // auto tmp_pivots = ba.slice(1, 0, 1).contiguous();
     auto scalar_0 = ba.type().scalarTensor(0);
-
-    // Tensor mask_not_reduced = tmp_pivots.ge(scalar_0);
-
-    // ind_not_red = ind_not_red.masked_select(mask_not_reduced).contiguous();
-
-    // ba =
-    //   ba.index_select(0, ind_not_red).contiguous();
 
     Tensor mask_not_reduced, pivots, merge_pairings, new_ind_not_red;
     bool continue_loop = true; 
@@ -566,9 +553,10 @@ std::vector<std::vector<Tensor>> calculate_persistence(
     if (ba.numel() == 0){
         continue_loop = false; 
     }
+    
     while (continue_loop)
     {
-
+        // PRINT(ba);
         pivots = ba.slice(1, 0, 1).contiguous();      
 
         merge_pairings = find_merge_pairings(pivots, max_pairs);
@@ -576,6 +564,7 @@ std::vector<std::vector<Tensor>> calculate_persistence(
         if (merge_pairings.size(0) == 0){
             break; 
         }
+        // PRINT(merge_pairings);
 
         ba = merge_columns(ba, merge_pairings);
 
@@ -588,9 +577,7 @@ std::vector<std::vector<Tensor>> calculate_persistence(
         mask_not_reduced = pivots.ge(scalar_0);
         new_ind_not_red = new_ind_not_red.masked_select(mask_not_reduced).contiguous();
 
-        ba =
-            ba.index_select(0, new_ind_not_red).contiguous();
-        // pivots = pivots.index_select(0, new_ind_not_red).contiguous();
+        ba = ba.index_select(0, new_ind_not_red).contiguous();
 
         ind_not_red = ind_not_red.index_select(0, new_ind_not_red);
 
@@ -605,6 +592,7 @@ std::vector<std::vector<Tensor>> calculate_persistence(
         real_pivots.index_copy_(0, ind_not_red, pivots);
     }
     auto barcodes = read_barcodes(real_pivots, simp_dim, max_dim_to_read_of_reduced_ba);
+
     return barcodes;
 }
 

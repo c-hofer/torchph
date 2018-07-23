@@ -717,8 +717,7 @@ Tensor co_faces_from_combinations(
 #pragma endregion
 
 PointCloud2VR PointCloud2VR_factory(const std::string & distance){
-    if (distance.compare("l1") == 0)
-    return PointCloud2VR(&l1_norm_distance_matrix); 
+    if (distance.compare("l1") == 0) return PointCloud2VR(&l1_norm_distance_matrix); 
     if (distance.compare("l2") == 0) return PointCloud2VR(&l2_norm_distance_matrix); 
     
     throw std::range_error("Expected 'l1' or 'l2'!");

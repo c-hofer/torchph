@@ -10,7 +10,7 @@ namespace VRCompCuda {
     std::vector<std::vector<Tensor>> vr_persistence(
         const Tensor& point_cloud, 
         int64_t max_dimension, 
-        double max_ball_radius,         
+        double max_ball_radius,          
         const std::string & metric);
 
     void write_combinations_table_to_tensor(
@@ -23,11 +23,6 @@ namespace VRCompCuda {
     Tensor co_faces_from_combinations(
         const Tensor & combinations, 
         const Tensor & faces
-        );
-    // std::vector<Tensor> vr_l1_generate_calculate_persistence_args(
-    //     const Tensor& point_cloud,
-    //     int64_t max_dimension, 
-    //     double max_ball_radius); 
 
     Tensor l1_norm_distance_matrix(const Tensor & points); 
     
