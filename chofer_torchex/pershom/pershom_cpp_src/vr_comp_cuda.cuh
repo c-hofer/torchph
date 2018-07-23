@@ -22,7 +22,7 @@ namespace VRCompCuda {
 
     Tensor co_faces_from_combinations(
         const Tensor & combinations, 
-        const Tensor & faces
+        const Tensor & faces);
 
     Tensor l1_norm_distance_matrix(const Tensor & points); 
     
