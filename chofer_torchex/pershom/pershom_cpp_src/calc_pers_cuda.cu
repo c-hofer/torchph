@@ -584,7 +584,7 @@ std::vector<std::vector<Tensor>> calculate_persistence(
         iterations++;
     }
 
-    std::cout << "Reached end of reduction after " << iterations << " iterations" << std::endl;
+    //std::cout << "Reached end of reduction after " << iterations << " iterations" << std::endl;
 
     auto real_pivots = ba.type().tensor({simp_dim.size(0), 1}).fill_(-1);
 
