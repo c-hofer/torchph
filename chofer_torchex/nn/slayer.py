@@ -252,7 +252,7 @@ class SLayerRational(Module):
 
         self.centers = Parameter(centers_init)
         self.sharpness = Parameter(sharpness_init)
-        self.exponent = Parameter(exponent_init) if not self.freeze_exponent else Vexponent_init
+        self.exponent = Parameter(exponent_init) if not self.freeze_exponent else exponent_init
 
     def forward(self, input)->Tensor:
         batch, not_dummy_points, max_points, batch_size = prepare_batch_if_necessary(input,
