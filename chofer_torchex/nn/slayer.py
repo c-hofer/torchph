@@ -25,14 +25,6 @@ import warnings
 # region helper functions
 
 
-def safe_tensor_size(tensor, dim):
-    try:
-        return tensor.size(dim)
-
-    except Exception:
-        return 0
-
-
 def prepare_batch(batch: [Tensor], point_dim: int=None)->tuple:
     """
     This method 'vectorizes' the multiset in order to take advances of gpu processing.
@@ -50,7 +42,7 @@ def prepare_batch(batch: [Tensor], point_dim: int=None)->tuple:
     batch = [x.cpu() for x in batch]
 
     batch_size = len(batch)
-    batch_max_points = max([safe_tensor_size(t, 0) for t in batch])
+    batch_max_points = max([t.size(0) for t in batch])
     input_type = type(batch[0])
 
     if batch_max_points == 0:
@@ -65,7 +57,7 @@ def prepare_batch(batch: [Tensor], point_dim: int=None)->tuple:
     prepared_batch = []
 
     for i, multi_set in enumerate(batch):
-        n_points = safe_tensor_size(multi_set, 0)
+        n_points = multi_set.size(0)
 
         prepared_dgm = type(multi_set)()
         torch.zeros(batch_max_points, point_dim, out=prepared_dgm)
