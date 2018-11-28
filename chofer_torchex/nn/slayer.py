@@ -15,7 +15,7 @@ Refs:
 import torch
 import numpy as np
 from torch import Tensor, LongTensor
-from torch.tensor import _TensorBase
+from torch.tensor import Tensor
 from torch.autograd import Variable
 from torch.nn.parameter import Parameter
 from torch.nn.modules.module import Module
@@ -92,12 +92,12 @@ def is_prepared_batch(input):
         return False
     else:
         batch, not_dummy_points, max_points, batch_size = input
-        return isinstance(batch, _TensorBase) and isinstance(not_dummy_points, _TensorBase) and max_points > 0 and batch_size > 0
+        return isinstance(batch, Tensor) and isinstance(not_dummy_points, Tensor) and max_points > 0 and batch_size > 0
 
 
 def is_list_of_tensors(input):
     try:
-        return all([isinstance(x, _TensorBase) for x in input])
+        return all([isinstance(x, Tensor) for x in input])
 
     except TypeError:
         return False
@@ -127,7 +127,7 @@ def parameter_init_from_arg(arg, size, default, scalar_is_valid=False):
             raise ValueError("Scalar initialization values are not valid. Got {} expected Tensor of size {}."
                              .format(arg, size))
         return torch.Tensor(*size).fill_(arg)
-    elif isinstance(arg, torch._TensorBase):
+    elif isinstance(arg, torch.Tensor):
         assert(arg.size() == size)
         return arg
     elif arg is None:
