@@ -38,34 +38,26 @@ def prepare_batch(batch: [Tensor], point_dim: int=None)->tuple:
         point_dim = batch[0].size(1)
     assert (all(x.size(1) == point_dim for x in batch if len(x) != 0))
 
-    # We do the following on cpu since there is a lot of looping
-    batch = [x.cpu() for x in batch]
-
     batch_size = len(batch)
     batch_max_points = max([t.size(0) for t in batch])
-    input_type = type(batch[0])
+    input_device = batch[0].device
 
     if batch_max_points == 0:
         # if we are here, batch consists only of empty diagrams.
         batch_max_points = 1
 
     # This will later be used to set the dummy points to zero in the output.
-    not_dummy_points = input_type(batch_size, batch_max_points)
-    # In the initialization every point is a dummy point.
-    not_dummy_points[:, :] = 0
+    not_dummy_points = torch.zeros(batch_size, batch_max_points, device=input_device)
 
     prepared_batch = []
 
     for i, multi_set in enumerate(batch):
         n_points = multi_set.size(0)
 
-        prepared_dgm = type(multi_set)()
-        torch.zeros(batch_max_points, point_dim, out=prepared_dgm)
+        prepared_dgm = torch.zeros(batch_max_points, point_dim, device=input_device)
 
         if n_points > 0:
-            index_selection = LongTensor(range(n_points))
-            # if prepared_dgm.is_cuda:
-            #     index_selection = index_selection.cuda()
+            index_selection = torch.tensor(range(n_points), device=input_device)
 
             prepared_dgm.index_add_(0, index_selection, multi_set)
 
@@ -244,7 +236,11 @@ class SLayerRational(Module):
 
         self.centers = Parameter(centers_init)
         self.sharpness = Parameter(sharpness_init)
-        self.exponent = Parameter(exponent_init) if not self.freeze_exponent else exponent_init
+
+        if self.freeze_exponent:
+            self.register_buffer('exponent', exponent_init)
+        else: 
+            self.exponent = Parameter(exponent_init)
 
     def forward(self, input)->Tensor:
         batch, not_dummy_points, max_points, batch_size = prepare_batch_if_necessary(input,
@@ -286,11 +282,6 @@ class SLayerRational(Module):
 
     def __repr__(self):
         return 'SLayerRational (... -> {} )'.format(self.n_elements)
-
-    def _apply(self, fn):
-        super()._apply(fn)
-        if self.freeze_exponent:
-            self.exponent.data = fn(self.exponent.data)
 
 
 class SLayerRationalHat(Module):
