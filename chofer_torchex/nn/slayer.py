@@ -16,7 +16,6 @@ import torch
 import numpy as np
 from torch import Tensor, LongTensor
 from torch.tensor import Tensor
-from torch.autograd import Variable
 from torch.nn.parameter import Parameter
 from torch.nn.modules.module import Module
 
@@ -168,27 +167,17 @@ class SLayerExponential(Module):
         self.centers = Parameter(centers_init)
         self.sharpness = Parameter(sharpness_init)
 
-    @staticmethod
-    def is_list_of_variables(input):
-        try:
-            return all(isinstance(x, Variable) for x in input)
-
-        except TypeError:
-            return False
-
     @property
     def is_gpu(self):
         return self.centers.is_cuda
 
-    def forward(self, input)->Variable:
+    def forward(self, input)->Tensor:
         batch, not_dummy_points, max_points, batch_size = prepare_batch_if_necessary(input,
                                                                                      point_dimension=self.point_dimension)
 
 
-        batch = Variable(batch, requires_grad=False)
         batch = torch.cat([batch] * self.n_elements, 1)
 
-        not_dummy_points = Variable(not_dummy_points, requires_grad=False)
         not_dummy_points = torch.cat([not_dummy_points] * self.n_elements, 1)
 
         centers = torch.cat([self.centers] * max_points, 1)
@@ -263,16 +252,14 @@ class SLayerRational(Module):
 
         self.centers = Parameter(centers_init)
         self.sharpness = Parameter(sharpness_init)
-        self.exponent = Parameter(exponent_init) if not self.freeze_exponent else Variable(exponent_init)
+        self.exponent = Parameter(exponent_init) if not self.freeze_exponent else Vexponent_init
 
-    def forward(self, input)->Variable:
+    def forward(self, input)->Tensor:
         batch, not_dummy_points, max_points, batch_size = prepare_batch_if_necessary(input,
                                                                                      point_dimension=self.point_dimension)
 
-        batch = Variable(batch, requires_grad=False)
         batch = batch.unsqueeze(1).expand(batch_size, self.n_elements, max_points, self.point_dimension)
 
-        not_dummy_points = Variable(not_dummy_points, requires_grad=False)
         not_dummy_points = not_dummy_points.unsqueeze(1).expand(-1, self.n_elements, -1)
 
         centers = self.centers.unsqueeze(1).expand(self.n_elements, max_points, self.point_dimension)
@@ -349,14 +336,12 @@ class SLayerRationalHat(Module):
         self.radius = Parameter(radius_init)
         self.norm_p = 1
 
-    def forward(self, input)->Variable:
+    def forward(self, input)->Tensor:
         batch, not_dummy_points, max_points, batch_size = prepare_batch_if_necessary(input,
                                                                                      point_dimension=self.point_dimension)
 
-        batch = Variable(batch, requires_grad=False)
         batch = batch.unsqueeze(1).expand(batch_size, self.n_elements, max_points, self.point_dimension)
 
-        not_dummy_points = Variable(not_dummy_points, requires_grad=False)
         not_dummy_points = not_dummy_points.unsqueeze(1).expand(-1, self.n_elements, -1)
 
         centers = self.centers.unsqueeze(1).expand(self.n_elements, max_points, self.point_dimension)
