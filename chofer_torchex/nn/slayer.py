@@ -14,7 +14,6 @@ Refs:
 """
 import torch
 import numpy as np
-from torch import Tensor, LongTensor
 from torch.tensor import Tensor
 from torch.nn.parameter import Parameter
 from torch.nn.modules.module import Module
@@ -150,10 +149,6 @@ class SLayerExponential(Module):
 
         self.centers = Parameter(centers_init)
         self.sharpness = Parameter(sharpness_init)
-
-    @property
-    def is_gpu(self):
-        return self.centers.is_cuda
 
     def forward(self, input)->Tensor:
         batch, not_dummy_points, max_points, batch_size = prepare_batch_if_necessary(input,
@@ -401,10 +396,9 @@ class UpperDiagonalThresholdedLogTransform:
     def __call__(self, dgm):
         if len(dgm) == 0:
             return dgm
-
-        if dgm.is_cuda:
-            self.b_1 = self.b_1.cuda()
-            self.b_2 = self.b_2.cuda()
+        
+        self.b_1 = self.b_1.to(dgm.device)
+        self.b_2 = self.b_2.to(dgm.device)
 
         x = torch.mul(dgm, self.b_1.repeat(dgm.size(0), 1))
         x = torch.sum(x, 1).squeeze()
