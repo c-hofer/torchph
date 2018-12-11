@@ -14,9 +14,7 @@ Refs:
 """
 import torch
 import numpy as np
-from torch import Tensor, LongTensor
-from torch.tensor import _TensorBase
-from torch.autograd import Variable
+from torch.tensor import Tensor
 from torch.nn.parameter import Parameter
 from torch.nn.modules.module import Module
 
@@ -24,14 +22,6 @@ import warnings
 
 
 # region helper functions
-
-
-def safe_tensor_size(tensor, dim):
-    try:
-        return tensor.size(dim)
-
-    except Exception:
-        return 0
 
 
 def prepare_batch(batch: [Tensor], point_dim: int=None)->tuple:
@@ -47,34 +37,26 @@ def prepare_batch(batch: [Tensor], point_dim: int=None)->tuple:
         point_dim = batch[0].size(1)
     assert (all(x.size(1) == point_dim for x in batch if len(x) != 0))
 
-    # We do the following on cpu since there is a lot of looping
-    batch = [x.cpu() for x in batch]
-
     batch_size = len(batch)
-    batch_max_points = max([safe_tensor_size(t, 0) for t in batch])
-    input_type = type(batch[0])
+    batch_max_points = max([t.size(0) for t in batch])
+    input_device = batch[0].device
 
     if batch_max_points == 0:
         # if we are here, batch consists only of empty diagrams.
         batch_max_points = 1
 
     # This will later be used to set the dummy points to zero in the output.
-    not_dummy_points = input_type(batch_size, batch_max_points)
-    # In the initialization every point is a dummy point.
-    not_dummy_points[:, :] = 0
+    not_dummy_points = torch.zeros(batch_size, batch_max_points, device=input_device)
 
     prepared_batch = []
 
     for i, multi_set in enumerate(batch):
-        n_points = safe_tensor_size(multi_set, 0)
+        n_points = multi_set.size(0)
 
-        prepared_dgm = type(multi_set)()
-        torch.zeros(batch_max_points, point_dim, out=prepared_dgm)
+        prepared_dgm = torch.zeros(batch_max_points, point_dim, device=input_device)
 
         if n_points > 0:
-            index_selection = LongTensor(range(n_points))
-            # if prepared_dgm.is_cuda:
-            #     index_selection = index_selection.cuda()
+            index_selection = torch.tensor(range(n_points), device=input_device)
 
             prepared_dgm.index_add_(0, index_selection, multi_set)
 
@@ -92,12 +74,12 @@ def is_prepared_batch(input):
         return False
     else:
         batch, not_dummy_points, max_points, batch_size = input
-        return isinstance(batch, _TensorBase) and isinstance(not_dummy_points, _TensorBase) and max_points > 0 and batch_size > 0
+        return isinstance(batch, Tensor) and isinstance(not_dummy_points, Tensor) and max_points > 0 and batch_size > 0
 
 
 def is_list_of_tensors(input):
     try:
-        return all([isinstance(x, _TensorBase) for x in input])
+        return all([isinstance(x, Tensor) for x in input])
 
     except TypeError:
         return False
@@ -127,7 +109,7 @@ def parameter_init_from_arg(arg, size, default, scalar_is_valid=False):
             raise ValueError("Scalar initialization values are not valid. Got {} expected Tensor of size {}."
                              .format(arg, size))
         return torch.Tensor(*size).fill_(arg)
-    elif isinstance(arg, torch._TensorBase):
+    elif isinstance(arg, torch.Tensor):
         assert(arg.size() == size)
         return arg
     elif arg is None:
@@ -168,27 +150,13 @@ class SLayerExponential(Module):
         self.centers = Parameter(centers_init)
         self.sharpness = Parameter(sharpness_init)
 
-    @staticmethod
-    def is_list_of_variables(input):
-        try:
-            return all(isinstance(x, Variable) for x in input)
-
-        except TypeError:
-            return False
-
-    @property
-    def is_gpu(self):
-        return self.centers.is_cuda
-
-    def forward(self, input)->Variable:
+    def forward(self, input)->Tensor:
         batch, not_dummy_points, max_points, batch_size = prepare_batch_if_necessary(input,
                                                                                      point_dimension=self.point_dimension)
 
 
-        batch = Variable(batch, requires_grad=False)
         batch = torch.cat([batch] * self.n_elements, 1)
 
-        not_dummy_points = Variable(not_dummy_points, requires_grad=False)
         not_dummy_points = torch.cat([not_dummy_points] * self.n_elements, 1)
 
         centers = torch.cat([self.centers] * max_points, 1)
@@ -263,16 +231,18 @@ class SLayerRational(Module):
 
         self.centers = Parameter(centers_init)
         self.sharpness = Parameter(sharpness_init)
-        self.exponent = Parameter(exponent_init) if not self.freeze_exponent else Variable(exponent_init)
 
-    def forward(self, input)->Variable:
+        if self.freeze_exponent:
+            self.register_buffer('exponent', exponent_init)
+        else: 
+            self.exponent = Parameter(exponent_init)
+
+    def forward(self, input)->Tensor:
         batch, not_dummy_points, max_points, batch_size = prepare_batch_if_necessary(input,
                                                                                      point_dimension=self.point_dimension)
 
-        batch = Variable(batch, requires_grad=False)
         batch = batch.unsqueeze(1).expand(batch_size, self.n_elements, max_points, self.point_dimension)
 
-        not_dummy_points = Variable(not_dummy_points, requires_grad=False)
         not_dummy_points = not_dummy_points.unsqueeze(1).expand(-1, self.n_elements, -1)
 
         centers = self.centers.unsqueeze(1).expand(self.n_elements, max_points, self.point_dimension)
@@ -307,11 +277,6 @@ class SLayerRational(Module):
 
     def __repr__(self):
         return 'SLayerRational (... -> {} )'.format(self.n_elements)
-
-    def _apply(self, fn):
-        super()._apply(fn)
-        if self.freeze_exponent:
-            self.exponent.data = fn(self.exponent.data)
 
 
 class SLayerRationalHat(Module):
@@ -349,14 +314,12 @@ class SLayerRationalHat(Module):
         self.radius = Parameter(radius_init)
         self.norm_p = 1
 
-    def forward(self, input)->Variable:
+    def forward(self, input)->Tensor:
         batch, not_dummy_points, max_points, batch_size = prepare_batch_if_necessary(input,
                                                                                      point_dimension=self.point_dimension)
 
-        batch = Variable(batch, requires_grad=False)
         batch = batch.unsqueeze(1).expand(batch_size, self.n_elements, max_points, self.point_dimension)
 
-        not_dummy_points = Variable(not_dummy_points, requires_grad=False)
         not_dummy_points = not_dummy_points.unsqueeze(1).expand(-1, self.n_elements, -1)
 
         centers = self.centers.unsqueeze(1).expand(self.n_elements, max_points, self.point_dimension)
@@ -433,10 +396,9 @@ class UpperDiagonalThresholdedLogTransform:
     def __call__(self, dgm):
         if len(dgm) == 0:
             return dgm
-
-        if dgm.is_cuda:
-            self.b_1 = self.b_1.cuda()
-            self.b_2 = self.b_2.cuda()
+        
+        self.b_1 = self.b_1.to(dgm.device)
+        self.b_2 = self.b_2.to(dgm.device)
 
         x = torch.mul(dgm, self.b_1.repeat(dgm.size(0), 1))
         x = torch.sum(x, 1).squeeze()

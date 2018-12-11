@@ -1,1 +1,1 @@
-from .slayer import SLayer, SLayerExponential, SLayerRational
+from .slayer import SLayer, SLayerExponential, SLayerRational, SLayerRationalHat
