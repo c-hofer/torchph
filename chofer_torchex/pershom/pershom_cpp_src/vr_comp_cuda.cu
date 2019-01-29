@@ -73,10 +73,11 @@ __global__ void binomial_table_kernel(int64_t* out, int64_t max_n, int64_t max_k
  * @param type 
  * @return Tensor [max_k, max_n] where return[i, j] = binom(j, i+1)
  */
-Tensor binomial_table(int64_t max_n, int64_t max_k, const Type& type){
+Tensor binomial_table(int64_t max_n, int64_t max_k, const Device& device){
  
     
-    auto ret = type.toScalarType(ScalarType::Long).tensor({max_k, max_n}); //LBL: creation 
+    // auto ret = type.toScalarType(ScalarType::Long).tensor({max_k, max_n}); // TODO delete
+    auto ret = at::empty({max_k, max_n}, at::dtype(at::kLong).device(device)); 
 
     dim3 threads_per_block = dim3(8, 8);
     dim3 num_blocks= dim3(max_k/threads_per_block.y + 1, max_n/threads_per_block.x + 1);    
@@ -244,7 +245,7 @@ void write_combinations_table_to_tensor(
     CHECK_EQUAL(out.ndimension(), 2);
 
 
-    const auto bt = binomial_table(max_n, r, out.type());
+    const auto bt = binomial_table(max_n, r, out.device());
     const int n_comb_by_thread = 100; //TODO optimize
     int threads_per_block = 64; //TODO optimize
 
@@ -690,8 +691,12 @@ Tensor co_faces_from_combinations(
     const Tensor & combinations, 
     const Tensor & faces
     ){
-    auto mask = combinations.type().toScalarType(ScalarType::Long)
-                            .tensor({combinations.size(0)});
+    // auto mask = combinations.type().toScalarType(ScalarType::Long)
+    //                         .tensor({combinations.size(0)}); TODO delete
+    auto mask = at::empty(
+        {combinations.size(0)}, 
+        at::dtype(at::kLong).device(combinations.device()));
+
     mask.fill_(0); 
 
     int threads_per_block = 64; //TODO optimize
