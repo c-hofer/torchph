@@ -364,7 +364,7 @@ for pth in glob.glob(os.path.join(os.path.dirname(__file__), "test_pershom_backe
 @pytest.mark.parametrize("test_args", random_point_clouds)
 def test_PointCloud2VR__l1_valid_calculate_persistence_args(test_args):
     point_cloud = test_args
-    point_cloud = torch.tensor(point_cloud, device='cuda', dtype=torch.float)
+    point_cloud = point_cloud.float().to('cuda')#torch.tensor(point_cloud, device='cuda', dtype=torch.float)
     max_dimension = 2
     max_ball_radius = 0
 

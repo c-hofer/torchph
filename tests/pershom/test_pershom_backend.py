@@ -67,7 +67,7 @@ class Test_find_merge_pairings:
         pivots = torch.tensor(pivots, device=device, dtype=dtype).unsqueeze(1)
 
         expected_result = torch.tensor([(int(i/100) * 100, i) for i in range(100* 100) if i % 100 != 0])
-        expected_result = torch.tensor(expected_result, device=device, dtype=torch.int64)
+        expected_result = expected_result.long().to('cuda')#torch.tensor(expected_result, device=device, dtype=torch.int64)
 
         result = pershom_backend.find_merge_pairings(pivots)
 
