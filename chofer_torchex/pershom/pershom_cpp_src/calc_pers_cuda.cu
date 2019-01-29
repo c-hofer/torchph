@@ -281,7 +281,6 @@ Tensor find_merge_pairings(
     }
     else
     {
-        // merge_pairs = pivots.type().tensor({0, 2}); TODO delete
         merge_pairs = torch::empty({0, 2}, pivots.options());
     }
 
@@ -571,10 +570,6 @@ std::vector<std::vector<Tensor>> calculate_persistence(
         // PRINT(merge_pairings);
 
         ba = merge_columns(ba, merge_pairings);
-
-        // new_ind_not_red = ba.type()
-        //                           .toScalarType(ScalarType::Long)
-        //                           .tensor({ba.size(0), 1}); TODO delete
 
         new_ind_not_red = torch::empty({ba.size(0), 1}, ba.options().dtype(torch::kInt64));
 
