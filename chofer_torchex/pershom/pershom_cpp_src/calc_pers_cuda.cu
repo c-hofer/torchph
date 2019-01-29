@@ -1,4 +1,4 @@
-#include <ATen/ATen.h>
+#include <torch/extension.h>
 
 #include <cuda.h>
 #include <cuda_runtime.h>
@@ -202,7 +202,7 @@ Tensor sorted_pivot_indices_to_merge_pairs_cuda_kernel_call(
     auto lengths = (slicings.slice(1, 1, 2) - slicings.slice(1, 0, 1)).contiguous();
     auto max_lengths = lengths.max().item<int64_t>();
     
-    Tensor extracted_slicings = at::empty(
+    Tensor extracted_slicings = torch::empty(
         {slicings.size(0), max_lengths}, 
         input.options());
     extracted_slicings.fill_(std::numeric_limits<int64_t>::max());
@@ -222,7 +222,7 @@ Tensor sorted_pivot_indices_to_merge_pairs_cuda_kernel_call(
     auto row_offset_for_thread = lengths_minus_1.cumsum(0);
 
     auto merge_pairings_size_0 = row_offset_for_thread[-1][0].item<int64_t>();
-    auto merge_pairings = at::empty({merge_pairings_size_0, 2}, input.options());
+    auto merge_pairings = torch::empty({merge_pairings_size_0, 2}, input.options());
     merge_pairings.fill_(-1);
 
     const int threads_per_block = 256;
@@ -282,7 +282,7 @@ Tensor find_merge_pairings(
     else
     {
         // merge_pairs = pivots.type().tensor({0, 2}); TODO delete
-        merge_pairs = at::empty({0, 2}, pivots.options());
+        merge_pairs = torch::empty({0, 2}, pivots.options());
     }
 
     return merge_pairs;
@@ -576,7 +576,7 @@ std::vector<std::vector<Tensor>> calculate_persistence(
         //                           .toScalarType(ScalarType::Long)
         //                           .tensor({ba.size(0), 1}); TODO delete
 
-        new_ind_not_red = at::empty({ba.size(0), 1}, ba.options().dtype(at::kLong));
+        new_ind_not_red = torch::empty({ba.size(0), 1}, ba.options().dtype(torch::kInt64));
 
         TensorUtils::fill_range_cuda_(new_ind_not_red);
 
@@ -593,7 +593,7 @@ std::vector<std::vector<Tensor>> calculate_persistence(
 
     //std::cout << "Reached end of reduction after " << iterations << " iterations" << std::endl;
 
-    auto real_pivots = at::empty({simp_dim.size(0), 1}, ba.options()).fill_(-1);
+    auto real_pivots = torch::empty({simp_dim.size(0), 1}, ba.options()).fill_(-1);
 
     if (ba.numel() != 0){
         real_pivots.index_copy_(0, ind_not_red, pivots);

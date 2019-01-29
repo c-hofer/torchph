@@ -1,4 +1,4 @@
-#include <ATen/ATen.h>
+#include <torch/extension.h>
 
 #include <cuda.h>
 #include <cuda_runtime.h>
@@ -77,7 +77,7 @@ Tensor binomial_table(int64_t max_n, int64_t max_k, const Device& device){
  
     
     // auto ret = type.toScalarType(ScalarType::Long).tensor({max_k, max_n}); // TODO delete
-    auto ret = at::empty({max_k, max_n}, at::dtype(at::kLong).device(device)); 
+    auto ret = torch::empty({max_k, max_n}, torch::dtype(torch::kInt64).device(device)); 
 
     dim3 threads_per_block = dim3(8, 8);
     dim3 num_blocks= dim3(max_k/threads_per_block.y + 1, max_n/threads_per_block.x + 1);    
@@ -693,9 +693,9 @@ Tensor co_faces_from_combinations(
     ){
     // auto mask = combinations.type().toScalarType(ScalarType::Long)
     //                         .tensor({combinations.size(0)}); TODO delete
-    auto mask = at::empty(
+    auto mask = torch::empty(
         {combinations.size(0)}, 
-        at::dtype(at::kLong).device(combinations.device()));
+        torch::dtype(torch::kInt64).device(combinations.device()));
 
     mask.fill_(0); 
 
@@ -715,6 +715,7 @@ Tensor co_faces_from_combinations(
     cudaCheckError(); 
 
     auto indices = mask.nonzero().squeeze(); 
+
     return combinations.index_select(0, indices); 
 }
 
@@ -740,13 +741,13 @@ void PointCloud2VR::init_state(
         CHECK_SMALLER_EQ(0, max_ball_radius);
 
         // this->RealType = &point_cloud.type(); TODO delete
-        this->tensopt_real = at::TensorOptions()
+        this->tensopt_real = torch::TensorOptions()
             .dtype(point_cloud.dtype())
             .device(point_cloud.device());  
 
         // this->IntegerType = &point_cloud.type().toScalarType(this->IntegerScalarType); TODO delete
-        this ->tensopt_int = at::TensorOptions()
-            .dtype(at::kLong)
+        this ->tensopt_int = torch::TensorOptions()
+            .dtype(torch::kInt64)
             .device(point_cloud.device());
 
         this->point_cloud = point_cloud;
@@ -758,7 +759,7 @@ void PointCloud2VR::init_state(
         //     this->RealType->tensor({point_cloud.size(0)}).fill_(0)
         //     ); TODO delete
         this->filtration_values_by_dim.push_back(
-            at::empty({point_cloud.size(0)}, 
+            torch::empty({point_cloud.size(0)}, 
             this->tensopt_real)
             .fill_(0)
             ); 
@@ -769,7 +770,7 @@ void PointCloud2VR::make_boundary_info_edges(){
     Tensor ba_dim_1, filt_val_vec_dim_1; 
     auto n_edges = binom_coeff_cpu(point_cloud.size(0), 2); 
     // ba_dim_1 = this->IntegerType->tensor({n_edges, 2}); TODO delete
-    ba_dim_1 = at::empty({n_edges, 2}, this->tensopt_int); 
+    ba_dim_1 = torch::empty({n_edges, 2}, this->tensopt_int); 
 
     write_combinations_table_to_tensor(ba_dim_1, 0, 0, point_cloud.size(0)/*=max_n*/, 2/*=r*/);
 
@@ -792,10 +793,10 @@ void PointCloud2VR::make_boundary_info_edges(){
         if (i_select.numel() ==  0){
 
             // ba_dim_1 = ba_dim_1.type().tensor({0}); TODO delete 
-            ba_dim_1 = at::empty({0}, ba_dim_1.options()); 
+            ba_dim_1 = torch::empty({0}, ba_dim_1.options()); 
 
             // filt_val_vec_dim_1 = filt_val_vec_dim_1.type().tensor({0}); TODO delete
-            filt_val_vec_dim_1 = at::empty({0}, filt_val_vec_dim_1.options()); 
+            filt_val_vec_dim_1 = torch::empty({0}, filt_val_vec_dim_1.options()); 
         }
         else{
             ba_dim_1 = ba_dim_1.index_select(0, i_select);
@@ -824,10 +825,10 @@ void PointCloud2VR::make_boundary_info_non_edges(){
         if (n_dim_min_one_simplices < dim + 1){
             // There are not enough dim-1 simplices ...
             // new_boundary_info = filt_vals_prev_dim.type().toScalarType(ScalarType::Long).tensor({0, dim + 1}); TODO delete
-            new_boundary_info = at::empty({0, dim + 1}, this->tensopt_int);
+            new_boundary_info = torch::empty({0, dim + 1}, this->tensopt_int);
 
             // new_filt_vals = filt_vals_prev_dim.type().tensor({0});  TODO delete
-            new_filt_vals = at::empty({0}, this->tensopt_real);
+            new_filt_vals = torch::empty({0}, this->tensopt_real);
         }
         else{
             // There are enough dim - 1 simplices ...
@@ -835,7 +836,7 @@ void PointCloud2VR::make_boundary_info_non_edges(){
             // auto combinations = filt_vals_prev_dim.type().toScalarType(ScalarType::Long).tensor(
             // {binom_coeff_cpu(n_dim_min_one_simplices, dim + 1), dim + 1}); TODO delete
 
-            auto combinations = at::empty(
+            auto combinations = torch::empty(
                 {binom_coeff_cpu(n_dim_min_one_simplices, dim + 1), dim + 1}, 
                 this->tensopt_int); 
 
@@ -888,7 +889,7 @@ void PointCloud2VR::make_simplex_dimension_vector(){
     }
 
     // simplex_dimension_vector = this->IntegerType->tensor({n_simplices}); TODO delete
-    simplex_dimension_vector = at::empty({n_simplices}, 
+    simplex_dimension_vector = torch::empty({n_simplices}, 
                                          this->tensopt_int); 
 
     auto max_dimension = this->max_dimension; 
@@ -934,7 +935,7 @@ void PointCloud2VR::do_filtration_add_eps_hack(){
 
         // auto filt_add_hack_values = this->RealType->tensor(
         //     {this->filtration_values_vector_without_vertices.size(0)}).fill_(0); TODO delete
-        auto filt_add_hack_values = at::empty(
+        auto filt_add_hack_values = torch::empty(
             {this->filtration_values_vector_without_vertices.size(0)},
             this->tensopt_real)
             .fill_(0);
@@ -978,7 +979,7 @@ void PointCloud2VR::undo_filtration_add_eps_hack(){
 
 void PointCloud2VR::make_sorted_filtration_values_vector(){
     // auto dim_0_filt_values = this->RealType->empty({n_simplices_by_dim.at(0)}); TODO delete
-    auto dim_0_filt_values = at::empty({n_simplices_by_dim.at(0)}, this->tensopt_real);
+    auto dim_0_filt_values = torch::empty({n_simplices_by_dim.at(0)}, this->tensopt_real);
     
     dim_0_filt_values.fill_(0);
 
@@ -997,7 +998,7 @@ void PointCloud2VR::make_boundary_array_rows_unsorted(){
         n_non_vertex_simplices += this->n_simplices_by_dim.at(i); 
     }
 
-    auto ba = at::empty(
+    auto ba = torch::empty(
         {n_non_vertex_simplices, (this->max_dimension == 0 ? 4 : (max_dimension + 1)*2)},
         this->tensopt_int);
     ba.fill_(-1);
@@ -1016,7 +1017,7 @@ void PointCloud2VR::make_boundary_array_rows_unsorted(){
 
         // ensure length is according to indexation with vertices ...
         auto dummy_vals = 
-            at::empty({n_simplices_by_dim.at(0)}, look_up_table_row.options())
+            torch::empty({n_simplices_by_dim.at(0)}, look_up_table_row.options())
             .fill_(std::numeric_limits<int64_t>::max());
 
         look_up_table_row = cat({dummy_vals, look_up_table_row}, 0);
@@ -1066,7 +1067,7 @@ void PointCloud2VR::apply_sorting_to_rows(){
 
 
 void PointCloud2VR::make_ba_row_i_to_bm_col_i_vector(){
-    auto tmp = at::empty({this->boundary_array.size(0)}, this->tensopt_int);
+    auto tmp = torch::empty({this->boundary_array.size(0)}, this->tensopt_int);
     TensorUtils::fill_range_cuda_(tmp); 
     tmp += this->n_simplices_by_dim.at(0); 
 
@@ -1104,9 +1105,9 @@ std::vector<Tensor> PointCloud2VR::operator()(
     }
     else
     {
-        ret.push_back(at::empty({0, 2*(max_dimension + 1)}, this->tensopt_int));
-        ret.push_back(at::empty({0}, this->tensopt_int));
-        ret.push_back(at::zeros({point_cloud.size(0)}, this->tensopt_int));
+        ret.push_back(torch::empty({0, 2*(max_dimension + 1)}, this->tensopt_int));
+        ret.push_back(torch::empty({0}, this->tensopt_int));
+        ret.push_back(torch::zeros({point_cloud.size(0)}, this->tensopt_int));
 
         // We generate the 0-vector in this way to ensure that point_cloud
         // will have zero gradients instead of None after a backward call
@@ -1133,7 +1134,7 @@ std::vector<std::vector<Tensor>> calculate_persistence_output_to_barcode_tensors
             birth_death_i = non_essentials.at(i); 
 
             if(birth_death_i.numel() == 0){
-                barcodes = at::empty({0, 2}, filtration_values.options()); 
+                barcodes = torch::empty({0, 2}, filtration_values.options()); 
             }
             else {
                 birth_i = birth_death_i.slice(1, 0, 1).squeeze(); 
@@ -1149,7 +1150,7 @@ std::vector<std::vector<Tensor>> calculate_persistence_output_to_barcode_tensors
                     barcodes = stack({births, deaths}, 1); 
                 }
                 else{
-                    barcodes = at::empty({0, 2}, filtration_values.options()); 
+                    barcodes = torch::empty({0, 2}, filtration_values.options()); 
                 }
                 
             }
@@ -1167,7 +1168,7 @@ std::vector<std::vector<Tensor>> calculate_persistence_output_to_barcode_tensors
             birth_i = essentials.at(i).squeeze(); 
 
             if (birth_i.numel() == 0){
-                barcodes = at::empty({0, 1}, filtration_values.options());
+                barcodes = torch::empty({0, 1}, filtration_values.options());
             }
             else {
                 barcodes = filtration_values.index_select(0, birth_i); 
