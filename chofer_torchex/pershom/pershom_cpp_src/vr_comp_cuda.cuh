@@ -32,9 +32,11 @@ namespace VRCompCuda {
     {
         public:
 
-        Type * RealType; 
-        Type * IntegerType; 
-        ScalarType IntegerScalarType = ScalarType::Long;
+        at::TensorOptions tensopt_real;
+        at::TensorOptions tensopt_int; 
+        // Type * RealType; TODO: delete 
+        // Type * IntegerType; TODO: delete 
+        // ScalarType IntegerScalarType = ScalarType::Long; TODO: delete 
 
         Tensor point_cloud; 
         int64_t max_dimension;

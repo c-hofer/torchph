@@ -200,8 +200,11 @@ Tensor sorted_pivot_indices_to_merge_pairs_cuda_kernel_call(
     // ASSERTION slicings[:, 1].max() < input.size(0)
 
     auto lengths = (slicings.slice(1, 1, 2) - slicings.slice(1, 0, 1)).contiguous();
-    auto max_lengths = Scalar(lengths.max()).to<int>();
-    Tensor extracted_slicings = input.type().tensor({slicings.size(0), max_lengths});
+    auto max_lengths = lengths.max().item<int64_t>();
+    
+    Tensor extracted_slicings = at::empty(
+        {slicings.size(0), max_lengths}, 
+        input.options());
     extracted_slicings.fill_(std::numeric_limits<int64_t>::max());
 
     const int threads_per_block_apply_slicings = 256;
@@ -215,11 +218,11 @@ Tensor sorted_pivot_indices_to_merge_pairs_cuda_kernel_call(
 
     auto extracted_slicings_sorted = std::get<0>(extracted_slicings.sort(1)).contiguous();
 
-    auto lengths_minus_1 = lengths - lengths.type().scalarTensor(1);
+    auto lengths_minus_1 = lengths - 1;
     auto row_offset_for_thread = lengths_minus_1.cumsum(0);
 
-    auto merge_pairings_size_0 = Scalar(row_offset_for_thread[-1][0]).to<int>();
-    auto merge_pairings = input.type().tensor({merge_pairings_size_0, 2});
+    auto merge_pairings_size_0 = row_offset_for_thread[-1][0].item<int64_t>();
+    auto merge_pairings = at::empty({merge_pairings_size_0, 2}, input.options());
     merge_pairings.fill_(-1);
 
     const int threads_per_block = 256;
@@ -278,7 +281,8 @@ Tensor find_merge_pairings(
     }
     else
     {
-        merge_pairs = pivots.type().tensor({0, 2});
+        // merge_pairs = pivots.type().tensor({0, 2}); TODO delete
+        merge_pairs = at::empty({0, 2}, pivots.options());
     }
 
     return merge_pairs;
@@ -535,7 +539,7 @@ std::vector<std::vector<Tensor>> calculate_persistence(
         CHECK_EQUAL(comp_desc_sort_ba.dim(), 2);
         CHECK_SMALLER_EQ(comp_desc_sort_ba.size(0), simplex_dimension.size(0)); 
 
-        CHECK_EQUAL((Scalar(simplex_dimension.max()).to<int64_t>()+1)*2, comp_desc_sort_ba.size(1)); 
+        CHECK_EQUAL((simplex_dimension.max().item<int64_t>()+1)*2, comp_desc_sort_ba.size(1)); 
     }
 
     auto ba = comp_desc_sort_ba;
@@ -568,9 +572,12 @@ std::vector<std::vector<Tensor>> calculate_persistence(
 
         ba = merge_columns(ba, merge_pairings);
 
-        new_ind_not_red = ba.type()
-                                  .toScalarType(ScalarType::Long)
-                                  .tensor({ba.size(0), 1});
+        // new_ind_not_red = ba.type()
+        //                           .toScalarType(ScalarType::Long)
+        //                           .tensor({ba.size(0), 1}); TODO delete
+
+        new_ind_not_red = at::empty({ba.size(0), 1}, ba.options().dtype(at::kLong));
+
         TensorUtils::fill_range_cuda_(new_ind_not_red);
 
         pivots = ba.slice(1, 0, 1).contiguous();
@@ -586,7 +593,7 @@ std::vector<std::vector<Tensor>> calculate_persistence(
 
     //std::cout << "Reached end of reduction after " << iterations << " iterations" << std::endl;
 
-    auto real_pivots = ba.type().tensor({simp_dim.size(0), 1}).fill_(-1);
+    auto real_pivots = at::empty({simp_dim.size(0), 1}, ba.options()).fill_(-1);
 
     if (ba.numel() != 0){
         real_pivots.index_copy_(0, ind_not_red, pivots);
