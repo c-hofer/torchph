@@ -8,6 +8,8 @@
 
 #include "tensor_utils.cuh"
 #include "param_checks_cuda.cuh"
+#include "cuda_checks.cuh"
+
 
 using namespace torch;
 
@@ -96,10 +98,14 @@ Tensor find_slicing_indices_cuda_kernel_call(
         output.data<scalar_t>(),
         pivots.size(0));
 
+    cudaCheckError(); 
+
     find_right_slicings_indices_cuda_kernel<scalar_t><<<blocks, threads_per_block>>>(
         pivots.data<scalar_t>(),
         output.data<scalar_t>(),
         pivots.size(0));
+
+    cudaCheckError(); 
 
     output = output.masked_select(output.ge(0));
     output = output.view(IntList({output.size(0) / 2, 2}));
@@ -216,6 +222,8 @@ Tensor sorted_pivot_indices_to_merge_pairs_cuda_kernel_call(
         extracted_slicings.size(0),
         extracted_slicings.size(1));
 
+    cudaCheckError(); 
+
     auto extracted_slicings_sorted = std::get<0>(extracted_slicings.sort(1)).contiguous();
 
     auto lengths_minus_1 = lengths - 1;
@@ -235,6 +243,8 @@ Tensor sorted_pivot_indices_to_merge_pairs_cuda_kernel_call(
         lengths.data<int64_t>(),
         row_offset_for_thread.data<int64_t>(),
         merge_pairings.data<int64_t>());
+
+    cudaCheckError(); 
 
     return merge_pairings;
 }
@@ -409,6 +419,7 @@ void merge_columns_cuda_kernel_call(
         d_boundary_array_needs_resize);
 
     cudaDeviceSynchronize();
+    cudaCheckError(); 
     cudaMemcpy(h_boundary_array_needs_resize, d_boundary_array_needs_resize, size, cudaMemcpyDeviceToHost);
 
     cudaFree(d_boundary_array_needs_resize);

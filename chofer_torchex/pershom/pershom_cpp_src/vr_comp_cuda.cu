@@ -13,18 +13,10 @@
 #include "tensor_utils.cuh"
 #include "calc_pers_cuda.cuh"
 #include "vr_comp_cuda.cuh"
+#include "cuda_checks.cuh"
+
 
 using namespace torch;
-
-
-//TODO extract in other file 
-#define cudaCheckError() {                                          \
- cudaError_t e=cudaGetLastError();                                 \
- if(e!=cudaSuccess) {                                              \
-   printf("Cuda failure %s:%d: '%s'\n",__FILE__,__LINE__,cudaGetErrorString(e));           \
-   exit(0); \
- }                                                                 \
-}
 
 
 namespace VRCompCuda {
