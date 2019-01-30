@@ -557,7 +557,6 @@ std::vector<std::vector<Tensor>> calculate_persistence(
     auto simp_dim = simplex_dimension; 
 
     int iterations = 0;
-    auto scalar_0 = ba.type().scalarTensor(0);
 
     Tensor mask_not_reduced, pivots, merge_pairings, new_ind_not_red;
     bool continue_loop = true; 
@@ -587,7 +586,7 @@ std::vector<std::vector<Tensor>> calculate_persistence(
         TensorUtils::fill_range_cuda_(new_ind_not_red);
 
         pivots = ba.slice(1, 0, 1).contiguous();
-        mask_not_reduced = pivots.ge(scalar_0);
+        mask_not_reduced = pivots.ge(0);
         new_ind_not_red = new_ind_not_red.masked_select(mask_not_reduced).contiguous();
 
         ba = ba.index_select(0, new_ind_not_red).contiguous();
