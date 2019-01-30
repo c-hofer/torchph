@@ -14,7 +14,7 @@
 #include "calc_pers_cuda.cuh"
 #include "vr_comp_cuda.cuh"
 
-using namespace at;
+using namespace torch;
 
 
 //TODO extract in other file 

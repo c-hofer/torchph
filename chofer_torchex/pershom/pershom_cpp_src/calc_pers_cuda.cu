@@ -9,7 +9,7 @@
 #include "tensor_utils.cuh"
 #include "param_checks_cuda.cuh"
 
-using namespace at;
+using namespace torch;
 
 
 #pragma region find_merge_pairings
@@ -87,7 +87,7 @@ template <typename scalar_t>
 Tensor find_slicing_indices_cuda_kernel_call(
     const Tensor & pivots)
 {
-    Tensor output = zeros_like(pivots).fill_(-1);
+    Tensor output = torch::zeros_like(pivots).fill_(-1);
     const int threads_per_block = 256;
     const int blocks = pivots.size(0) / threads_per_block + 1;
 
@@ -417,7 +417,7 @@ void merge_columns_cuda_kernel_call(
 Tensor resize_boundary_array(
     const Tensor & comp_desc_sort_ba)
 {
-    auto tmp = empty_like(comp_desc_sort_ba);
+    auto tmp = torch::empty_like(comp_desc_sort_ba);
     tmp.fill_(-1);
     auto new_ba = cat(TensorList({comp_desc_sort_ba, tmp}), 1);
     return new_ba.contiguous();
@@ -472,7 +472,7 @@ std::vector<std::vector<Tensor>> read_barcodes(
     std::vector<Tensor> ret_ess;
     auto simp_dim = simplex_dimension.unsqueeze(1);
 
-    auto range = empty_like(pivots);
+    auto range = torch::empty_like(pivots);
     TensorUtils::fill_range_cuda_(range);
 
     auto pool_for_barcodes_non_essential = cat({pivots, range}, 1);
@@ -483,7 +483,7 @@ std::vector<std::vector<Tensor>> read_barcodes(
 
     // all dimensions mask essential ...
     auto mask_no_pivot = pivots.le(-1);
-    auto mask_rows_with_no_lowest_one = ones_like(mask_no_pivot);
+    auto mask_rows_with_no_lowest_one = torch::ones_like(mask_no_pivot);
     auto row_indices_with_lowest_one = pivots.masked_select(mask_pivot).toType(ScalarType::Long);
 
     if (row_indices_with_lowest_one.numel() != 0){
@@ -596,17 +596,6 @@ std::vector<std::vector<Tensor>> calculate_persistence(
     auto barcodes = read_barcodes(real_pivots, simp_dim, max_dim_to_read_of_reduced_ba);
 
     return barcodes;
-}
-
-Tensor my_test_f(const Tensor & t)
-{
-    auto x = CUDA(kLong).ones_like(t); 
-    
-    x = x.toType(t.type().toScalarType(ScalarType::Long));
-    
-    auto ret = t.gather(1, x); 
-
-    return ret;
 }
 
 } // namespace CalcPersCuda

@@ -1,9 +1,10 @@
 #pragma once
 
-#include <ATen/ATen.h>
+
+#include <torch/extension.h>
 
 
-using namespace at;
+using namespace torch;
 
 
 namespace VRCompCuda {

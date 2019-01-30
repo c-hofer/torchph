@@ -1,8 +1,10 @@
 #pragma once
 
-#include <ATen/ATen.h>
 
-using namespace at;
+#include <torch/extension.h>
+
+
+using namespace torch;
 
 namespace CalcPersCuda
 {
@@ -26,7 +28,5 @@ std::vector<std::vector<Tensor>> calculate_persistence(
     const Tensor & simplex_dimension,
     int64_t max_dim_to_read_of_reduced_ba,
     int64_t max_pairs);
-
-Tensor my_test_f(const Tensor & t);
 
 } // namespace CalcPersCuda
