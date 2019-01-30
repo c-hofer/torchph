@@ -414,7 +414,7 @@ void PointCloud2VR::make_boundary_info_edges(){
 
     // reduce to edges with filtration value <= max_ball_radius...
     if (max_ball_radius > 0){
-        auto i_select = filt_val_vec_dim_1.le(point_cloud.type().scalarTensor(max_ball_radius)).nonzero().squeeze(); 
+        auto i_select = filt_val_vec_dim_1.le(this->max_ball_radius).nonzero().squeeze(); //TODO check
         if (i_select.numel() ==  0){
 
             ba_dim_1 = torch::empty({0}, ba_dim_1.options()); 
