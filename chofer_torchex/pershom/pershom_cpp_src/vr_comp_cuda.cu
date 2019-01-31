@@ -438,8 +438,6 @@ void PointCloud2VR::make_boundary_info_edges(){
 
 
 void PointCloud2VR::make_boundary_info_non_edges(){
-
-
     Tensor filt_vals_prev_dim;
     int64_t n_dim_min_one_simplices; 
     Tensor new_boundary_info, new_filt_vals;
