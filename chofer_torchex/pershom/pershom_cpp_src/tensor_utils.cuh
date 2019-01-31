@@ -1,9 +1,7 @@
 #pragma once
 
-#include <ATen/ATen.h>
 
-
-using namespace at;
+#include <torch/extension.h>
 
 
 namespace TensorUtils{

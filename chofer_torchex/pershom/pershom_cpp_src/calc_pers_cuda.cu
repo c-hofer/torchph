@@ -89,6 +89,8 @@ template <typename scalar_t>
 Tensor find_slicing_indices_cuda_kernel_call(
     const Tensor & pivots)
 {
+    at::OptionalDeviceGuard guard(device_of(pivots));
+
     Tensor output = torch::zeros_like(pivots).fill_(-1);
     const int threads_per_block = 256;
     const int blocks = pivots.size(0) / threads_per_block + 1;
@@ -204,6 +206,9 @@ Tensor sorted_pivot_indices_to_merge_pairs_cuda_kernel_call(
     // ASSERTION all(slicings.ge(0))
     // ASSERTION all(slicings[:, 0].leq(slicings[:, 1]))
     // ASSERTION slicings[:, 1].max() < input.size(0)
+
+    CHECK_SAME_DEVICE(input, slicings);
+    at::OptionalDeviceGuard guard(device_of(input));
 
     auto lengths = (slicings.slice(1, 1, 2) - slicings.slice(1, 0, 1)).contiguous();
     auto max_lengths = lengths.max().item<int64_t>();
@@ -392,6 +397,9 @@ void merge_columns_cuda_kernel_call(
     const Tensor & merge_pairings,
     int *h_boundary_array_needs_resize)
 {
+    CHECK_SAME_DEVICE(comp_desc_sort_ba, merge_pairings); 
+    at::OptionalDeviceGuard guard(device_of(comp_desc_sort_ba));
+
     const int threads_per_block = 32;
     const int blocks = merge_pairings.size(0) / threads_per_block + 1;
 

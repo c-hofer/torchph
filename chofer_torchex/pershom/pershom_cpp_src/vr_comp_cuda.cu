@@ -67,6 +67,8 @@ __global__ void binomial_table_kernel(int64_t* out, int64_t max_n, int64_t max_k
  */
 Tensor binomial_table(int64_t max_n, int64_t max_k, const Device& device){ 
 
+    at::OptionalDeviceGuard guard(device);
+
     auto ret = torch::empty({max_k, max_n}, torch::dtype(torch::kInt64).device(device)); 
 
     dim3 threads_per_block = dim3(8, 8);
@@ -234,6 +236,7 @@ void write_combinations_table_to_tensor(
     CHECK_SMALLER_EQ(r, out.size(1));  
     CHECK_EQUAL(out.ndimension(), 2);
 
+    at::OptionalDeviceGuard guard(device_of(out));
 
     const auto bt = binomial_table(max_n, r, out.device());
     const int n_comb_by_thread = 100; //TODO optimize
@@ -321,6 +324,9 @@ Tensor co_faces_from_combinations(
     const Tensor & combinations, 
     const Tensor & faces
     ){
+
+    CHECK_SAME_DEVICE(combinations, faces); 
+    at::OptionalDeviceGuard guard(device_of(combinations));
 
     auto mask = torch::empty(
         {combinations.size(0)}, 

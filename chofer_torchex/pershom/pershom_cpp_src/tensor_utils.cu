@@ -1,4 +1,6 @@
-#include <ATen/ATen.h>
+#include <torch/extension.h>
+#include "cuda_checks.cuh"
+#include "param_checks_cuda.cuh"
 
 
 using namespace at;
@@ -20,7 +22,8 @@ __global__ void fill_range_kernel(scalar_t* out, int64_t out_numel){
 
 void fill_range_cuda_(Tensor t)
 {
-  // AT_ASSERT(t.type().is_cuda());
+    CHECK_CUDA(t); 
+    at::OptionalDeviceGuard guard(device_of(t));
 
     const int threads_per_block = 256;
     const int blocks = t.numel()/threads_per_block + 1;
@@ -39,6 +42,8 @@ void fill_range_cuda_(Tensor t)
         default:
         throw std::invalid_argument("Unrecognized Type!");
     }
+
+    cudaCheckError(); 
 }
     
 } // namespace TensorUtils
