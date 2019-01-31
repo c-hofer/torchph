@@ -346,7 +346,6 @@ Tensor co_faces_from_combinations(
         mask.data<int64_t>()
     );
     
-    cudaStreamSynchronize(0); 
     cudaCheckError(); 
 
     auto indices = mask.nonzero().squeeze(); 
@@ -407,7 +406,6 @@ void PointCloud2VR::make_boundary_info_edges(){
 
     auto distance_matrix = this->get_distance_matrix(point_cloud); 
 
-    cudaStreamSynchronize(0); // ensure that write_combinations_table_to_tensor call has finished
     // building the vector containing the filtraiton values of the edges 
     // in the same order as they appear in ba_dim_1...
     auto x_indices = ba_dim_1.slice(1, 0, 1).squeeze(); 
@@ -465,10 +463,9 @@ void PointCloud2VR::make_boundary_info_non_edges(){
 
             // write combinations ... 
             write_combinations_table_to_tensor(combinations, 0, 0, n_dim_min_one_simplices, dim + 1); 
-            cudaStreamSynchronize(0); 
 
             new_boundary_info = co_faces_from_combinations(combinations, this->boundary_info_non_vertices.at(dim - 2)); 
-            cudaStreamSynchronize(0); 
+
             auto bi_cloned = new_boundary_info.clone(); // we have to clone here other wise auto-grad does not work!
             new_filt_vals = filt_vals_prev_dim.expand({new_boundary_info.size(0), filt_vals_prev_dim.size(0)});
 
@@ -818,8 +815,6 @@ std::vector<std::vector<Tensor>> vr_persistence(
     auto pers = CalcPersCuda::calculate_persistence(
         args.at(0), args.at(1), args.at(2), max_dimension, -1
     );
-
-    cudaStreamSynchronize(0);
 
     auto filtration_values = args.at(3); 
     ret = calculate_persistence_output_to_barcode_tensors(pers, filtration_values); 

@@ -426,11 +426,13 @@ void merge_columns_cuda_kernel_call(
         merge_pairings.size(0),
         d_boundary_array_needs_resize);
 
-    cudaDeviceSynchronize();
     cudaCheckError(); 
+
     cudaMemcpy(h_boundary_array_needs_resize, d_boundary_array_needs_resize, size, cudaMemcpyDeviceToHost);
+    cudaCheckError();
 
     cudaFree(d_boundary_array_needs_resize);
+    cudaCheckError(); 
 }
 
 Tensor resize_boundary_array(
@@ -446,7 +448,6 @@ Tensor merge_columns(
     const Tensor & comp_desc_sort_ba,
     const Tensor & merge_pairings)
 {
-
     CHECK_TENSOR_CUDA_CONTIGUOUS(comp_desc_sort_ba);
     CHECK_TENSOR_INT64(comp_desc_sort_ba);
     CHECK_TENSOR_CUDA_CONTIGUOUS(merge_pairings);
