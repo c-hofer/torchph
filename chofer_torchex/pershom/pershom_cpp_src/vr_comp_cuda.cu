@@ -368,11 +368,11 @@ PointCloud2VR PointCloud2VR_factory(const std::string & distance){
 void PointCloud2VR::init_state(
     const Tensor & point_cloud, 
     int64_t max_dimension, 
-    double max_ball_radius
+    double max_ball_diameter
     ){
         CHECK_TENSOR_CUDA_CONTIGUOUS(point_cloud);
         CHECK_SMALLER_EQ(max_dimension + 1, point_cloud.size(0)); 
-        CHECK_SMALLER_EQ(0, max_ball_radius);
+        CHECK_SMALLER_EQ(0, max_ball_diameter);
 
         this->tensopt_real = torch::TensorOptions()
             .dtype(point_cloud.dtype())
@@ -384,7 +384,7 @@ void PointCloud2VR::init_state(
 
         this->point_cloud = point_cloud;
         this->max_dimension = max_dimension;
-        this->max_ball_radius = max_ball_radius; 
+        this->max_ball_diameter = max_ball_diameter; 
 
         this->n_simplices_by_dim.push_back(point_cloud.size(0));
 
@@ -416,9 +416,9 @@ void PointCloud2VR::make_boundary_info_edges(){
     filt_val_vec_dim_1 = filt_val_vec_dim_1.gather(1, y_indices);
     filt_val_vec_dim_1 = filt_val_vec_dim_1.squeeze(); // 
 
-    // reduce to edges with filtration value <= max_ball_radius...
-    if (max_ball_radius > 0){
-        auto i_select = filt_val_vec_dim_1.le(this->max_ball_radius).nonzero().squeeze(); //TODO check
+    // reduce to edges with filtration value <= max_ball_diameter...
+    if (max_ball_diameter > 0){
+        auto i_select = filt_val_vec_dim_1.le(this->max_ball_diameter).nonzero().squeeze(); //TODO check
         if (i_select.numel() ==  0){
 
             ba_dim_1 = torch::empty({0}, ba_dim_1.options()); 
@@ -692,11 +692,11 @@ void PointCloud2VR::make_ba_row_i_to_bm_col_i_vector(){
 std::vector<Tensor> PointCloud2VR::operator()(
     const Tensor & point_cloud, 
     int64_t max_dimension, 
-    double max_ball_radius){
+    double max_ball_diameter){
     
     std::vector<Tensor> ret; 
 
-    this->init_state(point_cloud, max_dimension, max_ball_radius); 
+    this->init_state(point_cloud, max_dimension, max_ball_diameter); 
     this->make_boundary_info_edges(); 
 
     if (this->n_simplices_by_dim.at(1) > 0){
@@ -802,13 +802,13 @@ std::vector<std::vector<Tensor>> calculate_persistence_output_to_barcode_tensors
 std::vector<std::vector<Tensor>> vr_persistence(
     const Tensor& point_cloud,
     int64_t max_dimension, 
-    double max_ball_radius, 
+    double max_ball_diameter, 
     const std::string & metric){    
     
     std::vector<std::vector<Tensor>> ret; 
     auto args_generator = PointCloud2VR_factory(metric);
 
-    auto args = args_generator(point_cloud, max_dimension, max_ball_radius);
+    auto args = args_generator(point_cloud, max_dimension, max_ball_diameter);
     
     auto pers = CalcPersCuda::calculate_persistence(
         args.at(0), args.at(1), args.at(2), max_dimension, -1

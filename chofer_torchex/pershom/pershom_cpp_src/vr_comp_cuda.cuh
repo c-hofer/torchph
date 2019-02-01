@@ -11,7 +11,7 @@ namespace VRCompCuda {
     std::vector<std::vector<Tensor>> vr_persistence(
         const Tensor& point_cloud, 
         int64_t max_dimension, 
-        double max_ball_radius,          
+        double max_ball_diameter,          
         const std::string & metric);
 
     void write_combinations_table_to_tensor(
@@ -38,7 +38,7 @@ namespace VRCompCuda {
 
         Tensor point_cloud; 
         int64_t max_dimension;
-        double max_ball_radius; 
+        double max_ball_diameter; 
 
         std::function<Tensor(const Tensor &)> get_distance_matrix; 
         std::vector<Tensor> boundary_info_non_vertices;
@@ -63,12 +63,12 @@ namespace VRCompCuda {
         std::vector<Tensor> operator()(
             const Tensor & point_cloud, 
             int64_t max_dimension, 
-            double max_ball_radius);
+            double max_ball_diameter);
 
         void init_state(
             const Tensor & point_cloud, 
             int64_t max_dimension, 
-            double max_ball_radius
+            double max_ball_diameter
             );
 
         void make_boundary_info_edges(); 
