@@ -103,8 +103,8 @@ def calculate_persistence(
     simplex_dimension: Tensor,
     max_dim_to_read_of_reduced_ba: int,
     max_pairs: int = -1
-    )->[Tensor]:
-    """Returns the barcodes of the given encoded boundary array
+    )->[[Tensor]]:
+    """Returns the barcodes of the given encoded boundary array.
     
     Arguments:
         compr_desc_sort_ba {Tensor} -- [see readme section top]
@@ -127,6 +127,28 @@ def calculate_persistence(
     """
     return __C.CalcPersCuda__calculate_persistence(
         compr_desc_sort_ba, ba_row_i_to_bm_col_i, simplex_dimension, max_dim_to_read_of_reduced_ba, max_pairs)
+
+
+def vr_persistence_l1(
+    point_cloud: Tensor, 
+    max_dimension: int, 
+    max_ball_diameter: float=0.0
+    )->[[Tensor]]:
+    """Returns the barcodes of the Vietoris-Rips complex of a given point cloud.
+    
+    Args:
+        point_cloud (Tensor): Point cloud from which the Vietoris-Rips complex is generated.
+        max_dimension (int): The dimension of the used Vietoris-Rips complex. 
+        max_ball_diameter (float): If not 0, edges whose two defining vertices' distance is greater than max_ball_diameter are ignored. 
+    
+    Returns:
+        [[Tensor], [Tensor]] : [ret[0][i] = non essential barcodes of dimension i
+                                ret[1][i] = birth-times of essential classes of dimension i]
+    """
+    return __C.VRCompCuda__vr_persistence(point_cloud, max_dimension, max_ball_diameter, 'l1')
+
+
+
 
 
 
