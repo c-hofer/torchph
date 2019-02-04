@@ -30,11 +30,15 @@ for extension in ['*.cpp', '*.cu']:
 
 
 # jit compiling the c++ extension
-__C = load(
-    'pershom_cuda_ext',
-    src_files,
-    verbose=True)
 
+try: 
+    __C = load(
+        'pershom_cuda_ext',
+        src_files,
+        verbose=True)
+
+except Exception:
+    print(" rror in {}. Failed jit compilation. Maybe your CUDA environment is messed up?".format(__file__))
 
 def find_merge_pairings(
     pivots: Tensor, 
