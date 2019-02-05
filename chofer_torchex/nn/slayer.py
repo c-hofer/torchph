@@ -1,6 +1,7 @@
 r"""
 Implementation of the input layer for persistent homology barcodes 
 proposed in::
+
     [chofer2017c] 
     {
     author    = {C.~Hofer and R.~Kwitt and M.~Niethammer and A.~Uhl},
