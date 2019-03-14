@@ -356,40 +356,33 @@ Tensor co_faces_from_combinations(
 
 #pragma endregion
 
-PointCloud2VR PointCloud2VR_factory(const std::string & distance){
-    if (distance.compare("l1") == 0) return PointCloud2VR(&l1_norm_distance_matrix); 
-    if (distance.compare("l2") == 0) return PointCloud2VR(&l2_norm_distance_matrix); 
-    
-    throw std::range_error("Expected 'l1' or 'l2'!");
-    
-}
-
 
 void PointCloud2VR::init_state(
-    const Tensor & point_cloud, 
+    const Tensor & distance_matrix, 
     int64_t max_dimension, 
     double max_ball_diameter
     ){
-        CHECK_TENSOR_CUDA_CONTIGUOUS(point_cloud);
-        CHECK_SMALLER_EQ(max_dimension + 1, point_cloud.size(0)); 
+        CHECK_TENSOR_CUDA_CONTIGUOUS(distance_matrix);
+        CHECK_SMALLER_EQ(max_dimension + 1, distance_matrix.size(0)); 
         CHECK_SMALLER_EQ(0, max_ball_diameter);
+        CHECK_EQUAL(distance_matrix.size(0), distance_matrix.size(1));
 
         this->tensopt_real = torch::TensorOptions()
-            .dtype(point_cloud.dtype())
-            .device(point_cloud.device());  
+            .dtype(distance_matrix.dtype())
+            .device(distance_matrix.device());  
 
         this ->tensopt_int = torch::TensorOptions()
             .dtype(torch::kInt64)
-            .device(point_cloud.device());
+            .device(distance_matrix.device());
 
-        this->point_cloud = point_cloud;
+        this->distance_matrix = distance_matrix;
         this->max_dimension = max_dimension;
         this->max_ball_diameter = max_ball_diameter; 
 
-        this->n_simplices_by_dim.push_back(point_cloud.size(0));
+        this->n_simplices_by_dim.push_back(distance_matrix.size(0));
 
         this->filtration_values_by_dim.push_back(
-            torch::empty({point_cloud.size(0)}, 
+            torch::empty({distance_matrix.size(0)}, 
             this->tensopt_real)
             .fill_(0)
             ); 
@@ -398,13 +391,11 @@ void PointCloud2VR::init_state(
 
 void PointCloud2VR::make_boundary_info_edges(){
     Tensor ba_dim_1, filt_val_vec_dim_1; 
-    auto n_edges = binom_coeff_cpu(point_cloud.size(0), 2); 
+    auto n_edges = binom_coeff_cpu(distance_matrix.size(0), 2); 
 
     ba_dim_1 = torch::empty({n_edges, 2}, this->tensopt_int); 
 
-    write_combinations_table_to_tensor(ba_dim_1, 0, 0, point_cloud.size(0)/*=max_n*/, 2/*=r*/);
-
-    auto distance_matrix = this->get_distance_matrix(point_cloud); 
+    write_combinations_table_to_tensor(ba_dim_1, 0, 0, distance_matrix.size(0)/*=max_n*/, 2/*=r*/);
 
     // building the vector containing the filtraiton values of the edges 
     // in the same order as they appear in ba_dim_1...
@@ -412,7 +403,7 @@ void PointCloud2VR::make_boundary_info_edges(){
     auto y_indices = ba_dim_1.slice(1, 1, 2); 
 
     // filling filtration vector with edge filtration values ... 
-    filt_val_vec_dim_1 = distance_matrix.index_select(0, x_indices);
+    filt_val_vec_dim_1 = this->distance_matrix.index_select(0, x_indices);
     filt_val_vec_dim_1 = filt_val_vec_dim_1.gather(1, y_indices);
     filt_val_vec_dim_1 = filt_val_vec_dim_1.squeeze(); // 
 
@@ -690,13 +681,13 @@ void PointCloud2VR::make_ba_row_i_to_bm_col_i_vector(){
 }
 
 std::vector<Tensor> PointCloud2VR::operator()(
-    const Tensor & point_cloud, 
+    const Tensor & distance_matrix, 
     int64_t max_dimension, 
     double max_ball_diameter){
     
     std::vector<Tensor> ret; 
 
-    this->init_state(point_cloud, max_dimension, max_ball_diameter); 
+    this->init_state(distance_matrix, max_dimension, max_ball_diameter); 
     this->make_boundary_info_edges(); 
 
     if (this->n_simplices_by_dim.at(1) > 0){
@@ -722,12 +713,12 @@ std::vector<Tensor> PointCloud2VR::operator()(
     {
         ret.push_back(torch::empty({0, 2*(max_dimension + 1)}, this->tensopt_int));
         ret.push_back(torch::empty({0}, this->tensopt_int));
-        ret.push_back(torch::zeros({point_cloud.size(0)}, this->tensopt_int));
+        ret.push_back(torch::zeros({distance_matrix.size(0)}, this->tensopt_int));
 
-        // We generate the 0-vector in this way to ensure that point_cloud
+        // We generate the 0-vector in this way to ensure that distance_matrix
         // will have zero gradients instead of None after a backward call
         // in pytorch ... 
-        auto filtration_values = point_cloud.slice(1, 0, 1).squeeze().clone();
+        auto filtration_values = distance_matrix.slice(1, 0, 1).squeeze().clone();
         filtration_values.fill_(0); 
         ret.push_back(filtration_values);
     }
@@ -800,15 +791,14 @@ std::vector<std::vector<Tensor>> calculate_persistence_output_to_barcode_tensors
 
 
 std::vector<std::vector<Tensor>> vr_persistence(
-    const Tensor& point_cloud,
+    const Tensor& distance_matrix,
     int64_t max_dimension, 
-    double max_ball_diameter, 
-    const std::string & metric){    
+    double max_ball_diameter){    
     
     std::vector<std::vector<Tensor>> ret; 
-    auto args_generator = PointCloud2VR_factory(metric);
+    auto args_generator = PointCloud2VR();
 
-    auto args = args_generator(point_cloud, max_dimension, max_ball_diameter);
+    auto args = args_generator(distance_matrix, max_dimension, max_ball_diameter);
     
     auto pers = CalcPersCuda::calculate_persistence(
         args.at(0), args.at(1), args.at(2), max_dimension, -1
@@ -819,6 +809,17 @@ std::vector<std::vector<Tensor>> vr_persistence(
 
     return ret;
 }
+
+
+std::vector<std::vector<Tensor>> vr_persistence_l1(
+    const Tensor& point_cloud,
+    int64_t max_dimension, 
+    double max_ball_diameter){
+
+    auto distance_matrix = l1_norm_distance_matrix(point_cloud);
+    return vr_persistence(distance_matrix, max_dimension, max_ball_diameter);
+}
+
 
 
 } // namespace VRCompCuda 

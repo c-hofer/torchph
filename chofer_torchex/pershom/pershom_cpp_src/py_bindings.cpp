@@ -13,6 +13,7 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m)
     m.def("CalcPersCuda__calculate_persistence", &CalcPersCuda::calculate_persistence, "calculate_persistence (CUDA)");
 
     m.def("VRCompCuda__vr_persistence", &VRCompCuda::vr_persistence, "");
+    m.def("VRCompCuda__vr_persistence_l1", &VRCompCuda::vr_persistence_l1, "");
     m.def("VRCompCuda__write_combinations_table_to_tensor", &VRCompCuda::write_combinations_table_to_tensor, ""),
     m.def("VRCompCuda__co_faces_from_combinations", &VRCompCuda::co_faces_from_combinations, "");
 
@@ -20,7 +21,7 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m)
     m.def("VRCompCuda__l2_norm_distance_matrix", &VRCompCuda::l2_norm_distance_matrix, "");
 
     pybind11::class_<VRCompCuda::PointCloud2VR>(m, "VRCompCuda__PointCloud2VR")
-        .def(pybind11::init<std::function<Tensor(const Tensor &)>>())
+        .def(pybind11::init<>())
         .def_readwrite("boundary_info_non_vertices", &VRCompCuda::PointCloud2VR::boundary_info_non_vertices)
         .def_readwrite("filtration_values_by_dim", &VRCompCuda::PointCloud2VR::filtration_values_by_dim)
         .def_readwrite("n_simplices_by_dim", &VRCompCuda::PointCloud2VR::n_simplices_by_dim)
@@ -55,7 +56,6 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m)
         // .def("", &VRCompCuda::PointCloud2VR::, "")
         ; 
 
-    m.def("VRCompCuda__PointCloud2VR_factory", &VRCompCuda::PointCloud2VR_factory, "");
 }
 
 #endif
