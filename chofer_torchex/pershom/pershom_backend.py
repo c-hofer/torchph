@@ -192,7 +192,8 @@ def vr_persistence_l1(
     max_dimension: int, 
     max_ball_diameter: float=0.0
     )->List[List[Tensor]]:
-    """Returns the barcodes of the Vietoris-Rips complex of a given point cloud.
+    """Returns the barcodes of the Vietoris-Rips complex of a given point cloud
+    w.r.t. the l1 (manhatten) distance.
     
     Args:
         point_cloud: 
@@ -221,7 +222,12 @@ def vr_persistence(
     max_dimension: int, 
     max_ball_diameter: float=0.0
     )->List[List[Tensor]]:
-    """Returns the barcodes of the Vietoris-Rips complex of a given point cloud.
+    """Returns the barcodes of the Vietoris-Rips complex of a given distance
+    matrix.
+
+    **Note**: ``distance_matrix`` is assumed to be a square matrix. Practically, 
+    symetry is *not* required and the upper diagonal part is *ignored*.
+    For the computation, just the *lower* diagonal part is used. 
     
     Args:
         distance_matrix: 

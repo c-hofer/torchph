@@ -17,33 +17,35 @@
   
 
   
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
 
-  
-  
     
 
   
-
   <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="prev" title="nn" href="nn.html" /> 
-
-  
-  <script src="_static/js/modernizr.min.js"></script>
-
 </head>
 
 <body class="wy-body-for-nav">
 
    
   <div class="wy-grid-for-nav">
-
     
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
-        <div class="wy-side-nav-search">
+        <div class="wy-side-nav-search" >
           
 
           
@@ -301,9 +303,41 @@ reduced boundary array</li>
 </dd></dl>
 
 <dl class="function">
+<dt id="chofer_torchex.pershom.pershom_backend.vr_persistence">
+<code class="descclassname">chofer_torchex.pershom.pershom_backend.</code><code class="descname">vr_persistence</code><span class="sig-paren">(</span><em>distance_matrix: torch.Tensor</em>, <em>max_dimension: int</em>, <em>max_ball_diameter: float = 0.0</em><span class="sig-paren">)</span> &#x2192; List[List[torch.Tensor]]<a class="reference internal" href="_modules/chofer_torchex/pershom/pershom_backend.html#vr_persistence"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chofer_torchex.pershom.pershom_backend.vr_persistence" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the barcodes of the Vietoris-Rips complex of a given distance
+matrix.</p>
+<p><strong>Note</strong>: <code class="docutils literal notranslate"><span class="pre">distance_matrix</span></code> is assumed to be a square matrix. Practically,
+symetry is <em>not</em> required and the upper diagonal part is <em>ignored</em>.
+For the computation, just the <em>lower</em> diagonal part is used.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>distance_matrix</strong> – Distance matrix the Vietoris-Rips complex is based on.</li>
+<li><strong>max_dimension</strong> – The dimension of the used Vietoris-Rips complex.</li>
+<li><strong>max_ball_diameter</strong> – If not 0, edges whose two defining vertices’ distance is greater
+than <code class="docutils literal notranslate"><span class="pre">max_ball_diameter</span></code> are ignored.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><p>List of birth/death times.</p>
+<p><code class="docutils literal notranslate"><span class="pre">ret[0][n]</span></code> are non essential birth/death-<em>values</em> of dimension <code class="docutils literal notranslate"><span class="pre">n</span></code>.</p>
+<p><code class="docutils literal notranslate"><span class="pre">ret[1][n]</span></code> are birth-<em>values</em> of essential classes of
+dimension <code class="docutils literal notranslate"><span class="pre">n</span></code>.</p>
+</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
 <dt id="chofer_torchex.pershom.pershom_backend.vr_persistence_l1">
 <code class="descclassname">chofer_torchex.pershom.pershom_backend.</code><code class="descname">vr_persistence_l1</code><span class="sig-paren">(</span><em>point_cloud: torch.Tensor</em>, <em>max_dimension: int</em>, <em>max_ball_diameter: float = 0.0</em><span class="sig-paren">)</span> &#x2192; List[List[torch.Tensor]]<a class="reference internal" href="_modules/chofer_torchex/pershom/pershom_backend.html#vr_persistence_l1"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chofer_torchex.pershom.pershom_backend.vr_persistence_l1" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns the barcodes of the Vietoris-Rips complex of a given point cloud.</p>
+<dd><p>Returns the barcodes of the Vietoris-Rips complex of a given point cloud
+w.r.t. the l1 (manhatten) distance.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -339,7 +373,7 @@ dimension <code class="docutils literal notranslate"><span class="pre">n</span><
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
       
-        <a href="nn.html" class="btn btn-neutral" title="nn" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="nn.html" class="btn btn-neutral float-left" title="nn" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
@@ -365,26 +399,16 @@ dimension <code class="docutils literal notranslate"><span class="pre">n</span><
   
 
 
-  
-
-    
-    
-      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
-        <script type="text/javascript" src="_static/jquery.js"></script>
-        <script type="text/javascript" src="_static/underscore.js"></script>
-        <script type="text/javascript" src="_static/doctools.js"></script>
-        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    
-
-  
-
-  <script type="text/javascript" src="_static/js/theme.js"></script>
-
   <script type="text/javascript">
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
-  </script> 
+  </script>
+
+  
+  
+    
+   
 
 </body>
 </html>

@@ -17,32 +17,34 @@
   
 
   
+  <script type="text/javascript" src="../../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../../_static/doctools.js"></script>
+        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
 
-  
-  
     
 
   
-
   <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" /> 
-
-  
-  <script src="../../../_static/js/modernizr.min.js"></script>
-
 </head>
 
 <body class="wy-body-for-nav">
 
    
   <div class="wy-grid-for-nav">
-
     
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
-        <div class="wy-side-nav-search">
+        <div class="wy-side-nav-search" >
           
 
           
@@ -336,7 +338,8 @@
     <span class="n">max_dimension</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> 
     <span class="n">max_ball_diameter</span><span class="p">:</span> <span class="nb">float</span><span class="o">=</span><span class="mf">0.0</span>
     <span class="p">)</span><span class="o">-&gt;</span><span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]]:</span>
-    <span class="sd">&quot;&quot;&quot;Returns the barcodes of the Vietoris-Rips complex of a given point cloud.</span>
+    <span class="sd">&quot;&quot;&quot;Returns the barcodes of the Vietoris-Rips complex of a given point cloud</span>
+<span class="sd">    w.r.t. the l1 (manhatten) distance.</span>
 <span class="sd">    </span>
 <span class="sd">    Args:</span>
 <span class="sd">        point_cloud: </span>
@@ -357,7 +360,41 @@
 <span class="sd">        ``ret[1][n]`` are birth-*values* of essential classes of </span>
 <span class="sd">        dimension ``n``.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="n">__C</span><span class="o">.</span><span class="n">VRCompCuda__vr_persistence</span><span class="p">(</span><span class="n">point_cloud</span><span class="p">,</span> <span class="n">max_dimension</span><span class="p">,</span> <span class="n">max_ball_diameter</span><span class="p">,</span> <span class="s1">&#39;l1&#39;</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">__C</span><span class="o">.</span><span class="n">VRCompCuda__vr_persistence_l1</span><span class="p">(</span><span class="n">point_cloud</span><span class="p">,</span> <span class="n">max_dimension</span><span class="p">,</span> <span class="n">max_ball_diameter</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="vr_persistence"><a class="viewcode-back" href="../../../pershom.html#chofer_torchex.pershom.pershom_backend.vr_persistence">[docs]</a><span class="k">def</span> <span class="nf">vr_persistence</span><span class="p">(</span>
+    <span class="n">distance_matrix</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> 
+    <span class="n">max_dimension</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> 
+    <span class="n">max_ball_diameter</span><span class="p">:</span> <span class="nb">float</span><span class="o">=</span><span class="mf">0.0</span>
+    <span class="p">)</span><span class="o">-&gt;</span><span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]]:</span>
+    <span class="sd">&quot;&quot;&quot;Returns the barcodes of the Vietoris-Rips complex of a given distance</span>
+<span class="sd">    matrix.</span>
+
+<span class="sd">    **Note**: ``distance_matrix`` is assumed to be a square matrix. Practically, </span>
+<span class="sd">    symetry is *not* required and the upper diagonal part is *ignored*.</span>
+<span class="sd">    For the computation, just the *lower* diagonal part is used. </span>
+<span class="sd">    </span>
+<span class="sd">    Args:</span>
+<span class="sd">        distance_matrix: </span>
+<span class="sd">            Distance matrix the Vietoris-Rips complex is based on.</span>
+
+<span class="sd">        max_dimension: </span>
+<span class="sd">            The dimension of the used Vietoris-Rips complex. </span>
+
+<span class="sd">        max_ball_diameter: </span>
+<span class="sd">            If not 0, edges whose two defining vertices&#39; distance is greater </span>
+<span class="sd">            than ``max_ball_diameter`` are ignored. </span>
+<span class="sd">    </span>
+<span class="sd">    Returns:</span>
+<span class="sd">        List of birth/death times.</span>
+<span class="sd">        </span>
+<span class="sd">        ``ret[0][n]`` are non essential birth/death-*values* of dimension ``n``.</span>
+
+<span class="sd">        ``ret[1][n]`` are birth-*values* of essential classes of </span>
+<span class="sd">        dimension ``n``.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">__C</span><span class="o">.</span><span class="n">VRCompCuda__vr_persistence</span><span class="p">(</span><span class="n">distance_matrix</span><span class="p">,</span> <span class="n">max_dimension</span><span class="p">,</span> <span class="n">max_ball_diameter</span><span class="p">)</span></div>
 
 
 
@@ -396,26 +433,16 @@
   
 
 
-  
-
-    
-    
-      <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
-        <script type="text/javascript" src="../../../_static/jquery.js"></script>
-        <script type="text/javascript" src="../../../_static/underscore.js"></script>
-        <script type="text/javascript" src="../../../_static/doctools.js"></script>
-        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    
-
-  
-
-  <script type="text/javascript" src="../../../_static/js/theme.js"></script>
-
   <script type="text/javascript">
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
-  </script> 
+  </script>
+
+  
+  
+    
+   
 
 </body>
 </html>
