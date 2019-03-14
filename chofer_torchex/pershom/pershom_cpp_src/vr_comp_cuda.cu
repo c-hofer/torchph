@@ -356,55 +356,46 @@ Tensor co_faces_from_combinations(
 
 #pragma endregion
 
-PointCloud2VR PointCloud2VR_factory(const std::string & distance){
-    if (distance.compare("l1") == 0) return PointCloud2VR(&l1_norm_distance_matrix); 
-    if (distance.compare("l2") == 0) return PointCloud2VR(&l2_norm_distance_matrix); 
-    
-    throw std::range_error("Expected 'l1' or 'l2'!");
-    
-}
 
-
-void PointCloud2VR::init_state(
-    const Tensor & point_cloud, 
+void VietorisRipsArgsGenerator::init_state(
+    const Tensor & distance_matrix, 
     int64_t max_dimension, 
     double max_ball_diameter
     ){
-        CHECK_TENSOR_CUDA_CONTIGUOUS(point_cloud);
-        CHECK_SMALLER_EQ(max_dimension + 1, point_cloud.size(0)); 
+        CHECK_TENSOR_CUDA_CONTIGUOUS(distance_matrix);
+        CHECK_SMALLER_EQ(max_dimension + 1, distance_matrix.size(0)); 
         CHECK_SMALLER_EQ(0, max_ball_diameter);
+        CHECK_EQUAL(distance_matrix.size(0), distance_matrix.size(1));
 
         this->tensopt_real = torch::TensorOptions()
-            .dtype(point_cloud.dtype())
-            .device(point_cloud.device());  
+            .dtype(distance_matrix.dtype())
+            .device(distance_matrix.device());  
 
         this ->tensopt_int = torch::TensorOptions()
             .dtype(torch::kInt64)
-            .device(point_cloud.device());
+            .device(distance_matrix.device());
 
-        this->point_cloud = point_cloud;
+        this->distance_matrix = distance_matrix;
         this->max_dimension = max_dimension;
         this->max_ball_diameter = max_ball_diameter; 
 
-        this->n_simplices_by_dim.push_back(point_cloud.size(0));
+        this->n_simplices_by_dim.push_back(distance_matrix.size(0));
 
         this->filtration_values_by_dim.push_back(
-            torch::empty({point_cloud.size(0)}, 
+            torch::empty({distance_matrix.size(0)}, 
             this->tensopt_real)
             .fill_(0)
             ); 
 }
 
 
-void PointCloud2VR::make_boundary_info_edges(){
+void VietorisRipsArgsGenerator::make_boundary_info_edges(){
     Tensor ba_dim_1, filt_val_vec_dim_1; 
-    auto n_edges = binom_coeff_cpu(point_cloud.size(0), 2); 
+    auto n_edges = binom_coeff_cpu(distance_matrix.size(0), 2); 
 
     ba_dim_1 = torch::empty({n_edges, 2}, this->tensopt_int); 
 
-    write_combinations_table_to_tensor(ba_dim_1, 0, 0, point_cloud.size(0)/*=max_n*/, 2/*=r*/);
-
-    auto distance_matrix = this->get_distance_matrix(point_cloud); 
+    write_combinations_table_to_tensor(ba_dim_1, 0, 0, distance_matrix.size(0)/*=max_n*/, 2/*=r*/);
 
     // building the vector containing the filtraiton values of the edges 
     // in the same order as they appear in ba_dim_1...
@@ -412,7 +403,7 @@ void PointCloud2VR::make_boundary_info_edges(){
     auto y_indices = ba_dim_1.slice(1, 1, 2); 
 
     // filling filtration vector with edge filtration values ... 
-    filt_val_vec_dim_1 = distance_matrix.index_select(0, x_indices);
+    filt_val_vec_dim_1 = this->distance_matrix.index_select(0, x_indices);
     filt_val_vec_dim_1 = filt_val_vec_dim_1.gather(1, y_indices);
     filt_val_vec_dim_1 = filt_val_vec_dim_1.squeeze(); // 
 
@@ -437,7 +428,7 @@ void PointCloud2VR::make_boundary_info_edges(){
 }
 
 
-void PointCloud2VR::make_boundary_info_non_edges(){
+void VietorisRipsArgsGenerator::make_boundary_info_non_edges(){
     Tensor filt_vals_prev_dim;
     int64_t n_dim_min_one_simplices; 
     Tensor new_boundary_info, new_filt_vals;
@@ -485,7 +476,7 @@ void PointCloud2VR::make_boundary_info_non_edges(){
 }
 
 
-void PointCloud2VR::make_simplex_ids_compatible_within_dimensions(){
+void VietorisRipsArgsGenerator::make_simplex_ids_compatible_within_dimensions(){
     
     auto index_offset = this->n_simplices_by_dim.at(0);
     int dim; 
@@ -500,7 +491,7 @@ void PointCloud2VR::make_simplex_ids_compatible_within_dimensions(){
 }
 
 
-void PointCloud2VR::make_simplex_dimension_vector(){
+void VietorisRipsArgsGenerator::make_simplex_dimension_vector(){
     int64_t n_simplices = 0;
     for (int i = 0; i < this->n_simplices_by_dim.size(); i++){
         n_simplices += this->n_simplices_by_dim.at(i); 
@@ -524,7 +515,7 @@ void PointCloud2VR::make_simplex_dimension_vector(){
 }
 
 
-void PointCloud2VR::make_filtration_values_vector_without_vertices(){
+void VietorisRipsArgsGenerator::make_filtration_values_vector_without_vertices(){
     
     std::vector<Tensor> filt_values_non_vertex_simplices; 
     for (int i = 1; i < this->filtration_values_by_dim.size(); i++){
@@ -537,7 +528,7 @@ void PointCloud2VR::make_filtration_values_vector_without_vertices(){
 }
 
 
-void PointCloud2VR::do_filtration_add_eps_hack(){
+void VietorisRipsArgsGenerator::do_filtration_add_eps_hack(){
     /* 
     This is a dirty hack to ensure that simplices do not occour before their boundaries 
     in the filtration. As the filtration is raised to higher dimensional simplices by 
@@ -576,7 +567,7 @@ void PointCloud2VR::do_filtration_add_eps_hack(){
 }
 
 
-void PointCloud2VR::make_sorting_infrastructure(){
+void VietorisRipsArgsGenerator::make_sorting_infrastructure(){
     auto sort_ret = this->filtration_values_vector_without_vertices.sort(0);     
     this->sort_indices_without_vertices = std::get<1>(sort_ret);
     this->sort_indices_without_vertices_inverse = 
@@ -584,7 +575,7 @@ void PointCloud2VR::make_sorting_infrastructure(){
 }
 
 
-void PointCloud2VR::undo_filtration_add_eps_hack(){
+void VietorisRipsArgsGenerator::undo_filtration_add_eps_hack(){
     if (this->max_dimension >= 2 && this->n_simplices_by_dim.at(2) > 0){
         this->filtration_values_vector_without_vertices -=
             this->filtration_add_eps_hack_values; 
@@ -592,7 +583,7 @@ void PointCloud2VR::undo_filtration_add_eps_hack(){
 }
 
 
-void PointCloud2VR::make_sorted_filtration_values_vector(){
+void VietorisRipsArgsGenerator::make_sorted_filtration_values_vector(){
 
     auto dim_0_filt_values = torch::empty({n_simplices_by_dim.at(0)}, this->tensopt_real);
     
@@ -607,7 +598,7 @@ void PointCloud2VR::make_sorted_filtration_values_vector(){
 }
 
 
-void PointCloud2VR::make_boundary_array_rows_unsorted(){
+void VietorisRipsArgsGenerator::make_boundary_array_rows_unsorted(){
     auto n_non_vertex_simplices = 0;
     for (int i=1; i < this->n_simplices_by_dim.size(); i++){
         n_non_vertex_simplices += this->n_simplices_by_dim.at(i); 
@@ -669,7 +660,7 @@ void PointCloud2VR::make_boundary_array_rows_unsorted(){
 }
 
 
-void PointCloud2VR::apply_sorting_to_rows(){
+void VietorisRipsArgsGenerator::apply_sorting_to_rows(){
     this->boundary_array = boundary_array.index_select(
         0,
         this->sort_indices_without_vertices
@@ -681,7 +672,7 @@ void PointCloud2VR::apply_sorting_to_rows(){
 }
 
 
-void PointCloud2VR::make_ba_row_i_to_bm_col_i_vector(){
+void VietorisRipsArgsGenerator::make_ba_row_i_to_bm_col_i_vector(){
     auto tmp = torch::empty({this->boundary_array.size(0)}, this->tensopt_int);
     TensorUtils::fill_range_cuda_(tmp); 
     tmp += this->n_simplices_by_dim.at(0); 
@@ -689,14 +680,14 @@ void PointCloud2VR::make_ba_row_i_to_bm_col_i_vector(){
     this->ba_row_i_to_bm_col_i_vector = tmp; 
 }
 
-std::vector<Tensor> PointCloud2VR::operator()(
-    const Tensor & point_cloud, 
+std::vector<Tensor> VietorisRipsArgsGenerator::operator()(
+    const Tensor & distance_matrix, 
     int64_t max_dimension, 
     double max_ball_diameter){
     
     std::vector<Tensor> ret; 
 
-    this->init_state(point_cloud, max_dimension, max_ball_diameter); 
+    this->init_state(distance_matrix, max_dimension, max_ball_diameter); 
     this->make_boundary_info_edges(); 
 
     if (this->n_simplices_by_dim.at(1) > 0){
@@ -722,12 +713,12 @@ std::vector<Tensor> PointCloud2VR::operator()(
     {
         ret.push_back(torch::empty({0, 2*(max_dimension + 1)}, this->tensopt_int));
         ret.push_back(torch::empty({0}, this->tensopt_int));
-        ret.push_back(torch::zeros({point_cloud.size(0)}, this->tensopt_int));
+        ret.push_back(torch::zeros({distance_matrix.size(0)}, this->tensopt_int));
 
-        // We generate the 0-vector in this way to ensure that point_cloud
+        // We generate the 0-vector in this way to ensure that distance_matrix
         // will have zero gradients instead of None after a backward call
         // in pytorch ... 
-        auto filtration_values = point_cloud.slice(1, 0, 1).squeeze().clone();
+        auto filtration_values = distance_matrix.slice(1, 0, 1).squeeze().clone();
         filtration_values.fill_(0); 
         ret.push_back(filtration_values);
     }
@@ -800,15 +791,14 @@ std::vector<std::vector<Tensor>> calculate_persistence_output_to_barcode_tensors
 
 
 std::vector<std::vector<Tensor>> vr_persistence(
-    const Tensor& point_cloud,
+    const Tensor& distance_matrix,
     int64_t max_dimension, 
-    double max_ball_diameter, 
-    const std::string & metric){    
+    double max_ball_diameter){    
     
     std::vector<std::vector<Tensor>> ret; 
-    auto args_generator = PointCloud2VR_factory(metric);
+    auto args_generator = VietorisRipsArgsGenerator();
 
-    auto args = args_generator(point_cloud, max_dimension, max_ball_diameter);
+    auto args = args_generator(distance_matrix, max_dimension, max_ball_diameter);
     
     auto pers = CalcPersCuda::calculate_persistence(
         args.at(0), args.at(1), args.at(2), max_dimension, -1
@@ -819,6 +809,17 @@ std::vector<std::vector<Tensor>> vr_persistence(
 
     return ret;
 }
+
+
+std::vector<std::vector<Tensor>> vr_persistence_l1(
+    const Tensor& point_cloud,
+    int64_t max_dimension, 
+    double max_ball_diameter){
+
+    auto distance_matrix = l1_norm_distance_matrix(point_cloud);
+    return vr_persistence(distance_matrix, max_dimension, max_ball_diameter);
+}
+
 
 
 } // namespace VRCompCuda 

@@ -9,10 +9,14 @@ using namespace torch;
 
 namespace VRCompCuda {
     std::vector<std::vector<Tensor>> vr_persistence(
+        const Tensor& distance_matrix, 
+        int64_t max_dimension, 
+        double max_ball_diameter);
+
+    std::vector<std::vector<Tensor>> vr_persistence_l1(
         const Tensor& point_cloud, 
         int64_t max_dimension, 
-        double max_ball_diameter,          
-        const std::string & metric);
+        double max_ball_diameter);
 
     void write_combinations_table_to_tensor(
         const Tensor& out, 
@@ -29,18 +33,17 @@ namespace VRCompCuda {
     
     Tensor l2_norm_distance_matrix(const Tensor & points);
 
-    class PointCloud2VR
+    class VietorisRipsArgsGenerator
     {
         public:
 
         at::TensorOptions tensopt_real;
         at::TensorOptions tensopt_int; 
 
-        Tensor point_cloud; 
+        Tensor distance_matrix; 
         int64_t max_dimension;
         double max_ball_diameter; 
 
-        std::function<Tensor(const Tensor &)> get_distance_matrix; 
         std::vector<Tensor> boundary_info_non_vertices;
         std::vector<Tensor> filtration_values_by_dim; 
         std::vector<int64_t> n_simplices_by_dim; 
@@ -56,17 +59,14 @@ namespace VRCompCuda {
         Tensor boundary_array; 
 
         Tensor ba_row_i_to_bm_col_i_vector; 
-        
-        PointCloud2VR(const std::function<Tensor(const Tensor &)> get_distance_matrix)
-            : get_distance_matrix(get_distance_matrix){}
 
         std::vector<Tensor> operator()(
-            const Tensor & point_cloud, 
+            const Tensor & distance_matrix, 
             int64_t max_dimension, 
             double max_ball_diameter);
 
         void init_state(
-            const Tensor & point_cloud, 
+            const Tensor & distance_matrix, 
             int64_t max_dimension, 
             double max_ball_diameter
             );
@@ -84,7 +84,5 @@ namespace VRCompCuda {
         void apply_sorting_to_rows();
         void make_ba_row_i_to_bm_col_i_vector(); 
     };
-
-    PointCloud2VR PointCloud2VR_factory(const std::string & distance);
 }
 

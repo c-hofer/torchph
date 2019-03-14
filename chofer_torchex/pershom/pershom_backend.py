@@ -213,7 +213,36 @@ def vr_persistence_l1(
         ``ret[1][n]`` are birth-*values* of essential classes of 
         dimension ``n``.
     """
-    return __C.VRCompCuda__vr_persistence(point_cloud, max_dimension, max_ball_diameter, 'l1')
+    return __C.VRCompCuda__vr_persistence_l1(point_cloud, max_dimension, max_ball_diameter)
+
+
+def vr_persistence(
+    distance_matrix: Tensor, 
+    max_dimension: int, 
+    max_ball_diameter: float=0.0
+    )->List[List[Tensor]]:
+    """Returns the barcodes of the Vietoris-Rips complex of a given point cloud.
+    
+    Args:
+        distance_matrix: 
+            Distance matrix the Vietoris-Rips complex is based on.
+
+        max_dimension: 
+            The dimension of the used Vietoris-Rips complex. 
+
+        max_ball_diameter: 
+            If not 0, edges whose two defining vertices' distance is greater 
+            than ``max_ball_diameter`` are ignored. 
+    
+    Returns:
+        List of birth/death times.
+        
+        ``ret[0][n]`` are non essential birth/death-*values* of dimension ``n``.
+
+        ``ret[1][n]`` are birth-*values* of essential classes of 
+        dimension ``n``.
+    """
+    return __C.VRCompCuda__vr_persistence(distance_matrix, max_dimension, max_ball_diameter)
 
 
 
