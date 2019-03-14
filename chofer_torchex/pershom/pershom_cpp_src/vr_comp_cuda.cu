@@ -1,4 +1,5 @@
 #include <torch/extension.h>
+#include <ATen/cuda/CUDAApplyUtils.cuh>
 
 #include <cuda.h>
 #include <cuda_runtime.h>
@@ -75,7 +76,7 @@ Tensor binomial_table(int64_t max_n, int64_t max_k, const Device& device){
     dim3 num_blocks= dim3(max_k/threads_per_block.y + 1, max_n/threads_per_block.x + 1);    
 
 
-    binomial_table_kernel<<<num_blocks, threads_per_block>>>(
+    binomial_table_kernel<<<num_blocks, threads_per_block, 0, at::cuda::getCurrentCUDAStream()>>>(
         ret.data<int64_t>(),
         max_n, 
         max_k);      
@@ -244,7 +245,7 @@ void write_combinations_table_to_tensor(
 
     int blocks = n_max_over_r/(threads_per_block*n_comb_by_thread) + 1;
 
-    write_combinations_to_tensor_kernel<<<blocks, threads_per_block>>>(
+    write_combinations_to_tensor_kernel<<<blocks, threads_per_block, 0, at::cuda::getCurrentCUDAStream()>>>(
         out.data<int64_t>(), 
         out_row_offset, 
         out.size(1), 
@@ -337,7 +338,7 @@ Tensor co_faces_from_combinations(
     int threads_per_block = 64; //TODO optimize
     int blocks = combinations.size(0)/threads_per_block + 1;
 
-    mask_of_valid_co_faces_from_combinations_kernel<<<blocks, threads_per_block>>>(
+    mask_of_valid_co_faces_from_combinations_kernel<<<blocks, threads_per_block, 0, at::cuda::getCurrentCUDAStream()>>>(
         combinations.data<int64_t>(), 
         combinations.size(0),
         combinations.size(1),
