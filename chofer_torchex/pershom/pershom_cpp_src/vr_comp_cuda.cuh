@@ -33,7 +33,7 @@ namespace VRCompCuda {
     
     Tensor l2_norm_distance_matrix(const Tensor & points);
 
-    class PointCloud2VR
+    class VietorisRipsArgsGenerator
     {
         public:
 
