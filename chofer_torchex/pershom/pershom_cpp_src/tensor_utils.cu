@@ -1,4 +1,6 @@
 #include <torch/extension.h>
+#include <ATen/cuda/CUDAApplyUtils.cuh>
+
 #include "cuda_checks.cuh"
 #include "param_checks_cuda.cuh"
 
@@ -32,11 +34,11 @@ void fill_range_cuda_(Tensor t)
     switch(scalar_type)
     {
         case ScalarType::Int: 
-        fill_range_kernel<int32_t><<<blocks, threads_per_block>>>(t.data<int32_t>(), t.numel());
+        fill_range_kernel<int32_t><<<blocks, threads_per_block, 0, at::cuda::getCurrentCUDAStream()>>>(t.data<int32_t>(), t.numel());
         break;
 
         case ScalarType::Long: 
-        fill_range_kernel<int64_t><<<blocks, threads_per_block>>>(t.data<int64_t>(), t.numel());
+        fill_range_kernel<int64_t><<<blocks, threads_per_block, 0, at::cuda::getCurrentCUDAStream()>>>(t.data<int64_t>(), t.numel());
         break;
         
         default:
