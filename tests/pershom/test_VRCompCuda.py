@@ -113,19 +113,20 @@ def test_co_faces_from_combinations__result(n_vertices, dim_faces):
 
 @pytest.mark.parametrize("max_dimension, max_ball_radius", 
 [ (2, 0.0), (2, 1.0), (2, 2.0), (3, 0.0), (3, 1.0), (3, 2.0)])
-def test_PointCloud2VR__l1_excessive_state_testing_of_all_intermediate_steps(max_dimension, max_ball_radius):
+def test_VietorisRipsArgsGenerator__l1_excessive_state_testing_of_all_intermediate_steps(max_dimension, max_ball_radius):
     # ASSERTS that the number of edges is > 0!!!
     point_cloud = [(0, 0), (1, 0), (0, 0.5), (1, 1.5)]
     point_cloud = torch.tensor(point_cloud, device='cuda', dtype=torch.float)
+    distance_matrix = pershom_backend.__C.VRCompCuda__l1_norm_distance_matrix(point_cloud)
 
     def l1_norm(x, y):
         return float((x-y).abs().sum())
 
-    testee = pershom_backend.__C.VRCompCuda__PointCloud2VR_factory("l1")
+    testee = pershom_backend.__C.VRCompCuda__VietorisRipsArgsGenerator()
     # Test
     # init_state 
     #
-    testee.init_state(point_cloud, max_dimension, max_ball_radius)
+    testee.init_state(distance_matrix, max_dimension, max_ball_radius)
 
     assert len(testee.filtration_values_by_dim) == 1
     assert testee.n_simplices_by_dim[0] == point_cloud.size(0)
@@ -362,14 +363,15 @@ for pth in glob.glob(os.path.join(os.path.dirname(__file__), "test_pershom_backe
 
 
 @pytest.mark.parametrize("test_args", random_point_clouds)
-def test_PointCloud2VR__l1_valid_calculate_persistence_args(test_args):
+def test_VietorisRipsArgsGenerator__l1_valid_calculate_persistence_args(test_args):
     point_cloud = test_args
     point_cloud = point_cloud.float().to('cuda')
+    distance_matrix =  pershom_backend.__C.VRCompCuda__l1_norm_distance_matrix(point_cloud)
     max_dimension = 2
     max_ball_radius = 0
 
-    testee = pershom_backend.__C.VRCompCuda__PointCloud2VR_factory("l1")
-    ba, ba_row_i_to_bm_col_i, simplex_dimension, sorted_filtration_values_vector = testee(point_cloud, max_dimension, max_ball_radius)
+    testee = pershom_backend.__C.VRCompCuda__VietorisRipsArgsGenerator()
+    ba, ba_row_i_to_bm_col_i, simplex_dimension, sorted_filtration_values_vector = testee(distance_matrix, max_dimension, max_ball_radius)
 
     if ba.size(0) > 0:
 
