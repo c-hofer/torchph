@@ -84,5 +84,10 @@ namespace VRCompCuda {
         void apply_sorting_to_rows();
         void make_ba_row_i_to_bm_col_i_vector(); 
     };
+
+
+    std::vector<std::vector<Tensor>> calculate_persistence_output_to_barcode_tensors(
+        const std::vector<std::vector<Tensor>>& calculate_persistence_output,
+        const Tensor & filtration_values);
 }
 
