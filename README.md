@@ -1,23 +1,20 @@
-This repository is still **under construction** ... you're more than invited to try stuff, but strange things may happen ;) 
+This repository is still **under developement**, however, you're more than invited to try stuff :).
 
 # chofer_torchex
 
 In this repository I gather my extensions to [PyTorch](http://pytorch.org). 
 The packaging structure tries to reproduce PyTorch's structure in order 
-to facilitate usage for people familiar with PyTorch. In the following, you
-can find list of its main features (admittedly short ... yet ;) ).
+to facilitate usage for people familiar with PyTorch. 
 
-1. `nn.SLayer`:
-This is an input layer which can operate on multisets of points in some 
-cartesian product of the real numbers. Its primary intention is to train 
-networks on the output of a topological data analysis pipeline, but can 
-be used on arbitrary (real vector) multiset input. [Tutorial](https://github.com/c-hofer/chofer_torchex/blob/master/tutorials/SLayer.ipynb)
+[Read the docs!](https://c-hofer.github.io/chofer_torchex/)
 
-See [Deep Learning with Topological Signatures](https://arxiv.org/abs/1707.04041) for 
-further reading. 
+The folder *tutorials* contains some minimalistic examples in form of Jupyter notebooks
+to demonstrate how to use the `PyTorch` extensions. 
+
+# associated papers
 
 ```bash
-@inproceedings{Hofer17c,
+@inproceedings{HoferNIPS17,
   author    = {C.~Hofer and R.~Kwitt and M.~Niethammer and A.~Uhl},
   title     = {Deep Learning with Topological Signatures},
   booktitle = {NIPS},
@@ -26,5 +23,13 @@ further reading.
 }
 ```
 
-The folder *tutorials* contains minimalistic examples in form of Jupyter notebooks
-to demonstrate how to use the `PyTorch` extensions. 
+```bash
+@inproceedings{HoferICML19,
+  author    = {C.~Hofer and R.~Kwitt and M.~Dixit and M.~Niethammer},
+  title     = {Connectivity-Optimized Representation Learning via Persistent Homology},
+  booktitle = {ICML},
+  year      = 2019,
+  note      = {accepted}
+}
+```
+
