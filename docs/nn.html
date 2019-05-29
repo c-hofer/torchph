@@ -1,0 +1,359 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>nn &mdash; chofer_torchex 0.0.1 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="pershom" href="pershom.html" />
+    <link rel="prev" title="Welcome to chofer_torchex’s documentation!" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> chofer_torchex
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#"><code class="docutils literal notranslate"><span class="pre">nn</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="pershom.html"><code class="docutils literal notranslate"><span class="pre">pershom</span></code></a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">chofer_torchex</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li><code class="docutils literal notranslate"><span class="pre">nn</span></code></li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/nn.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-chofer_torchex.nn.slayer">
+<span id="nn"></span><h1><code class="docutils literal notranslate"><span class="pre">nn</span></code><a class="headerlink" href="#module-chofer_torchex.nn.slayer" title="Permalink to this headline">¶</a></h1>
+<p>Implementation of the input layer for persistent homology barcodes
+proposed in:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">chofer2017c</span><span class="p">]</span>
+<span class="p">{</span>
+<span class="n">author</span>    <span class="o">=</span> <span class="p">{</span><span class="n">C</span><span class="o">.~</span><span class="n">Hofer</span> <span class="ow">and</span> <span class="n">R</span><span class="o">.~</span><span class="n">Kwitt</span> <span class="ow">and</span> <span class="n">M</span><span class="o">.~</span><span class="n">Niethammer</span> <span class="ow">and</span> <span class="n">A</span><span class="o">.~</span><span class="n">Uhl</span><span class="p">},</span>
+<span class="n">title</span>     <span class="o">=</span> <span class="p">{</span><span class="n">Deep</span> <span class="n">Learning</span> <span class="k">with</span> <span class="n">Topological</span> <span class="n">Signatures</span><span class="p">},</span>
+<span class="n">booktitle</span> <span class="o">=</span> <span class="p">{</span><span class="n">NIPS</span><span class="p">},</span>
+<span class="n">year</span>      <span class="o">=</span> <span class="mi">2017</span><span class="p">,</span>
+<span class="n">note</span>      <span class="o">=</span> <span class="p">{</span><span class="n">accepted</span><span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<dl class="class">
+<dt id="chofer_torchex.nn.slayer.SLayerExponential">
+<em class="property">class </em><code class="descclassname">chofer_torchex.nn.slayer.</code><code class="descname">SLayerExponential</code><span class="sig-paren">(</span><em>n_elements: int</em>, <em>point_dimension: int = 2</em>, <em>centers_init: torch.Tensor = None</em>, <em>sharpness_init: torch.Tensor = None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chofer_torchex/nn/slayer.html#SLayerExponential"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chofer_torchex.nn.slayer.SLayerExponential" title="Permalink to this definition">¶</a></dt>
+<dd><p>Proposed input layer for multisets [1].</p>
+<dl class="method">
+<dt id="chofer_torchex.nn.slayer.SLayerExponential.__init__">
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>n_elements: int</em>, <em>point_dimension: int = 2</em>, <em>centers_init: torch.Tensor = None</em>, <em>sharpness_init: torch.Tensor = None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chofer_torchex/nn/slayer.html#SLayerExponential.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chofer_torchex.nn.slayer.SLayerExponential.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>n_elements</strong> – Number of structure elements used.</li>
+<li><strong>point_dimension</strong> – D
+Dimensionality of the points of which the
+input multi set consists of.</li>
+<li><strong>centers_init</strong> – The initialization for the centers of the structure elements.</li>
+<li><strong>sharpness_init</strong> – Initialization for the sharpness of the structure elements.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="chofer_torchex.nn.slayer.SLayerExponential.forward">
+<code class="descname">forward</code><span class="sig-paren">(</span><em>input</em><span class="sig-paren">)</span> &#x2192; torch.Tensor<a class="reference internal" href="_modules/chofer_torchex/nn/slayer.html#SLayerExponential.forward"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chofer_torchex.nn.slayer.SLayerExponential.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Defines the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Although the recipe for forward pass needs to be defined within
+this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="chofer_torchex.nn.slayer.SLayerRational">
+<em class="property">class </em><code class="descclassname">chofer_torchex.nn.slayer.</code><code class="descname">SLayerRational</code><span class="sig-paren">(</span><em>n_elements: int</em>, <em>point_dimension: int = 2</em>, <em>centers_init: torch.Tensor = None</em>, <em>sharpness_init: torch.Tensor = None</em>, <em>exponent_init: torch.Tensor = None</em>, <em>pointwise_activation_threshold=None</em>, <em>share_sharpness=False</em>, <em>share_exponent=False</em>, <em>freeze_exponent=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chofer_torchex/nn/slayer.html#SLayerRational"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chofer_torchex.nn.slayer.SLayerRational" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="chofer_torchex.nn.slayer.SLayerRational.__init__">
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>n_elements: int</em>, <em>point_dimension: int = 2</em>, <em>centers_init: torch.Tensor = None</em>, <em>sharpness_init: torch.Tensor = None</em>, <em>exponent_init: torch.Tensor = None</em>, <em>pointwise_activation_threshold=None</em>, <em>share_sharpness=False</em>, <em>share_exponent=False</em>, <em>freeze_exponent=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chofer_torchex/nn/slayer.html#SLayerRational.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chofer_torchex.nn.slayer.SLayerRational.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>n_elements</strong> – Number of structure elements used.</li>
+<li><strong>point_dimension</strong> – Dimensionality of the points of which the input multi set consists
+of.</li>
+<li><strong>centers_init</strong> – The initialization for the centers of the structure elements.</li>
+<li><strong>sharpness_init</strong> – Initialization for the sharpness of the structure elements.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="chofer_torchex.nn.slayer.SLayerRational.forward">
+<code class="descname">forward</code><span class="sig-paren">(</span><em>input</em><span class="sig-paren">)</span> &#x2192; torch.Tensor<a class="reference internal" href="_modules/chofer_torchex/nn/slayer.html#SLayerRational.forward"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chofer_torchex.nn.slayer.SLayerRational.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Defines the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Although the recipe for forward pass needs to be defined within
+this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="chofer_torchex.nn.slayer.SLayerRationalHat">
+<em class="property">class </em><code class="descclassname">chofer_torchex.nn.slayer.</code><code class="descname">SLayerRationalHat</code><span class="sig-paren">(</span><em>n_elements: int</em>, <em>point_dimension: int = 2</em>, <em>centers_init: torch.Tensor = None</em>, <em>radius_init: float = 1</em>, <em>exponent: int = 1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chofer_torchex/nn/slayer.html#SLayerRationalHat"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chofer_torchex.nn.slayer.SLayerRationalHat" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="chofer_torchex.nn.slayer.SLayerRationalHat.__init__">
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>n_elements: int</em>, <em>point_dimension: int = 2</em>, <em>centers_init: torch.Tensor = None</em>, <em>radius_init: float = 1</em>, <em>exponent: int = 1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chofer_torchex/nn/slayer.html#SLayerRationalHat.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chofer_torchex.nn.slayer.SLayerRationalHat.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>n_elements</strong> – Number of structure elements used.</li>
+<li><strong>point_dimension</strong> – Dimensionality of the points of which the input multi set
+consists of.</li>
+<li><strong>centers_init</strong> – The initialization for the centers of the structure elements.</li>
+<li><strong>radius_init</strong> – Initialization for radius of zero level-set of the hat.</li>
+<li><strong>exponent</strong> – Exponent of the rationals forming the hat.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="chofer_torchex.nn.slayer.SLayerRationalHat.forward">
+<code class="descname">forward</code><span class="sig-paren">(</span><em>input</em><span class="sig-paren">)</span> &#x2192; torch.Tensor<a class="reference internal" href="_modules/chofer_torchex/nn/slayer.html#SLayerRationalHat.forward"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chofer_torchex.nn.slayer.SLayerRationalHat.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Defines the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Although the recipe for forward pass needs to be defined within
+this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="chofer_torchex.nn.slayer.prepare_batch">
+<code class="descclassname">chofer_torchex.nn.slayer.</code><code class="descname">prepare_batch</code><span class="sig-paren">(</span><em>batch: List[torch.Tensor], point_dim: int = None</em><span class="sig-paren">)</span> &#x2192; Tuple[torch.Tensor, torch.Tensor, int, int]<a class="reference internal" href="_modules/chofer_torchex/nn/slayer.html#prepare_batch"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chofer_torchex.nn.slayer.prepare_batch" title="Permalink to this definition">¶</a></dt>
+<dd><p>This method ‘vectorizes’ the multiset in order to take advances of gpu
+processing.
+The policy is to embed all multisets in batch to the highest dimensionality
+occurring in batch, i.e., <code class="docutils literal notranslate"><span class="pre">max(t.size()[0]</span></code> for <code class="docutils literal notranslate"><span class="pre">t</span></code> in batch).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>batch</strong> – The input batch to process.</li>
+<li><strong>point_dim</strong> – The dimension of the points the inputs consist of.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">Tensor with size <code class="docutils literal notranslate"><span class="pre">batch_size</span></code> x <code class="docutils literal notranslate"><span class="pre">n_max_points</span></code> x <code class="docutils literal notranslate"><span class="pre">point_dim</span></code>.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="pershom.html" class="btn btn-neutral float-right" title="pershom" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="index.html" class="btn btn-neutral float-left" title="Welcome to chofer_torchex’s documentation!" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Christoph D. Hofer
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

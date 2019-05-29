@@ -1,16 +1,15 @@
-"""
-Refs:
+r"""
+Implementation of the input layer for persistent homology barcodes 
+proposed in::
 
-[1] {
-      Hofer17c,
-      author    = {C.~Hofer and R.~Kwitt and M.~Niethammer and A.~Uhl},
-      title     = {Deep Learning with Topological Signatures},
-      booktitle = {NIPS},
-      year      = 2017,
-      note      = {accepted}
+    [chofer2017c] 
+    {
+    author    = {C.~Hofer and R.~Kwitt and M.~Niethammer and A.~Uhl},
+    title     = {Deep Learning with Topological Signatures},
+    booktitle = {NIPS},
+    year      = 2017,
+    note      = {accepted}
     }
-
-
 """
 import torch
 import numpy as np
@@ -18,20 +17,34 @@ from torch.tensor import Tensor
 from torch.nn.parameter import Parameter
 from torch.nn.modules.module import Module
 
+from typing import List, Tuple
+
 import warnings
 
 
 # region helper functions
 
 
-def prepare_batch(batch: [Tensor], point_dim: int=None)->tuple:
+def prepare_batch(
+    batch: List[Tensor], 
+    point_dim: int=None
+    )->Tuple[Tensor, Tensor, int, int]:
     """
-    This method 'vectorizes' the multiset in order to take advances of gpu processing.
+    This method 'vectorizes' the multiset in order to take advances of gpu 
+    processing.
     The policy is to embed all multisets in batch to the highest dimensionality
-    occurring in batch, i.e., max(t.size()[0] for t in batch).
-    :param batch:
-    :param point_dim:
-    :return: Tensor with size batch_size x n_max_points x point_dim
+    occurring in batch, i.e., ``max(t.size()[0]`` for ``t`` in batch).
+
+    Args:
+        batch: 
+            The input batch to process. 
+
+        point_dim:
+            The dimension of the points the inputs consist of. 
+
+    Returns: 
+        Tensor with size ``batch_size`` x ``n_max_points`` x ``point_dim``. 
+
     """
     if point_dim is None:
         point_dim = batch[0].size(1)
@@ -125,17 +138,26 @@ def parameter_init_from_arg(arg, size, default, scalar_is_valid=False):
 
 class SLayerExponential(Module):
     """
-    proposed input layer for multisets [1].
+    Proposed input layer for multisets [1].
     """
     def __init__(self, n_elements: int,
                  point_dimension: int=2,
                  centers_init: Tensor=None,
                  sharpness_init: Tensor=None):
         """
-        :param n_elements: number of structure elements used
-        :param point_dimension: dimensionality of the points of which the input multi set consists of
-        :param centers_init: the initialization for the centers of the structure elements
-        :param sharpness_init: initialization for the sharpness of the structure elements
+        Args:
+            n_elements: 
+                Number of structure elements used.
+
+            point_dimension: D
+                Dimensionality of the points of which the 
+                input multi set consists of.
+
+            centers_init: 
+                The initialization for the centers of the structure elements.
+
+            sharpness_init: 
+                Initialization for the sharpness of the structure elements.
         """
         super().__init__()
 
@@ -197,10 +219,19 @@ class SLayerRational(Module):
                  share_exponent=False,
                  freeze_exponent=True):
         """
-        :param n_elements: number of structure elements used
-        :param point_dimension: dimensionality of the points of which the input multi set consists of
-        :param centers_init: the initialization for the centers of the structure elements
-        :param sharpness_init: initialization for the sharpness of the structure elements
+        Args:
+            n_elements: 
+                Number of structure elements used.
+
+            point_dimension: 
+                Dimensionality of the points of which the input multi set consists 
+                of.
+
+            centers_init: 
+                The initialization for the centers of the structure elements.
+
+            sharpness_init: 
+                Initialization for the sharpness of the structure elements.
         """
         super().__init__()
 
@@ -289,11 +320,23 @@ class SLayerRationalHat(Module):
                  exponent: int=1
                  ):
         """
-        :param n_elements: number of structure elements used
-        :param point_dimension: dimensionality of the points of which the input multi set consists of
-        :param centers_init: the initialization for the centers of the structure elements
-        :param radius_init: initialization for radius of zero level-set of the hat
-        :param exponent: Exponent of the rationals forming the hat
+        Args:
+            n_elements: 
+                Number of structure elements used.
+
+            point_dimension: 
+                Dimensionality of the points of which the input multi set 
+                consists of.
+
+            centers_init: 
+                The initialization for the centers of the structure elements.
+
+            radius_init: 
+                Initialization for radius of zero level-set of the hat.
+
+            exponent: 
+                Exponent of the rationals forming the hat.
+
         """
         super().__init__()
 
@@ -409,8 +452,9 @@ class UpperDiagonalThresholdedLogTransform:
         ret = torch.stack([x, y], 1)
         return ret
 
-
-class SLayer(SLayerExponential):
-    def __init__(self, *args,  **kwargs):
-        super().__init__(*args, **kwargs)
-        warnings.warn("Renaming in progress. In future use SLayerExponential.", FutureWarning)
+# todo delete
+# class SLayer(SLayerExponential):
+#     def __init__(self, *args,  **kwargs):
+#         super().__init__(*args, **kwargs)
+#         warnings.warn("Renaming in progress. In future use SLayerExponential.", 
+#         FutureWarning)
