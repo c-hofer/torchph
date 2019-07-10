@@ -149,6 +149,37 @@
             
   <div class="section" id="welcome-to-chofer-torchex-s-documentation">
 <h1>Welcome to chofer_torchex’s documentation!<a class="headerlink" href="#welcome-to-chofer-torchex-s-documentation" title="Permalink to this headline">¶</a></h1>
+<p>This package contains the backend methods for multiple works using persistent homology
+in machine learning problems. In particular:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nd">@inproceedings</span><span class="p">{</span><span class="n">Hofer17a</span><span class="p">,</span>
+    <span class="n">author</span>    <span class="o">=</span> <span class="p">{</span><span class="n">C</span><span class="o">.~</span><span class="n">Hofer</span><span class="p">,</span> <span class="n">R</span><span class="o">.~</span><span class="n">Kwitt</span><span class="p">,</span> <span class="n">M</span><span class="o">.~</span><span class="n">Niethammer</span> <span class="ow">and</span> <span class="n">A</span><span class="o">.~</span><span class="n">Uhl</span><span class="p">},</span>
+    <span class="n">title</span>     <span class="o">=</span> <span class="p">{</span><span class="n">Deep</span> <span class="n">Learning</span> <span class="k">with</span> <span class="n">Topological</span> <span class="n">Signatures</span><span class="p">},</span>
+    <span class="n">booktitle</span> <span class="o">=</span> <span class="p">{</span><span class="n">NIPS</span><span class="p">},</span>
+    <span class="n">year</span>      <span class="o">=</span> <span class="p">{</span><span class="mi">2017</span><span class="p">}}</span>
+
+<span class="nd">@inproceedings</span><span class="p">{</span><span class="n">Hofer19a</span><span class="p">,</span>
+    <span class="n">author</span>    <span class="o">=</span> <span class="p">{</span><span class="n">C</span><span class="o">.~</span><span class="n">Hofer</span><span class="p">,</span> <span class="n">R</span><span class="o">.~</span><span class="n">Kwitt</span><span class="p">,</span> <span class="n">M</span><span class="o">.~</span><span class="n">Dixit</span> <span class="ow">and</span> <span class="n">M</span><span class="o">.~</span><span class="n">Niethammer</span><span class="p">},</span>
+    <span class="n">title</span>     <span class="o">=</span> <span class="p">{</span><span class="n">Connectivity</span><span class="o">-</span><span class="n">Optimized</span> <span class="n">Representation</span> <span class="n">Learning</span> <span class="n">via</span> <span class="n">Persistent</span> <span class="n">Homology</span><span class="p">},</span>
+    <span class="n">booktitle</span> <span class="o">=</span> <span class="p">{</span><span class="n">ICML</span><span class="p">},</span>
+    <span class="n">year</span>      <span class="o">=</span> <span class="p">{</span><span class="mi">2019</span><span class="p">}}</span>
+
+<span class="nd">@inproceedings</span><span class="p">{</span><span class="n">Hofer19b</span><span class="p">,</span>
+    <span class="n">author</span>    <span class="o">=</span> <span class="p">{</span><span class="n">C</span><span class="o">.~</span><span class="n">Hofer</span><span class="p">,</span> <span class="n">R</span><span class="o">.~</span><span class="n">Kwitt</span> <span class="ow">and</span> <span class="n">M</span><span class="o">.~</span><span class="n">Niethammer</span><span class="p">},</span>
+    <span class="n">title</span>     <span class="o">=</span> <span class="p">{</span><span class="n">Graph</span> <span class="n">Filtration</span> <span class="n">Learning</span><span class="p">},</span>
+    <span class="n">booktitle</span> <span class="o">=</span> <span class="p">{</span><span class="n">arXiv</span><span class="p">},</span>
+    <span class="n">year</span>      <span class="o">=</span> <span class="p">{</span><span class="mi">2019</span><span class="p">}}</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="functionality">
+<h1>Functionality<a class="headerlink" href="#functionality" title="Permalink to this headline">¶</a></h1>
+<ul class="simple">
+<li>Vietoris-Rips persistent homology</li>
+<li>Vertex-based filtrations (e.g., usable for graphs)</li>
+<li>Learnable vectorizations of persistence barcodes</li>
+</ul>
+<p>All of this functionality is available for GPU computations and can easily be
+used within the PyTorch environment.</p>
 </div>
 <div class="section" id="module-chofer_torchex">
 <span id="chofer-torchex-package"></span><h1><code class="docutils literal notranslate"><span class="pre">chofer_torchex</span></code> Package<a class="headerlink" href="#module-chofer_torchex" title="Permalink to this headline">¶</a></h1>
