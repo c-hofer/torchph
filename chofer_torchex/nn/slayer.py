@@ -2,13 +2,12 @@ r"""
 Implementation of the input layer for persistent homology barcodes 
 proposed in::
 
-    [chofer2017c] 
+    @inproceedings{Hofer17a,
     {
     author    = {C.~Hofer and R.~Kwitt and M.~Niethammer and A.~Uhl},
     title     = {Deep Learning with Topological Signatures},
     booktitle = {NIPS},
-    year      = 2017,
-    note      = {accepted}
+    year      = 2017
     }
 """
 import torch
@@ -26,24 +25,23 @@ import warnings
 
 
 def prepare_batch(
-    batch: List[Tensor], 
-    point_dim: int=None
-    )->Tuple[Tensor, Tensor, int, int]:
+        batch: List[Tensor],
+        point_dim: int=None
+        )->Tuple[Tensor, Tensor, int, int]:
     """
-    This method 'vectorizes' the multiset in order to take advances of gpu 
-    processing.
-    The policy is to embed all multisets in batch to the highest dimensionality
-    occurring in batch, i.e., ``max(t.size()[0]`` for ``t`` in batch).
+    This method 'vectorizes' the multiset in order to take advances of GPU
+    processing. The policy is to embed all multisets in batch to the highest
+    dimensionality occurring in batch, i.e., ``max(t.size()[0]`` for ``t`` in batch).
 
     Args:
-        batch: 
-            The input batch to process. 
+        batch:
+            The input batch to process.
 
         point_dim:
-            The dimension of the points the inputs consist of. 
+            The dimension of the points the inputs consist of.
 
-    Returns: 
-        Tensor with size ``batch_size`` x ``n_max_points`` x ``point_dim``. 
+    Returns:
+        Tensor with size ``batch_size`` x ``n_max_points`` x ``point_dim``.
 
     """
     if point_dim is None:
@@ -59,17 +57,24 @@ def prepare_batch(
         batch_max_points = 1
 
     # This will later be used to set the dummy points to zero in the output.
-    not_dummy_points = torch.zeros(batch_size, batch_max_points, device=input_device)
+    not_dummy_points = torch.zeros(
+        batch_size,
+        batch_max_points,
+        device=input_device)
 
     prepared_batch = []
 
     for i, multi_set in enumerate(batch):
         n_points = multi_set.size(0)
 
-        prepared_dgm = torch.zeros(batch_max_points, point_dim, device=input_device)
+        prepared_dgm = torch.zeros(
+            batch_max_points,
+            point_dim,
+            device=input_device)
 
         if n_points > 0:
-            index_selection = torch.tensor(range(n_points), device=input_device)
+            index_selection = torch.tensor(range(n_points),
+                                           device=input_device)
 
             prepared_dgm.index_add_(0, index_selection, multi_set)
 
@@ -107,11 +112,14 @@ def prepare_batch_if_necessary(input, point_dimension=None):
         if point_dimension is None:
             point_dimension = input[0].size(1)
 
-        batch, not_dummy_points, max_points, batch_size = prepare_batch(input, point_dimension)
+        batch, not_dummy_points, max_points, batch_size = prepare_batch(
+            input,
+            point_dimension)
 
     else:
         raise ValueError(
-            'SLayer does not recognize input format! Expecting [Tensor] or prepared batch. Not {}'.format(input))
+            'SLayer does not recognize input format! Expecting [Tensor] or \
+             prepared batch. Not {}'.format(input))
 
     return batch, not_dummy_points, max_points, batch_size
 
@@ -119,7 +127,8 @@ def prepare_batch_if_necessary(input, point_dimension=None):
 def parameter_init_from_arg(arg, size, default, scalar_is_valid=False):
     if isinstance(arg, (int, float)):
         if not scalar_is_valid:
-            raise ValueError("Scalar initialization values are not valid. Got {} expected Tensor of size {}."
+            raise ValueError('Scalar initialization values are not valid. \
+                              Got {} expected Tensor of size {}.'
                              .format(arg, size))
         return torch.Tensor(*size).fill_(arg)
     elif isinstance(arg, torch.Tensor):
@@ -131,7 +140,8 @@ def parameter_init_from_arg(arg, size, default, scalar_is_valid=False):
         else:
             return default(size)
     else:
-        raise ValueError('Cannot handle parameter initialization. Got "{}" '.format(arg))
+        raise ValueError('Cannot handle parameter initialization. \
+                          Got "{}" '.format(arg))
 
 # endregion
 
@@ -146,17 +156,17 @@ class SLayerExponential(Module):
                  sharpness_init: Tensor=None):
         """
         Args:
-            n_elements: 
+            n_elements:
                 Number of structure elements used.
 
             point_dimension: D
-                Dimensionality of the points of which the 
+                Dimensionality of the points of which the
                 input multi set consists of.
 
-            centers_init: 
+            centers_init:
                 The initialization for the centers of the structure elements.
 
-            sharpness_init: 
+            sharpness_init:
                 Initialization for the sharpness of the structure elements.
         """
         super().__init__()
@@ -166,16 +176,22 @@ class SLayerExponential(Module):
 
         expected_init_size = (self.n_elements, self.point_dimension)
 
-        centers_init = parameter_init_from_arg(centers_init, expected_init_size, torch.rand, scalar_is_valid=False)
-        sharpness_init = parameter_init_from_arg(sharpness_init, expected_init_size, lambda size: torch.ones(*size)*3)
+        centers_init = parameter_init_from_arg(
+            centers_init,
+            expected_init_size,
+            torch.rand, scalar_is_valid=False)
+        sharpness_init = parameter_init_from_arg(
+            sharpness_init,
+            expected_init_size,
+            lambda size: torch.ones(*size)*3)
 
         self.centers = Parameter(centers_init)
         self.sharpness = Parameter(sharpness_init)
 
     def forward(self, input)->Tensor:
-        batch, not_dummy_points, max_points, batch_size = prepare_batch_if_necessary(input,
-                                                                                     point_dimension=self.point_dimension)
-
+        batch, not_dummy_points, max_points, batch_size = prepare_batch_if_necessary(
+            input,
+            point_dimension=self.point_dimension)
 
         batch = torch.cat([batch] * self.n_elements, 1)
 
@@ -220,17 +236,17 @@ class SLayerRational(Module):
                  freeze_exponent=True):
         """
         Args:
-            n_elements: 
+            n_elements:
                 Number of structure elements used.
 
-            point_dimension: 
-                Dimensionality of the points of which the input multi set consists 
-                of.
+            point_dimension:
+                Dimensionality of the points of which the input multi set
+                consists of.
 
-            centers_init: 
+            centers_init:
                 The initialization for the centers of the structure elements.
 
-            sharpness_init: 
+            sharpness_init:
                 Initialization for the sharpness of the structure elements.
         """
         super().__init__()
@@ -246,37 +262,48 @@ class SLayerRational(Module):
         if self.pointwise_activation_threshold is not None:
             self.pointwise_activation_threshold = float(self.pointwise_activation_threshold)
 
-        centers_init = parameter_init_from_arg(arg=centers_init,
-                                               size=(self.n_elements, self.point_dimension),
-                                               default=torch.rand)
+        centers_init = parameter_init_from_arg(
+            arg=centers_init,
+            size=(self.n_elements, self.point_dimension),
+            default=torch.rand)
 
-        sharpness_init = parameter_init_from_arg(arg=sharpness_init,
-                                                 size=(1,) if self.share_sharpness else (self.n_elements, self.point_dimension),
-                                                 default=torch.ones,
-                                                 scalar_is_valid=True)
+        sharpness_init = parameter_init_from_arg(
+            arg=sharpness_init,
+            size=(1,) if self.share_sharpness else (self.n_elements, self.point_dimension),
+            default=torch.ones,
+            scalar_is_valid=True)
 
-        exponent_init = parameter_init_from_arg(arg=exponent_init,
-                                                size=(1,) if self.share_exponent else (self.n_elements,),
-                                                default=torch.ones,
-                                                scalar_is_valid=True)
+        exponent_init = parameter_init_from_arg(
+            arg=exponent_init,
+            size=(1,) if self.share_exponent else (self.n_elements,),
+            default=torch.ones,
+            scalar_is_valid=True)
 
         self.centers = Parameter(centers_init)
         self.sharpness = Parameter(sharpness_init)
 
         if self.freeze_exponent:
             self.register_buffer('exponent', exponent_init)
-        else: 
+        else:
             self.exponent = Parameter(exponent_init)
 
     def forward(self, input)->Tensor:
-        batch, not_dummy_points, max_points, batch_size = prepare_batch_if_necessary(input,
-                                                                                     point_dimension=self.point_dimension)
+        batch, not_dummy_points, max_points, batch_size = prepare_batch_if_necessary(
+            input,
+            point_dimension=self.point_dimension)
 
-        batch = batch.unsqueeze(1).expand(batch_size, self.n_elements, max_points, self.point_dimension)
+        batch = batch.unsqueeze(1).expand(
+            batch_size,
+            self.n_elements,
+            max_points,
+            self.point_dimension)
 
         not_dummy_points = not_dummy_points.unsqueeze(1).expand(-1, self.n_elements, -1)
 
-        centers = self.centers.unsqueeze(1).expand(self.n_elements, max_points, self.point_dimension)
+        centers = self.centers.unsqueeze(1).expand(
+            self.n_elements,
+            max_points,
+            self.point_dimension)
         centers = centers.unsqueeze(0).expand(batch_size, *centers.size())
 
         sharpness = self.sharpness
@@ -321,20 +348,20 @@ class SLayerRationalHat(Module):
                  ):
         """
         Args:
-            n_elements: 
+            n_elements:
                 Number of structure elements used.
 
-            point_dimension: 
-                Dimensionality of the points of which the input multi set 
-                consists of.
+            point_dimension:
+                Dimensionality of the points of which the input multi
+                set consists of.
 
-            centers_init: 
+            centers_init:
                 The initialization for the centers of the structure elements.
 
-            radius_init: 
+            radius_init:
                 Initialization for radius of zero level-set of the hat.
 
-            exponent: 
+            exponent:
                 Exponent of the rationals forming the hat.
 
         """
@@ -358,14 +385,22 @@ class SLayerRationalHat(Module):
         self.norm_p = 1
 
     def forward(self, input)->Tensor:
-        batch, not_dummy_points, max_points, batch_size = prepare_batch_if_necessary(input,
-                                                                                     point_dimension=self.point_dimension)
+        batch, not_dummy_points, max_points, batch_size = prepare_batch_if_necessary(
+            input,
+            point_dimension=self.point_dimension)
 
-        batch = batch.unsqueeze(1).expand(batch_size, self.n_elements, max_points, self.point_dimension)
+        batch = batch.unsqueeze(1).expand(
+            batch_size,
+            self.n_elements,
+            max_points,
+            self.point_dimension)
 
         not_dummy_points = not_dummy_points.unsqueeze(1).expand(-1, self.n_elements, -1)
 
-        centers = self.centers.unsqueeze(1).expand(self.n_elements, max_points, self.point_dimension)
+        centers = self.centers.unsqueeze(1).expand(
+            self.n_elements,
+            max_points,
+            self.point_dimension)
         centers = centers.unsqueeze(0).expand(batch_size, *centers.size())
 
         radius = self.radius
@@ -384,9 +419,6 @@ class SLayerRationalHat(Module):
 
         x = torch.mul(x, not_dummy_points)
         x = torch.sum(x, 2)
-        
-        # c = (1 + self.radius.abs())/self.radius.abs()
-        # x = x*c
 
         return x
 
@@ -410,7 +442,7 @@ class LinearRationalStretchedBirthLifeTimeCoordinateTransform:
         i = (y <= self._nu)
         y[i] = - self._nu_squared/y[i] + self._2_nu
 
-        return torch.stack([x,y], dim=1)
+        return torch.stack([x, y], dim=1)
 
 
 class LogStretchedBirthLifeTimeCoordinateTransform:
@@ -439,22 +471,15 @@ class UpperDiagonalThresholdedLogTransform:
     def __call__(self, dgm):
         if len(dgm) == 0:
             return dgm
-        
+
         self.b_1 = self.b_1.to(dgm.device)
         self.b_2 = self.b_2.to(dgm.device)
 
         x = torch.mul(dgm, self.b_1.repeat(dgm.size(0), 1))
         x = torch.sum(x, 1).squeeze()
-        y = torch.mul(dgm, self.b_2.repeat( dgm.size(0), 1))
+        y = torch.mul(dgm, self.b_2.repeat(dgm.size(0), 1))
         y = torch.sum(y, 1).squeeze()
         i = (y <= self.nu)
         y[i] = torch.log(y[i] / self.nu)*self.nu + self.nu
         ret = torch.stack([x, y], 1)
         return ret
-
-# todo delete
-# class SLayer(SLayerExponential):
-#     def __init__(self, *args,  **kwargs):
-#         super().__init__(*args, **kwargs)
-#         warnings.warn("Renaming in progress. In future use SLayerExponential.", 
-#         FutureWarning)
