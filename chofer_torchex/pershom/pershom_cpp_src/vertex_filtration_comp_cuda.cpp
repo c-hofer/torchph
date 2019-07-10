@@ -68,7 +68,9 @@ namespace VertFiltCompCuda {
                 auto v = tmp.back(); 
                 v = v.unsqueeze(0).expand({bi.size(0), -1});
                 v = v.gather(1, bi);
+
                 v = std::get<0>(v.max(1));
+
                 tmp.push_back(v);
             }
 
@@ -283,7 +285,6 @@ namespace VertFiltCompCuda {
     )
     {
         auto futures = std::vector<std::future<std::vector<std::vector<Tensor>>>>();
-        std::cout << "launch" << std::endl;
         for (auto & arg: batch){
 
             futures.push_back(
@@ -299,16 +300,12 @@ namespace VertFiltCompCuda {
             );
         }
 
-        std::cout << "launched" << std::endl;
-
         auto ret = std::vector<std::vector<std::vector<Tensor>>>();
         for (auto & fut: futures){
             ret.push_back(
                 fut.get()
             );
         }
-
-        std::cout << "finished" << std::endl;
 
         return ret;
     }
