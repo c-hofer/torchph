@@ -17,6 +17,8 @@ Welcome to chofer_torchex's documentation!
 .. toctree::
     nn
     pershom
+    utils
+    
 
 Indices and tables
 ==================

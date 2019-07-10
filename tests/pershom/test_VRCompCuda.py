@@ -21,7 +21,7 @@ def test_l2_distance_matrix():
 
     D = __C.VRCompCuda__l2_norm_distance_matrix(point_cloud)
 
-    for i, j in combinations(range(point_cloud.size(0)),2):
+    for i, j in combinations(range(point_cloud.size(0)), 2):
         l2_dist = (point_cloud[i] - point_cloud[j]).pow(2).sum().sqrt()
         l2_dist = float(l2_dist)
 
@@ -34,7 +34,7 @@ def test_l1_distance_matrix():
 
     D = __C.VRCompCuda__l1_norm_distance_matrix(point_cloud)
 
-    for i, j in combinations(range(point_cloud.size(0)),2):
+    for i, j in combinations(range(point_cloud.size(0)), 2):
         l1_dist = (point_cloud[i] - point_cloud[j]).abs().sum()
         l1_dist = float(l1_dist)
 
@@ -42,21 +42,21 @@ def test_l1_distance_matrix():
 
 
 def test_co_faces_from_combinations__ground_truth():
-    faces = [(1, 0), (2, 0) , (2, 1), (3, 0), (3, 1)]
+    faces = [(1, 0), (2, 0), (2, 1), (3, 0), (3, 1)]
     comb = [sorted(cf, reverse=True) for cf in combinations(range(len(faces)), 3)]
 
     faces_t = torch.tensor(faces, device='cuda', dtype=torch.int64)
     comb_t = torch.tensor(comb, device='cuda', dtype=torch.int64)
 
     result = __C.VRCompCuda__co_faces_from_combinations(comb_t, faces_t)
-    
+
     expected_result = [[2, 1, 0], [4, 3, 0]]
 
     assert result.tolist() == expected_result
 
 
 def test_co_faces_from_combinations__correct_size_if_just_one_co_face():
-    faces = [(1, 0), (2, 0) , (2, 1), (3, 0)]
+    faces = [(1, 0), (2, 0), (2, 1), (3, 0)]
     comb = [sorted(cf, reverse=True) for cf in combinations(range(len(faces)), 3)]
 
     faces_t = torch.tensor(faces, device='cuda', dtype=torch.int64)
@@ -80,7 +80,7 @@ def test_co_faces_from_combinations__no_co_face():
     comb_t = torch.tensor(comb, device='cuda', dtype=torch.int64)
 
     result = __C.VRCompCuda__co_faces_from_combinations(comb_t, faces_t)
-    
+
     expected_result = []
 
     assert result.tolist() == expected_result
@@ -105,14 +105,15 @@ def test_co_faces_from_combinations__result(n_vertices, dim_faces):
     expected_result = {tuple(x) for x in expected_result}
 
     result = __C.VRCompCuda__co_faces_from_combinations(comb_t, faces_t)
-    
+
     result = {tuple(x) for x in result.tolist()}
 
     assert expected_result == result
 
 
-@pytest.mark.parametrize("max_dimension, max_ball_radius", 
-[ (2, 0.0), (2, 1.0), (2, 2.0), (3, 0.0), (3, 1.0), (3, 2.0)])
+@pytest.mark.parametrize(
+    "max_dimension, max_ball_radius",
+    [(2, 0.0), (2, 1.0), (2, 2.0), (3, 0.0), (3, 1.0), (3, 2.0)])
 def test_VietorisRipsArgsGenerator__l1_excessive_state_testing_of_all_intermediate_steps(max_dimension, max_ball_radius):
     # ASSERTS that the number of edges is > 0!!!
     point_cloud = [(0, 0), (1, 0), (0, 0.5), (1, 1.5)]
@@ -123,8 +124,8 @@ def test_VietorisRipsArgsGenerator__l1_excessive_state_testing_of_all_intermedia
         return float((x-y).abs().sum())
 
     testee = pershom_backend.__C.VRCompCuda__VietorisRipsArgsGenerator()
-    # Test
-    # init_state 
+    #
+    # Test: init_state
     #
     testee.init_state(distance_matrix, max_dimension, max_ball_radius)
 
@@ -133,22 +134,21 @@ def test_VietorisRipsArgsGenerator__l1_excessive_state_testing_of_all_intermedia
     assert testee.filtration_values_by_dim[0].size(0) == point_cloud.size(0)
     assert all(testee.filtration_values_by_dim[0] == 0)
 
-
-    # Test 
-    # make_boundary_info_edges
+    #
+    # Test: make_boundary_info_edges
     #
     testee.make_boundary_info_edges()
 
     assert len(testee.filtration_values_by_dim) == 2
 
-    expected_n_dim_1_simplices = 0 
+    expected_n_dim_1_simplices = 0
     expected_filtration_values = []
     expected_boundaries = []
     threshold = max_ball_radius if max_ball_radius > 0 else float('inf')
     for i, j in combinations(range(point_cloud.size(0)), 2):
-        
+
         norm = l1_norm(point_cloud[i], point_cloud[j])
-        
+
         if norm <= threshold:
             expected_n_dim_1_simplices += 1
             expected_boundaries.append(sorted((i, j), reverse=True))
@@ -159,21 +159,28 @@ def test_VietorisRipsArgsGenerator__l1_excessive_state_testing_of_all_intermedia
         norm = l1_norm(point_cloud[i], point_cloud[j])
         expected_filtration_values.append(norm)
 
-    expected_boundaries = torch.tensor(expected_boundaries, device='cuda', dtype=torch.int64)
-    if expected_boundaries.numel() == 0: 
-        expected_boundaries = torch.empty((0, 2), device='cuda', dtype=torch.int64)
+    expected_boundaries = torch.tensor(
+        expected_boundaries,
+        device='cuda',
+        dtype=torch.int64)
+    if expected_boundaries.numel() == 0:
+        expected_boundaries = torch.empty(
+            (0, 2),
+            device='cuda',
+            dtype=torch.int64)
 
-    expected_filtration_values = torch.tensor(expected_filtration_values, device='cuda')
-    
+    expected_filtration_values = torch.tensor(
+        expected_filtration_values,
+        device='cuda')
+
     assert testee.n_simplices_by_dim[1] == expected_n_dim_1_simplices
     assert testee.boundary_info_non_vertices[0].size(0) == testee.filtration_values_by_dim[1].size(0)
     assert testee.boundary_info_non_vertices[0].equal(expected_boundaries)
     assert testee.filtration_values_by_dim[1].equal(expected_filtration_values)
     assert testee.filtration_values_by_dim[1].dim() == 1 
 
-
-    # Test
-    # make_boundary_info_non_edges
+    #
+    # Test: make_boundary_info_non_edges
     #
     testee.make_boundary_info_non_edges()
 
@@ -201,15 +208,16 @@ def test_VietorisRipsArgsGenerator__l1_excessive_state_testing_of_all_intermedia
                 max(dim_min_one_filtration_values[b] for b in boundaries) 
             )
 
-        expected_filtration_values = torch.tensor(expected_filtration_values, device='cuda')
+        expected_filtration_values = torch.tensor(
+            expected_filtration_values,
+            device='cuda')
 
         assert expected_boundaries == [tuple(x) for x in testee.boundary_info_non_vertices[dim-1].tolist()]
         assert expected_filtration_values.equal(testee.filtration_values_by_dim[dim])
         assert testee.n_simplices_by_dim[dim] == len(expected_boundaries)
 
-
-    # Test
-    # make_simplex_ids_compatible_within_dimensions
+    #
+    # Test: make_simplex_ids_compatible_within_dimensions
     #
     testee.make_simplex_ids_compatible_within_dimensions()
     for dim, boundary_info in enumerate(testee.boundary_info_non_vertices[1:], start=2):
@@ -222,12 +230,10 @@ def test_VietorisRipsArgsGenerator__l1_excessive_state_testing_of_all_intermedia
             assert min_id <= min(simp_ids)
             assert max_id >= max(simp_ids)
         else:
-            assert testee.n_simplices_by_dim[dim] == 0 
-        
+            assert testee.n_simplices_by_dim[dim] == 0   
 
-
-    # Test
-    # make_simplex_dimension_vector
+    #
+    # Test: make_simplex_dimension_vector
     #
     testee.make_simplex_dimension_vector()
 
@@ -235,24 +241,22 @@ def test_VietorisRipsArgsGenerator__l1_excessive_state_testing_of_all_intermedia
     for i in range(max_dimension+1):
         a = sum(tmp[:i])
         b = sum(tmp[:i+1])
-        
+
         slice_i  = testee.simplex_dimension_vector[a:b]
         assert  slice_i.numel() == 0 or (slice_i.equal(torch.empty_like(slice_i).fill_(i)))
 
     assert testee.simplex_dimension_vector.dim() == 1
     assert testee.simplex_dimension_vector.size(0) == sum(tmp) 
 
-
-    # Test
-    # make_filtration_values_vector_without_vertices
+    #
+    # Test: make_filtration_values_vector_without_vertices
     #
     testee.make_filtration_values_vector_without_vertices()
     assert testee.filtration_values_vector_without_vertices.dim() == 1
     assert testee.filtration_values_vector_without_vertices.size(0) == sum(testee.n_simplices_by_dim[1:])
 
-
-    # Test 
-    # do_filtration_add_eps_hack
+    #
+    # Test: do_filtration_add_eps_hack
     #
     testee.do_filtration_add_eps_hack()
 
@@ -267,12 +271,10 @@ def test_VietorisRipsArgsGenerator__l1_excessive_state_testing_of_all_intermedia
 
             for b in boundaries:
                 assert testee.filtration_values_vector_without_vertices[int(b) - point_cloud.size(0)] <= \
-                testee.filtration_values_vector_without_vertices[id]  
+                    testee.filtration_values_vector_without_vertices[id]
 
-
-
-    # Test 
-    # make_sorting_infrastructure
+    #
+    # Test: make_sorting_infrastructure
     #
     testee.make_sorting_infrastructure()
     assert testee.sort_indices_without_vertices.dim() == 1
@@ -304,27 +306,24 @@ def test_VietorisRipsArgsGenerator__l1_excessive_state_testing_of_all_intermedia
                     testee.filtration_values_vector_without_vertices[int(b) - point_cloud.size(0)])
             assert testee.filtration_values_vector_without_vertices[id] == max(filt_b) 
 
-
-    # Test 
-    # make_sorted_filtration_values_vector
+    #
+    # Test: make_sorted_filtration_values_vector
     #
     testee.make_sorted_filtration_values_vector()
     assert testee.sorted_filtration_values_vector.equal(
         testee.sorted_filtration_values_vector.sort(0)[0]
     )
 
-
-    # Test 
-    # make_boundary_array_rows_unsorted
+    #
+    # Test: make_boundary_array_rows_unsorted
     #
     testee.make_boundary_array_rows_unsorted()
 
     assert testee.boundary_array.size() \
         == (sum(testee.n_simplices_by_dim[1:]), 4 if max_dimension == 0 else 2*(max_dimension +1))
 
-
-    # Test 
-    # apply_sorting_to_rows
+    #
+    # Test: apply_sorting_to_rows
     #
     testee.apply_sorting_to_rows()
     for i, row in enumerate(testee.boundary_array.tolist()):
@@ -339,11 +338,12 @@ def test_VietorisRipsArgsGenerator__l1_excessive_state_testing_of_all_intermedia
 
 
         assert sorted(b_filt_vals, reverse=True) == b_filt_vals
-        
+
         if simplex_dim > 1:
             assert float(testee.sorted_filtration_values_vector[simplex_id]) == max(b_filt_vals)
-    # Test 
-    # make_ba_row_i_to_bm_col_i_vector
+
+    #
+    # Test: make_ba_row_i_to_bm_col_i_vector
     #
     testee.make_ba_row_i_to_bm_col_i_vector()
     assert testee.ba_row_i_to_bm_col_i_vector.dim() == 1
@@ -366,12 +366,15 @@ for pth in glob.glob(os.path.join(os.path.dirname(__file__), "test_pershom_backe
 def test_VietorisRipsArgsGenerator__l1_valid_calculate_persistence_args(test_args):
     point_cloud = test_args
     point_cloud = point_cloud.float().to('cuda')
-    distance_matrix =  pershom_backend.__C.VRCompCuda__l1_norm_distance_matrix(point_cloud)
+    distance_matrix = pershom_backend.__C.VRCompCuda__l1_norm_distance_matrix(point_cloud)
     max_dimension = 2
     max_ball_radius = 0
 
     testee = pershom_backend.__C.VRCompCuda__VietorisRipsArgsGenerator()
-    ba, ba_row_i_to_bm_col_i, simplex_dimension, sorted_filtration_values_vector = testee(distance_matrix, max_dimension, max_ball_radius)
+    ba, ba_row_i_to_bm_col_i, simplex_dimension, sorted_filtration_values_vector = testee(
+        distance_matrix,
+        max_dimension,
+        max_ball_radius)
 
     if ba.size(0) > 0:
 
@@ -387,7 +390,7 @@ def test_VietorisRipsArgsGenerator__l1_valid_calculate_persistence_args(test_arg
         assert sorted_filtration_values_vector.dim() == 1
         assert sorted_filtration_values_vector.size(0) == n_simplices
 
-        # discard right half of columns, which are filled with -1 ...  
+        # discard right half of columns, which are filled with -1 ...
         content_column_border = (max_dimension if max_dimension != 0 else 1) + 1
         ba_right = ba[:, content_column_border:].contiguous()
         ba_right = ba_right.view(ba_right.numel())
@@ -406,7 +409,7 @@ def test_VietorisRipsArgsGenerator__l1_valid_calculate_persistence_args(test_arg
             simplex_id = i + point_cloud.size(0)
             simplex_dim = simplex_dimension[simplex_id]
             simplex_filt_val = sorted_filtration_values_vector[simplex_id]        
-            
+
             # sorted descendingly by id?
             assert row_i == sorted(row_i, reverse=True)
             boundary_ids = [x for x in row_i if x != -1]
@@ -421,21 +424,20 @@ def test_VietorisRipsArgsGenerator__l1_valid_calculate_persistence_args(test_arg
             # simplex_filt_val is maximum of boundary filtration values?
             if simplex_dim > 1 : 
                 assert abs(max(boundary_filt_vals) - simplex_filt_val) < EPSILON
-            
 
-            # boundary of simplex has dim - 1 ? 
+            # boundary of simplex has dim - 1 ?
             boundary_dims = [simplex_dimension[b_id] for b_id in boundary_ids]
             assert all(list(dim == simplex_dim - 1 for dim in boundary_dims))
 
             if simplex_dim > 1:
                 boundary_of_boundaries = sum([ba[b_id - point_cloud.size(0)] for b_id in boundary_ids], [])
                 boundary_of_boundaries = [x for x in boundary_of_boundaries if x != -1]
-                
+
                 c = Counter(boundary_of_boundaries)
 
                 assert all(list(v == 2 for v in c.values()))
-
-    else: #ba.size(0) == 0
+    # ba.size(0) == 0
+    else:
 
         assert ba_row_i_to_bm_col_i.numel() == 0
         assert simplex_dimension.tolist() == [0]*point_cloud.size(0)

@@ -83,6 +83,7 @@
               <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#"><code class="docutils literal notranslate"><span class="pre">nn</span></code></a></li>
 <li class="toctree-l1"><a class="reference internal" href="pershom.html"><code class="docutils literal notranslate"><span class="pre">pershom</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="utils.html"><code class="docutils literal notranslate"><span class="pre">utils</span></code></a></li>
 </ul>
 
             
@@ -151,13 +152,12 @@
 <span id="nn"></span><h1><code class="docutils literal notranslate"><span class="pre">nn</span></code><a class="headerlink" href="#module-chofer_torchex.nn.slayer" title="Permalink to this headline">¶</a></h1>
 <p>Implementation of the input layer for persistent homology barcodes
 proposed in:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">chofer2017c</span><span class="p">]</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nd">@inproceedings</span><span class="p">{</span><span class="n">Hofer17a</span><span class="p">,</span>
 <span class="p">{</span>
 <span class="n">author</span>    <span class="o">=</span> <span class="p">{</span><span class="n">C</span><span class="o">.~</span><span class="n">Hofer</span> <span class="ow">and</span> <span class="n">R</span><span class="o">.~</span><span class="n">Kwitt</span> <span class="ow">and</span> <span class="n">M</span><span class="o">.~</span><span class="n">Niethammer</span> <span class="ow">and</span> <span class="n">A</span><span class="o">.~</span><span class="n">Uhl</span><span class="p">},</span>
 <span class="n">title</span>     <span class="o">=</span> <span class="p">{</span><span class="n">Deep</span> <span class="n">Learning</span> <span class="k">with</span> <span class="n">Topological</span> <span class="n">Signatures</span><span class="p">},</span>
 <span class="n">booktitle</span> <span class="o">=</span> <span class="p">{</span><span class="n">NIPS</span><span class="p">},</span>
-<span class="n">year</span>      <span class="o">=</span> <span class="mi">2017</span><span class="p">,</span>
-<span class="n">note</span>      <span class="o">=</span> <span class="p">{</span><span class="n">accepted</span><span class="p">}</span>
+<span class="n">year</span>      <span class="o">=</span> <span class="mi">2017</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -214,8 +214,8 @@ registered hooks while the latter silently ignores them.</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>n_elements</strong> – Number of structure elements used.</li>
-<li><strong>point_dimension</strong> – Dimensionality of the points of which the input multi set consists
-of.</li>
+<li><strong>point_dimension</strong> – Dimensionality of the points of which the input multi set
+consists of.</li>
 <li><strong>centers_init</strong> – The initialization for the centers of the structure elements.</li>
 <li><strong>sharpness_init</strong> – Initialization for the sharpness of the structure elements.</li>
 </ul>
@@ -253,8 +253,8 @@ registered hooks while the latter silently ignores them.</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>n_elements</strong> – Number of structure elements used.</li>
-<li><strong>point_dimension</strong> – Dimensionality of the points of which the input multi set
-consists of.</li>
+<li><strong>point_dimension</strong> – Dimensionality of the points of which the input multi
+set consists of.</li>
 <li><strong>centers_init</strong> – The initialization for the centers of the structure elements.</li>
 <li><strong>radius_init</strong> – Initialization for radius of zero level-set of the hat.</li>
 <li><strong>exponent</strong> – Exponent of the rationals forming the hat.</li>
@@ -284,10 +284,9 @@ registered hooks while the latter silently ignores them.</p>
 <dl class="function">
 <dt id="chofer_torchex.nn.slayer.prepare_batch">
 <code class="descclassname">chofer_torchex.nn.slayer.</code><code class="descname">prepare_batch</code><span class="sig-paren">(</span><em>batch: List[torch.Tensor], point_dim: int = None</em><span class="sig-paren">)</span> &#x2192; Tuple[torch.Tensor, torch.Tensor, int, int]<a class="reference internal" href="_modules/chofer_torchex/nn/slayer.html#prepare_batch"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chofer_torchex.nn.slayer.prepare_batch" title="Permalink to this definition">¶</a></dt>
-<dd><p>This method ‘vectorizes’ the multiset in order to take advances of gpu
-processing.
-The policy is to embed all multisets in batch to the highest dimensionality
-occurring in batch, i.e., <code class="docutils literal notranslate"><span class="pre">max(t.size()[0]</span></code> for <code class="docutils literal notranslate"><span class="pre">t</span></code> in batch).</p>
+<dd><p>This method ‘vectorizes’ the multiset in order to take advances of GPU
+processing. The policy is to embed all multisets in batch to the highest
+dimensionality occurring in batch, i.e., <code class="docutils literal notranslate"><span class="pre">max(t.size()[0]</span></code> for <code class="docutils literal notranslate"><span class="pre">t</span></code> in batch).</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />

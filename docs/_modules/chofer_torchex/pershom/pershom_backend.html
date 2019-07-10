@@ -81,6 +81,7 @@
               <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../nn.html"><code class="docutils literal notranslate"><span class="pre">nn</span></code></a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../pershom.html"><code class="docutils literal notranslate"><span class="pre">pershom</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../utils.html"><code class="docutils literal notranslate"><span class="pre">utils</span></code></a></li>
 </ul>
 
             
@@ -145,49 +146,50 @@
             
   <h1>Source code for chofer_torchex.pershom.pershom_backend</h1><div class="highlight"><pre>
 <span></span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">This module exposes the C++/CUDA backend functionality for python. </span>
+<span class="sd">This module exposes the C++/CUDA backend functionality for python.</span>
 
 <span class="sd">Terminology</span>
 <span class="sd">-----------</span>
 
-<span class="sd">descending sorted boundary array: </span>
-<span class="sd">    Boundary array which encodes the boundary matrix (BM) for a given filtration </span>
-<span class="sd">    in column first order.</span>
-<span class="sd">    Let BA be the descending_sorted_boundary of BM, then </span>
-<span class="sd">    ``BA[i, :]`` is the i-th column of BM. </span>
-<span class="sd">    Content encoded as decreasingly sorted list, embedded into the array </span>
-<span class="sd">    with -1 padding from the right. </span>
+<span class="sd">Descending sorted boundary array:</span>
+<span class="sd">    Boundary array which encodes the boundary matrix (BM) for a given</span>
+<span class="sd">    filtration in column first order.</span>
+<span class="sd">    Let BA be the descending_sorted_boundary of BM, then</span>
+<span class="sd">    ``BA[i, :]`` is the i-th column of BM.</span>
+<span class="sd">    Content encoded as decreasingly sorted list, embedded into the array</span>
+<span class="sd">    with -1 padding from the right.</span>
 
 <span class="sd">        Example :</span>
-<span class="sd">            ``BA[3, :] = [2, 0, -1, -1]`` </span>
+<span class="sd">            ``BA[3, :] = [2, 0, -1, -1]``</span>
 <span class="sd">            then  :math:`\partial(v_3) = v_0 + v_2`</span>
-<span class="sd">            </span>
+
 <span class="sd">            ``BA[6, :] = [5, 4, 3, -1]``</span>
 <span class="sd">            then :math:`\partial(v_6) = v_3 + v_4 + v_5`</span>
 
 
-<span class="sd">compressed descending sorted boundary array:</span>
+<span class="sd">Compressed descending sorted boundary array:</span>
 <span class="sd">    Same ase *descending sorted boundary array* but rows consisting only of -1</span>
-<span class="sd">    are omitted. </span>
-<span class="sd">    This is sometimes used for efficiency purposes and is usually accompanied </span>
-<span class="sd">    by a vector, ``v``, telling which row of the reduced BA corresponds to which </span>
-<span class="sd">    row of the uncompressed BA, i.e., ``v[3] = 5`` means that the 3rd row of </span>
-<span class="sd">    the reduced BA corresponds to the 5th row in the uncompressed version. </span>
+<span class="sd">    are omitted.</span>
+<span class="sd">    This is sometimes used for efficiency purposes and is usually accompanied</span>
+<span class="sd">    by a vector, ``v``, telling which row of the reduced BA corresponds to</span>
+<span class="sd">    which row of the uncompressed BA, i.e., ``v[3] = 5`` means that the 3rd</span>
+<span class="sd">    row of the reduced BA corresponds to the 5th row in the uncompressed</span>
+<span class="sd">    version.</span>
 
-<span class="sd">birth/death-time:</span>
-<span class="sd">    Index of the coresponding birth/death event in the filtration. </span>
-<span class="sd">    This is always an *integer*. </span>
+<span class="sd">Birth/Death-time:</span>
+<span class="sd">    Index of the coresponding birth/death event in the filtration.</span>
+<span class="sd">    This is always an *integer*.</span>
 
-<span class="sd">birth/deat-value:</span>
-<span class="sd">    If a filtration is induced by a real-valued function, this corresponds </span>
-<span class="sd">    to the value of this function corresponding to the birth/death event. </span>
-<span class="sd">    This is always *real*-valued. </span>
+<span class="sd">Birth/Death-value:</span>
+<span class="sd">    If a filtration is induced by a real-valued function, this corresponds</span>
+<span class="sd">    to the value of this function corresponding to the birth/death event.</span>
+<span class="sd">    This is always *real*-valued.</span>
 
 <span class="sd">Limitations</span>
 <span class="sd">-----------</span>
 
-<span class="sd">Currently all ``cuda`` backend functionality **only** supports  ``int64_t`` and </span>
-<span class="sd">``float32_t`` typing. </span>
+<span class="sd">Currently all ``cuda`` backend functionality **only** supports  ``int64_t`` and</span>
+<span class="sd">``float32_t`` typing.</span>
 
 <span class="sd">&quot;&quot;&quot;</span>
 <span class="kn">import</span> <span class="nn">os.path</span> <span class="k">as</span> <span class="nn">pth</span>
@@ -206,195 +208,210 @@
 <span class="k">for</span> <span class="n">extension</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;*.cpp&#39;</span><span class="p">,</span> <span class="s1">&#39;*.cu&#39;</span><span class="p">]:</span>
     <span class="n">src_files</span> <span class="o">+=</span> <span class="n">glob</span><span class="p">(</span><span class="n">pth</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">__cpp_src_dir</span><span class="p">,</span> <span class="n">extension</span><span class="p">))</span>
 
-
-
 <span class="c1"># jit compiling the c++ extension</span>
 
-<span class="k">try</span><span class="p">:</span> 
+<span class="k">try</span><span class="p">:</span>
     <span class="n">__C</span> <span class="o">=</span> <span class="n">load</span><span class="p">(</span>
         <span class="s1">&#39;pershom_cuda_ext&#39;</span><span class="p">,</span>
         <span class="n">src_files</span><span class="p">,</span>
         <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
-<span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; Error in </span><span class="si">{}</span><span class="s2">. Failed jit compilation. Maybe your CUDA environment is messed up?&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="vm">__file__</span><span class="p">))</span>
+<span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">ex</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Error in </span><span class="si">{}</span><span class="s2">. Failed jit compilation. Maybe your CUDA environment </span><span class="se">\</span>
+<span class="s2">           is messed up?&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="vm">__file__</span><span class="p">))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Error was </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">ex</span><span class="p">))</span>
+
 
 <div class="viewcode-block" id="find_merge_pairings"><a class="viewcode-back" href="../../../pershom.html#chofer_torchex.pershom.pershom_backend.find_merge_pairings">[docs]</a><span class="k">def</span> <span class="nf">find_merge_pairings</span><span class="p">(</span>
-    <span class="n">pivots</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> 
-    <span class="n">max_pairs</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
-    <span class="p">)</span><span class="o">-&gt;</span><span class="n">Tensor</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;Finds the pairs which have to be merged in the current iteration of the </span>
+        <span class="n">pivots</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span>
+        <span class="n">max_pairs</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+        <span class="p">)</span><span class="o">-&gt;</span><span class="n">Tensor</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Finds the pairs which have to be merged in the current iteration of the</span>
 <span class="sd">    matrix reduction.</span>
-<span class="sd">    </span>
+
 <span class="sd">    Args:</span>
-<span class="sd">        pivots: </span>
-<span class="sd">            The pivots of a descending sorted boundary array. </span>
-<span class="sd">            Expected size is ``Nx1``, where N is the number of columns of the </span>
+<span class="sd">        pivots:</span>
+<span class="sd">            The pivots of a descending sorted boundary array.</span>
+<span class="sd">            Expected size is ``Nx1``, where N is the number of columns of the</span>
 <span class="sd">            underlying descending sorted boundary array.</span>
 
-<span class="sd">        max_pairs: </span>
-<span class="sd">            The output is at most a ``max_pairs x 2`` Tensor. If set to </span>
-<span class="sd">            default all possible merge pairs are returned. </span>
-<span class="sd">    </span>
+<span class="sd">        max_pairs:</span>
+<span class="sd">            The output is at most a ``max_pairs x 2`` Tensor. If set to</span>
+<span class="sd">            default all possible merge pairs are returned.</span>
+
 <span class="sd">    Returns:</span>
 <span class="sd">        The merge pairs, ``p``, for the current iteration of the reduction.</span>
-<span class="sd">        ``p[i]`` is a merge pair. </span>
-<span class="sd">        In boundary matrix notation this would mean column ``p[i][0]`` has to </span>
-<span class="sd">        be merged into column ``p[i][1]``. </span>
+<span class="sd">        ``p[i]`` is a merge pair.</span>
+<span class="sd">        In boundary matrix notation this would mean column ``p[i][0]`` has to</span>
+<span class="sd">        be merged into column ``p[i][1]``.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">__C</span><span class="o">.</span><span class="n">CalcPersCuda__find_merge_pairings</span><span class="p">(</span><span class="n">pivots</span><span class="p">,</span> <span class="n">max_pairs</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="merge_columns_"><a class="viewcode-back" href="../../../pershom.html#chofer_torchex.pershom.pershom_backend.merge_columns_">[docs]</a><span class="k">def</span> <span class="nf">merge_columns_</span><span class="p">(</span>
-    <span class="n">compr_desc_sort_ba</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> 
-    <span class="n">merge_pairs</span><span class="p">:</span> <span class="n">Tensor</span>
-    <span class="p">)</span><span class="o">-&gt;</span><span class="kc">None</span><span class="p">:</span>
-    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Executes the given merging operations inplace on the descending </span>
-<span class="sd">    sorted boundary array. </span>
-<span class="sd">    </span>
+        <span class="n">compr_desc_sort_ba</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span>
+        <span class="n">merge_pairs</span><span class="p">:</span> <span class="n">Tensor</span>
+        <span class="p">)</span><span class="o">-&gt;</span><span class="kc">None</span><span class="p">:</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Executes the given merging operations inplace on the descending</span>
+<span class="sd">    sorted boundary array.</span>
+
 <span class="sd">    Args:</span>
-<span class="sd">        compr_desc_sort_ba: </span>
+<span class="sd">        compr_desc_sort_ba:</span>
 <span class="sd">            see module description top.</span>
 
-<span class="sd">        merge_pairs: </span>
+<span class="sd">        merge_pairs:</span>
 <span class="sd">            output of a ``find_merge_pairings`` call.</span>
-<span class="sd">    </span>
+
 <span class="sd">    Returns:</span>
-<span class="sd">        None </span>
+<span class="sd">        None</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">__C</span><span class="o">.</span><span class="n">CalcPersCuda__merge_columns_</span><span class="p">(</span><span class="n">compr_desc_sort_ba</span><span class="p">,</span> <span class="n">merge_pairs</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="read_barcodes"><a class="viewcode-back" href="../../../pershom.html#chofer_torchex.pershom.pershom_backend.read_barcodes">[docs]</a><span class="k">def</span> <span class="nf">read_barcodes</span><span class="p">(</span>
-    <span class="n">pivots</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> 
-    <span class="n">simplex_dimension</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> 
-    <span class="n">max_dim_to_read_of_reduced_ba</span><span class="p">:</span> <span class="nb">int</span>
-    <span class="p">)</span><span class="o">-&gt;</span><span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]]:</span>
+        <span class="n">pivots</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span>
+        <span class="n">simplex_dimension</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span>
+        <span class="n">max_dim_to_read_of_reduced_ba</span><span class="p">:</span> <span class="nb">int</span>
+        <span class="p">)</span><span class="o">-&gt;</span><span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]]:</span>
     <span class="sd">&quot;&quot;&quot;Reads the barcodes using the pivot of a reduced boundary array.</span>
-<span class="sd">    </span>
+
 <span class="sd">    Arguments:</span>
 <span class="sd">        pivots:</span>
 <span class="sd">            pivots is the first column of a compr_desc_sort_ba</span>
 
-<span class="sd">        simplex_dimension: </span>
-<span class="sd">            Vector whose i-th entry is the dimension if the i-th simplex in </span>
+<span class="sd">        simplex_dimension:</span>
+<span class="sd">            Vector whose i-th entry is the dimension if the i-th simplex in</span>
 <span class="sd">            the given filtration.</span>
 
 <span class="sd">        max_dim_to_read_of_reduced_ba:</span>
-<span class="sd">            features up to max_dim_to_read_of_reduced_ba are read from the </span>
+<span class="sd">            features up to max_dim_to_read_of_reduced_ba are read from the</span>
 <span class="sd">            reduced boundary array</span>
-<span class="sd">    </span>
+
 <span class="sd">    Returns:</span>
 <span class="sd">        List of birth/death times.</span>
-<span class="sd">        </span>
+
 <span class="sd">        ``ret[0][n]`` are non essential birth/death-times of dimension ``n``.</span>
 
 <span class="sd">        ``ret[1][n]`` are birth-times of essential classes of dimension ``n``.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="n">__C</span><span class="o">.</span><span class="n">CalcPersCuda__read_barcodes</span><span class="p">(</span><span class="n">pivots</span><span class="p">,</span> <span class="n">simplex_dimension</span><span class="p">,</span> <span class="n">max_dim_to_read_of_reduced_ba</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">__C</span><span class="o">.</span><span class="n">CalcPersCuda__read_barcodes</span><span class="p">(</span>
+        <span class="n">pivots</span><span class="p">,</span>
+        <span class="n">simplex_dimension</span><span class="p">,</span>
+        <span class="n">max_dim_to_read_of_reduced_ba</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="calculate_persistence"><a class="viewcode-back" href="../../../pershom.html#chofer_torchex.pershom.pershom_backend.calculate_persistence">[docs]</a><span class="k">def</span> <span class="nf">calculate_persistence</span><span class="p">(</span>
-    <span class="n">compr_desc_sort_ba</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span>
-    <span class="n">ba_row_i_to_bm_col_i</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> 
-    <span class="n">simplex_dimension</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span>
-    <span class="n">max_dim_to_read_of_reduced_ba</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
-    <span class="n">max_pairs</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
-    <span class="p">)</span><span class="o">-&gt;</span><span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]]:</span>
+        <span class="n">compr_desc_sort_ba</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span>
+        <span class="n">ba_row_i_to_bm_col_i</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span>
+        <span class="n">simplex_dimension</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span>
+        <span class="n">max_dim_to_read_of_reduced_ba</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">max_pairs</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+        <span class="p">)</span><span class="o">-&gt;</span><span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]]:</span>
     <span class="sd">&quot;&quot;&quot;Returns the barcodes of the given encoded boundary array.</span>
-<span class="sd">    </span>
+
 <span class="sd">    Arguments:</span>
-<span class="sd">        compr_desc_sort_ba: </span>
-<span class="sd">            A `compressed descending sorted boundary array`, </span>
+<span class="sd">        compr_desc_sort_ba:</span>
+<span class="sd">            A `compressed descending sorted boundary array`,</span>
 <span class="sd">            see readme section top.</span>
 
-<span class="sd">        ba_row_i_to_bm_col_i: </span>
-<span class="sd">            Vector whose i-th entry is the column index of the boundary </span>
+<span class="sd">        ba_row_i_to_bm_col_i:</span>
+<span class="sd">            Vector whose i-th entry is the column index of the boundary</span>
 <span class="sd">            matrix the i-th row in ``compr_desc_sort_ba corresponds`` to.</span>
 
-<span class="sd">        simplex_dimension: </span>
-<span class="sd">            Vector whose i-th entry is the dimension if the i-th simplex in </span>
+<span class="sd">        simplex_dimension:</span>
+<span class="sd">            Vector whose i-th entry is the dimension if the i-th simplex in</span>
 <span class="sd">            the given filtration</span>
 
 <span class="sd">        max_pairs: see ``find_merge_pairings``.</span>
 
-<span class="sd">        max_dim_to_read_of_reduced_ba: </span>
+<span class="sd">        max_dim_to_read_of_reduced_ba:</span>
 <span class="sd">            features up to max_dim_to_read_of_reduced_ba are read from the</span>
 <span class="sd">            reduced boundary array.</span>
-<span class="sd">    </span>
+
 <span class="sd">    Returns:</span>
 <span class="sd">        List of birth/death times.</span>
-<span class="sd">        </span>
+
 <span class="sd">        ``ret[0][n]`` are non essential birth/death-times of dimension ``n``.</span>
 
 <span class="sd">        ``ret[1][n]`` are birth-times of essential classes of dimension ``n``.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">__C</span><span class="o">.</span><span class="n">CalcPersCuda__calculate_persistence</span><span class="p">(</span>
-        <span class="n">compr_desc_sort_ba</span><span class="p">,</span> <span class="n">ba_row_i_to_bm_col_i</span><span class="p">,</span> <span class="n">simplex_dimension</span><span class="p">,</span> <span class="n">max_dim_to_read_of_reduced_ba</span><span class="p">,</span> <span class="n">max_pairs</span><span class="p">)</span></div>
+        <span class="n">compr_desc_sort_ba</span><span class="p">,</span>
+        <span class="n">ba_row_i_to_bm_col_i</span><span class="p">,</span>
+        <span class="n">simplex_dimension</span><span class="p">,</span>
+        <span class="n">max_dim_to_read_of_reduced_ba</span><span class="p">,</span>
+        <span class="n">max_pairs</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="vr_persistence_l1"><a class="viewcode-back" href="../../../pershom.html#chofer_torchex.pershom.pershom_backend.vr_persistence_l1">[docs]</a><span class="k">def</span> <span class="nf">vr_persistence_l1</span><span class="p">(</span>
-    <span class="n">point_cloud</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> 
-    <span class="n">max_dimension</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> 
-    <span class="n">max_ball_diameter</span><span class="p">:</span> <span class="nb">float</span><span class="o">=</span><span class="mf">0.0</span>
-    <span class="p">)</span><span class="o">-&gt;</span><span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]]:</span>
+        <span class="n">point_cloud</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span>
+        <span class="n">max_dimension</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">max_ball_diameter</span><span class="p">:</span> <span class="nb">float</span><span class="o">=</span><span class="mf">0.0</span>
+        <span class="p">)</span><span class="o">-&gt;</span><span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]]:</span>
     <span class="sd">&quot;&quot;&quot;Returns the barcodes of the Vietoris-Rips complex of a given point cloud</span>
 <span class="sd">    w.r.t. the l1 (manhatten) distance.</span>
-<span class="sd">    </span>
+
 <span class="sd">    Args:</span>
-<span class="sd">        point_cloud: </span>
+<span class="sd">        point_cloud:</span>
 <span class="sd">            Point cloud from which the Vietoris-Rips complex is generated.</span>
 
-<span class="sd">        max_dimension: </span>
-<span class="sd">            The dimension of the used Vietoris-Rips complex. </span>
+<span class="sd">        max_dimension:</span>
+<span class="sd">            The dimension of the used Vietoris-Rips complex.</span>
 
-<span class="sd">        max_ball_diameter: </span>
-<span class="sd">            If not 0, edges whose two defining vertices&#39; distance is greater </span>
-<span class="sd">            than ``max_ball_diameter`` are ignored. </span>
-<span class="sd">    </span>
+<span class="sd">        max_ball_diameter:</span>
+<span class="sd">            If not 0, edges whose two defining vertices&#39; distance is greater</span>
+<span class="sd">            than ``max_ball_diameter`` are ignored.</span>
+
 <span class="sd">    Returns:</span>
 <span class="sd">        List of birth/death times.</span>
-<span class="sd">        </span>
+
 <span class="sd">        ``ret[0][n]`` are non essential birth/death-*values* of dimension ``n``.</span>
 
-<span class="sd">        ``ret[1][n]`` are birth-*values* of essential classes of </span>
+<span class="sd">        ``ret[1][n]`` are birth-*values* of essential classes of</span>
 <span class="sd">        dimension ``n``.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="n">__C</span><span class="o">.</span><span class="n">VRCompCuda__vr_persistence_l1</span><span class="p">(</span><span class="n">point_cloud</span><span class="p">,</span> <span class="n">max_dimension</span><span class="p">,</span> <span class="n">max_ball_diameter</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">__C</span><span class="o">.</span><span class="n">VRCompCuda__vr_persistence_l1</span><span class="p">(</span>
+        <span class="n">point_cloud</span><span class="p">,</span>
+        <span class="n">max_dimension</span><span class="p">,</span>
+        <span class="n">max_ball_diameter</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="vr_persistence"><a class="viewcode-back" href="../../../pershom.html#chofer_torchex.pershom.pershom_backend.vr_persistence">[docs]</a><span class="k">def</span> <span class="nf">vr_persistence</span><span class="p">(</span>
-    <span class="n">distance_matrix</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> 
-    <span class="n">max_dimension</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> 
-    <span class="n">max_ball_diameter</span><span class="p">:</span> <span class="nb">float</span><span class="o">=</span><span class="mf">0.0</span>
-    <span class="p">)</span><span class="o">-&gt;</span><span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]]:</span>
+        <span class="n">distance_matrix</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span>
+        <span class="n">max_dimension</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">max_ball_diameter</span><span class="p">:</span> <span class="nb">float</span><span class="o">=</span><span class="mf">0.0</span>
+        <span class="p">)</span><span class="o">-&gt;</span><span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]]:</span>
     <span class="sd">&quot;&quot;&quot;Returns the barcodes of the Vietoris-Rips complex of a given distance</span>
 <span class="sd">    matrix.</span>
 
-<span class="sd">    **Note**: ``distance_matrix`` is assumed to be a square matrix. Practically, </span>
-<span class="sd">    symetry is *not* required and the upper diagonal part is *ignored*.</span>
-<span class="sd">    For the computation, just the *lower* diagonal part is used. </span>
-<span class="sd">    </span>
+<span class="sd">    **Note**: ``distance_matrix`` is assumed to be a square matrix.</span>
+<span class="sd">    Practically, symmetry is *not* required and the upper diagonal part is</span>
+<span class="sd">    *ignored*. For the computation, just the *lower* diagonal part is used.</span>
+
 <span class="sd">    Args:</span>
-<span class="sd">        distance_matrix: </span>
+<span class="sd">        distance_matrix:</span>
 <span class="sd">            Distance matrix the Vietoris-Rips complex is based on.</span>
 
-<span class="sd">        max_dimension: </span>
-<span class="sd">            The dimension of the used Vietoris-Rips complex. </span>
+<span class="sd">        max_dimension:</span>
+<span class="sd">            The dimension of the used Vietoris-Rips complex.</span>
 
-<span class="sd">        max_ball_diameter: </span>
-<span class="sd">            If not 0, edges whose two defining vertices&#39; distance is greater </span>
-<span class="sd">            than ``max_ball_diameter`` are ignored. </span>
-<span class="sd">    </span>
+<span class="sd">        max_ball_diameter:</span>
+<span class="sd">            If not 0, edges whose two defining vertices&#39; distance is greater</span>
+<span class="sd">            than ``max_ball_diameter`` are ignored.</span>
+
 <span class="sd">    Returns:</span>
 <span class="sd">        List of birth/death times.</span>
-<span class="sd">        </span>
+
 <span class="sd">        ``ret[0][n]`` are non essential birth/death-*values* of dimension ``n``.</span>
 
-<span class="sd">        ``ret[1][n]`` are birth-*values* of essential classes of </span>
+<span class="sd">        ``ret[1][n]`` are birth-*values* of essential classes of</span>
 <span class="sd">        dimension ``n``.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="n">__C</span><span class="o">.</span><span class="n">VRCompCuda__vr_persistence</span><span class="p">(</span><span class="n">distance_matrix</span><span class="p">,</span> <span class="n">max_dimension</span><span class="p">,</span> <span class="n">max_ball_diameter</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">__C</span><span class="o">.</span><span class="n">VRCompCuda__vr_persistence</span><span class="p">(</span>
+        <span class="n">distance_matrix</span><span class="p">,</span>
+        <span class="n">max_dimension</span><span class="p">,</span>
+        <span class="n">max_ball_diameter</span><span class="p">)</span></div>
+
 
 
 
