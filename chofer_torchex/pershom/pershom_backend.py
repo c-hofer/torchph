@@ -70,8 +70,9 @@ try:
         src_files,
         verbose=True)
 
-except Exception:
+except Exception as ex:
     print(" Error in {}. Failed jit compilation. Maybe your CUDA environment is messed up?".format(__file__))
+    print(" Error was {}".format(ex))
 
 def find_merge_pairings(
     pivots: Tensor, 
