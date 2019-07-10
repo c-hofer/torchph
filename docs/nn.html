@@ -36,7 +36,7 @@
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="pershom" href="pershom.html" />
-    <link rel="prev" title="Welcome to chofer_torchex’s documentation!" href="index.html" /> 
+    <link rel="prev" title="PyTorch extensions for persistent homology" href="index.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -150,17 +150,9 @@
             
   <div class="section" id="module-chofer_torchex.nn.slayer">
 <span id="nn"></span><h1><code class="docutils literal notranslate"><span class="pre">nn</span></code><a class="headerlink" href="#module-chofer_torchex.nn.slayer" title="Permalink to this headline">¶</a></h1>
-<p>Implementation of the input layer for persistent homology barcodes
-proposed in:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nd">@inproceedings</span><span class="p">{</span><span class="n">Hofer17a</span><span class="p">,</span>
-<span class="p">{</span>
-<span class="n">author</span>    <span class="o">=</span> <span class="p">{</span><span class="n">C</span><span class="o">.~</span><span class="n">Hofer</span> <span class="ow">and</span> <span class="n">R</span><span class="o">.~</span><span class="n">Kwitt</span> <span class="ow">and</span> <span class="n">M</span><span class="o">.~</span><span class="n">Niethammer</span> <span class="ow">and</span> <span class="n">A</span><span class="o">.~</span><span class="n">Uhl</span><span class="p">},</span>
-<span class="n">title</span>     <span class="o">=</span> <span class="p">{</span><span class="n">Deep</span> <span class="n">Learning</span> <span class="k">with</span> <span class="n">Topological</span> <span class="n">Signatures</span><span class="p">},</span>
-<span class="n">booktitle</span> <span class="o">=</span> <span class="p">{</span><span class="n">NIPS</span><span class="p">},</span>
-<span class="n">year</span>      <span class="o">=</span> <span class="mi">2017</span>
-<span class="p">}</span>
-</pre></div>
-</div>
+<p>Implementation of <strong>differentiable vectorization layers</strong> for persistent homology barcodes.</p>
+<p>Examples for using these layers can be found in the <code class="docutils literal notranslate"><span class="pre">tutorials</span></code> subfolder of the
+<code class="docutils literal notranslate"><span class="pre">chofer_torchex</span></code> repository <a class="reference external" href="https://github.com/c-hofer/chofer_torchex">https://github.com/c-hofer/chofer_torchex</a>.</p>
 <dl class="class">
 <dt id="chofer_torchex.nn.slayer.SLayerExponential">
 <em class="property">class </em><code class="descclassname">chofer_torchex.nn.slayer.</code><code class="descname">SLayerExponential</code><span class="sig-paren">(</span><em>n_elements: int</em>, <em>point_dimension: int = 2</em>, <em>centers_init: torch.Tensor = None</em>, <em>sharpness_init: torch.Tensor = None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chofer_torchex/nn/slayer.html#SLayerExponential"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chofer_torchex.nn.slayer.SLayerExponential" title="Permalink to this definition">¶</a></dt>
@@ -317,7 +309,7 @@ dimensionality occurring in batch, i.e., <code class="docutils literal notransla
         <a href="pershom.html" class="btn btn-neutral float-right" title="pershom" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="index.html" class="btn btn-neutral float-left" title="Welcome to chofer_torchex’s documentation!" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="index.html" class="btn btn-neutral float-left" title="PyTorch extensions for persistent homology" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   

@@ -1,15 +1,10 @@
 r"""
-Implementation of the input layer for persistent homology barcodes 
-proposed in::
+Implementation of **differentiable vectorization layers** for persistent homology barcodes.
 
-    @inproceedings{Hofer17a,
-    {
-    author    = {C.~Hofer and R.~Kwitt and M.~Niethammer and A.~Uhl},
-    title     = {Deep Learning with Topological Signatures},
-    booktitle = {NIPS},
-    year      = 2017
-    }
+Examples for using these layers can be found in the ``tutorials`` subfolder of the 
+``chofer_torchex`` repository https://github.com/c-hofer/chofer_torchex.
 """
+
 import torch
 import numpy as np
 from torch.tensor import Tensor

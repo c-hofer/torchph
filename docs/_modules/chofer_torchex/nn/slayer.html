@@ -146,17 +146,12 @@
             
   <h1>Source code for chofer_torchex.nn.slayer</h1><div class="highlight"><pre>
 <span></span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">Implementation of the input layer for persistent homology barcodes </span>
-<span class="sd">proposed in::</span>
+<span class="sd">Implementation of **differentiable vectorization layers** for persistent homology barcodes.</span>
 
-<span class="sd">    @inproceedings{Hofer17a,</span>
-<span class="sd">    {</span>
-<span class="sd">    author    = {C.~Hofer and R.~Kwitt and M.~Niethammer and A.~Uhl},</span>
-<span class="sd">    title     = {Deep Learning with Topological Signatures},</span>
-<span class="sd">    booktitle = {NIPS},</span>
-<span class="sd">    year      = 2017</span>
-<span class="sd">    }</span>
+<span class="sd">Examples for using these layers can be found in the ``tutorials`` subfolder of the </span>
+<span class="sd">``chofer_torchex`` repository https://github.com/c-hofer/chofer_torchex.</span>
 <span class="sd">&quot;&quot;&quot;</span>
+
 <span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">from</span> <span class="nn">torch.tensor</span> <span class="k">import</span> <span class="n">Tensor</span>
