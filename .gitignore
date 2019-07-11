@@ -1,6 +1,9 @@
+develop.py
+develop_2.py
 .idea
 .vscode
 __pycache__
 *.pyc
 .cache
 .pytest_cache
+pershom_dev/extensions_sandbox
