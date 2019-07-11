@@ -1,4 +1,5 @@
 import requests
+import torch
 
 
 class Dataset(object):
@@ -15,6 +16,22 @@ class Dataset(object):
     @property
     def sample_labels(self):
         raise NotImplementedError
+
+
+class SimpleDataset(torch.utils.data.dataset.Dataset):
+    def __init__(self, X, Y):
+        super().__init__()
+        self.X = X
+        self.Y = Y
+        
+    def __len__(self):
+        return len(self.Y)
+
+    def __getitem__(self, item):
+        return self.X[item], self.Y[item]
+    
+    def __iter__(self):
+        return zip(self.X, self.Y) 
 
 
 def _download_file_from_google_drive(id, destination):
