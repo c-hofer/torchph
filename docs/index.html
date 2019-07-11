@@ -25,6 +25,7 @@
         <script type="text/javascript" src="_static/underscore.js"></script>
         <script type="text/javascript" src="_static/doctools.js"></script>
         <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
     
     <script type="text/javascript" src="_static/js/theme.js"></script>
 
@@ -35,7 +36,7 @@
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="nn" href="nn.html" /> 
+    <link rel="next" title="Installation" href="install/index.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -79,10 +80,21 @@
               
             
             
-              <ul>
+              <p class="caption"><span class="caption-text">Get Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="install/index.html">Installation</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Modules</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="nn.html"><code class="docutils literal notranslate"><span class="pre">nn</span></code></a></li>
 <li class="toctree-l1"><a class="reference internal" href="pershom.html"><code class="docutils literal notranslate"><span class="pre">pershom</span></code></a></li>
 <li class="toctree-l1"><a class="reference internal" href="utils.html"><code class="docutils literal notranslate"><span class="pre">utils</span></code></a></li>
+</ul>
+<p class="caption"><span class="caption-text">Notebooks</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/SLayer.html">Differentiable barcode vectorization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/ToyDiffVR.html">Differentiable Vietoris-Rips persistent homology</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/ComparisonSOTA.html">Comparison to SOTA</a></li>
 </ul>
 
             
@@ -147,7 +159,31 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="pytorch-extensions-for-persistent-homology">
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast,
+.nboutput.nblast {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast + .nbinput {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<div class="section" id="pytorch-extensions-for-persistent-homology">
 <h1>PyTorch extensions for persistent homology<a class="headerlink" href="#pytorch-extensions-for-persistent-homology" title="Permalink to this headline">¶</a></h1>
 <p>This package contains the backend methods (to be used within the PyTorch environment)
 for multiple works using persistent homology in machine learning problems. In particular,
@@ -176,48 +212,23 @@ the following publications are most relevant:</p>
 <p class="last">Note that not all of the available functionality is exposed in the
 documentation yet.</p>
 </div>
-<ul class="simple">
-<li><a class="reference internal" href="#installation">Installation</a></li>
-<li><a class="reference internal" href="#teaser">Teaser</a></li>
-<li><a class="reference internal" href="#tutorials">Tutorials</a></li>
-</ul>
 </div>
-<div class="section" id="installation">
-<h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h1>
-<p>tbd.</p>
+<div class="section" id="get-started">
+<h1>Get started<a class="headerlink" href="#get-started" title="Permalink to this headline">¶</a></h1>
+<div class="toctree-wrapper compound">
+</div>
+<p>Follow the <a class="reference internal" href="install/index.html"><span class="doc">instructions</span></a> to install <code class="docutils literal notranslate"><span class="pre">chofer_torchex</span></code>.</p>
 </div>
 <div class="section" id="functionality">
 <h1>Functionality<a class="headerlink" href="#functionality" title="Permalink to this headline">¶</a></h1>
 <ul class="simple">
-<li>Vietoris-Rips (VR) persistent homology</li>
+<li>Vietoris-Rips (VR) persistent homology (from point clouds and distance matrices)</li>
 <li>Vertex-based filtrations (e.g., usable for graphs)</li>
 <li>Learnable vectorizations of persistence barcodes</li>
 </ul>
 <p>All of this functionality is available for <strong>GPU</strong> computations and can easily be
 used within the PyTorch environment.</p>
-</div>
-<div class="section" id="module-chofer_torchex">
-<span id="package-content"></span><h1>Package content<a class="headerlink" href="#module-chofer_torchex" title="Permalink to this headline">¶</a></h1>
-<p><strong>Sub-Modules:</strong></p>
-<div class="toctree-wrapper compound">
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="nn.html"><code class="docutils literal notranslate"><span class="pre">nn</span></code></a></li>
-<li class="toctree-l1"><a class="reference internal" href="pershom.html"><code class="docutils literal notranslate"><span class="pre">pershom</span></code></a><ul>
-<li class="toctree-l2"><a class="reference internal" href="pershom.html#terminology">Terminology</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pershom.html#limitations">Limitations</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="utils.html"><code class="docutils literal notranslate"><span class="pre">utils</span></code></a></li>
-</ul>
-</div>
-</div>
-<div class="section" id="tutorials">
-<h1>Tutorials<a class="headerlink" href="#tutorials" title="Permalink to this headline">¶</a></h1>
-<p>Tutorials can be found at <a class="reference external" href="https://github.com/c-hofer/chofer_torchex/tree/master/tutorials">https://github.com/c-hofer/chofer_torchex/tree/master/tutorials</a>.</p>
-</div>
-<div class="section" id="teaser">
-<h1>Teaser<a class="headerlink" href="#teaser" title="Permalink to this headline">¶</a></h1>
-<p>The following code snipped is a simple teaser showing how to compute 0-dim. persistent
+<p>The following <strong>simple example</strong> is a teaser showing how to compute 0-dim. persistent
 homology of a (1) Vietoris-Rips filtration which uses the Manhatten distance between
 samples and (2) doing the same using a pre-computed distance matrix.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">device</span> <span class="o">=</span> <span class="s2">&quot;cuda:0&quot;</span>
@@ -250,6 +261,10 @@ samples and (2) doing the same using a pre-computed distance matrix.</p>
     <span class="p">(</span><span class="n">l_a</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">float</span><span class="p">()</span><span class="o">-</span><span class="n">l_b</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">float</span><span class="p">())</span><span class="o">.</span><span class="n">abs</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
 </pre></div>
 </div>
+<div class="toctree-wrapper compound">
+</div>
+<div class="toctree-wrapper compound">
+</div>
 </div>
 <div class="section" id="indices-and-tables">
 <h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
@@ -268,7 +283,7 @@ samples and (2) doing the same using a pre-computed distance matrix.</p>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="nn.html" class="btn btn-neutral float-right" title="nn" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="install/index.html" class="btn btn-neutral float-right" title="Installation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
     </div>

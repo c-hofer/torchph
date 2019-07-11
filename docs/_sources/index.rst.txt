@@ -32,46 +32,29 @@ the following publications are most relevant::
   Note that not all of the available functionality is exposed in the
   documentation yet.
 
-* `Installation`_
-* `Teaser`_
-* `Tutorials`_
+Get started
+===========
 
-Installation
-============
+.. toctree::
+   :maxdepth: 1
+   :caption: Get Started
+   :hidden:
+   :glob:
 
-tbd.
+   install/index
+
+Follow the :doc:`instructions<install/index>` to install ``chofer_torchex``.
 
 Functionality
 =============
-* Vietoris-Rips (VR) persistent homology
+* Vietoris-Rips (VR) persistent homology (from point clouds and distance matrices)
 * Vertex-based filtrations (e.g., usable for graphs)
 * Learnable vectorizations of persistence barcodes
 
 All of this functionality is available for **GPU** computations and can easily be
 used within the PyTorch environment.
 
-Package content
-===============
-
-.. automodule:: chofer_torchex
-    :members:
-
-**Sub-Modules:**
-
-.. toctree::
-    nn
-    pershom
-    utils
-
-Tutorials
-=========
-
-Tutorials can be found at https://github.com/c-hofer/chofer_torchex/tree/master/tutorials.
-
-Teaser
-======
-
-The following code snipped is a simple teaser showing how to compute 0-dim. persistent
+The following **simple example** is a teaser showing how to compute 0-dim. persistent
 homology of a (1) Vietoris-Rips filtration which uses the Manhatten distance between
 samples and (2) doing the same using a pre-computed distance matrix.
 
@@ -106,6 +89,25 @@ samples and (2) doing the same using a pre-computed distance matrix.
     print("Diff: ",
         (l_a[0].float()-l_b[0].float()).abs().sum().item())
 
+.. toctree::
+    :caption: Modules 
+    :maxdepth: 1
+    :hidden:
+    :glob:
+
+    nn
+    pershom
+    utils
+
+.. toctree::
+    :caption: Notebooks
+    :maxdepth: 0
+    :hidden:
+    :glob:
+
+    tutorials/SLayer.ipynb
+    tutorials/ToyDiffVR.ipynb
+    tutorials/ComparisonSOTA.ipynb
 
 Indices and tables
 ==================

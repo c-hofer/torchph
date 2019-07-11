@@ -4,7 +4,7 @@
    "cell_type": "markdown",
    "metadata": {},
    "source": [
-    "# SLayer Tutorial\n",
+    "# Differentiable barcode vectorization\n",
     "\n",
     "This tutorial gives you a brief insight in the functionalities offered by the `nn.SLayerExponential` \n",
     "module. It assumes familarity with standard `PyTorch` functionality. \n"
@@ -12,7 +12,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 1,
+   "execution_count": 3,
    "metadata": {},
    "outputs": [],
    "source": [
@@ -22,7 +22,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 3,
+   "execution_count": 4,
    "metadata": {},
    "outputs": [],
    "source": [
@@ -41,7 +41,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 4,
+   "execution_count": 5,
    "metadata": {},
    "outputs": [
     {
@@ -50,7 +50,7 @@
        "True"
       ]
      },
-     "execution_count": 4,
+     "execution_count": 5,
      "metadata": {},
      "output_type": "execute_result"
     }
@@ -69,7 +69,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 5,
+   "execution_count": 6,
    "metadata": {},
    "outputs": [
     {
@@ -77,9 +77,9 @@
      "output_type": "stream",
      "text": [
       "Parameter containing:\n",
-      "tensor([[0.9911, 0.0225],\n",
-      "        [0.0462, 0.4961],\n",
-      "        [0.9853, 0.3108]], requires_grad=True)\n",
+      "tensor([[0.3424, 0.1891],\n",
+      "        [0.1751, 0.1890],\n",
+      "        [0.4058, 0.0261]], requires_grad=True)\n",
       "Parameter containing:\n",
       "tensor([[3., 3.],\n",
       "        [3., 3.],\n",
@@ -105,7 +105,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 9,
+   "execution_count": 7,
    "metadata": {},
    "outputs": [
     {
@@ -158,7 +158,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 10,
+   "execution_count": 8,
    "metadata": {},
    "outputs": [
     {
@@ -196,7 +196,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 11,
+   "execution_count": 9,
    "metadata": {},
    "outputs": [
     {
@@ -229,7 +229,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 18,
+   "execution_count": 10,
    "metadata": {},
    "outputs": [
     {
@@ -259,7 +259,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 34,
+   "execution_count": 11,
    "metadata": {},
    "outputs": [],
    "source": [
@@ -277,7 +277,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 36,
+   "execution_count": 12,
    "metadata": {},
    "outputs": [
     {

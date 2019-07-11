@@ -4,7 +4,7 @@
    "cell_type": "markdown",
    "metadata": {},
    "source": [
-    "# Example for differentiable Vietoris-Rips persistent homology\n",
+    "# Differentiable Vietoris-Rips persistent homology\n",
     "\n",
     "In this example, we essentially reproduce the toy experiment from\n",
     "\n",
@@ -31,19 +31,8 @@
    ]
   },
   {
-   "cell_type": "code",
-   "execution_count": 43,
+   "cell_type": "markdown",
    "metadata": {},
-   "outputs": [
-    {
-     "name": "stdout",
-     "output_type": "stream",
-     "text": [
-      "The autoreload extension is already loaded. To reload it, use:\n",
-      "  %reload_ext autoreload\n"
-     ]
-    }
-   ],
    "source": [
     "%load_ext autoreload\n",
     "%autoreload 2"
