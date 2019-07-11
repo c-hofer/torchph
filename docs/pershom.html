@@ -24,7 +24,8 @@
         <script type="text/javascript" src="_static/jquery.js"></script>
         <script type="text/javascript" src="_static/underscore.js"></script>
         <script type="text/javascript" src="_static/doctools.js"></script>
-        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
     <script type="text/javascript" src="_static/js/theme.js"></script>
 
@@ -154,43 +155,41 @@
             
   <div class="section" id="module-chofer_torchex.pershom.pershom_backend">
 <span id="pershom"></span><h1><code class="docutils literal notranslate"><span class="pre">pershom</span></code><a class="headerlink" href="#module-chofer_torchex.pershom.pershom_backend" title="Permalink to this headline">¶</a></h1>
-<p>This module exposes the C++/CUDA backend functionality for python.</p>
+<p>This module exposes the C++/CUDA backend functionality for Python.</p>
 <div class="section" id="terminology">
 <h2>Terminology<a class="headerlink" href="#terminology" title="Permalink to this headline">¶</a></h2>
-<dl class="docutils">
-<dt>Descending sorted boundary array:</dt>
-<dd><p class="first">Boundary array which encodes the boundary matrix (BM) for a given
+<dl>
+<dt>Descending sorted boundary array:</dt><dd><p>Boundary array which encodes the boundary matrix (BM) for a given
 filtration in column first order.
 Let BA be the descending_sorted_boundary of BM, then
 <code class="docutils literal notranslate"><span class="pre">BA[i,</span> <span class="pre">:]</span></code> is the i-th column of BM.
 Content encoded as decreasingly sorted list, embedded into the array
 with -1 padding from the right.</p>
-<blockquote class="last">
-<div><dl class="docutils">
-<dt>Example :</dt>
-<dd><p class="first"><code class="docutils literal notranslate"><span class="pre">BA[3,</span> <span class="pre">:]</span> <span class="pre">=</span> <span class="pre">[2,</span> <span class="pre">0,</span> <span class="pre">-1,</span> <span class="pre">-1]</span></code>
+<blockquote>
+<div><dl>
+<dt>Example :</dt><dd><p><code class="docutils literal notranslate"><span class="pre">BA[3,</span> <span class="pre">:]</span> <span class="pre">=</span> <span class="pre">[2,</span> <span class="pre">0,</span> <span class="pre">-1,</span> <span class="pre">-1]</span></code>
 then  <span class="math notranslate nohighlight">\(\partial(v_3) = v_0 + v_2\)</span></p>
-<p class="last"><code class="docutils literal notranslate"><span class="pre">BA[6,</span> <span class="pre">:]</span> <span class="pre">=</span> <span class="pre">[5,</span> <span class="pre">4,</span> <span class="pre">3,</span> <span class="pre">-1]</span></code>
+<p><code class="docutils literal notranslate"><span class="pre">BA[6,</span> <span class="pre">:]</span> <span class="pre">=</span> <span class="pre">[5,</span> <span class="pre">4,</span> <span class="pre">3,</span> <span class="pre">-1]</span></code>
 then <span class="math notranslate nohighlight">\(\partial(v_6) = v_3 + v_4 + v_5\)</span></p>
 </dd>
 </dl>
 </div></blockquote>
 </dd>
-<dt>Compressed descending sorted boundary array:</dt>
-<dd>Same ase <em>descending sorted boundary array</em> but rows consisting only of -1
+<dt>Compressed descending sorted boundary array:</dt><dd><p>Same as <em>descending sorted boundary array</em> but rows consisting only of -1
 are omitted.
 This is sometimes used for efficiency purposes and is usually accompanied
 by a vector, <code class="docutils literal notranslate"><span class="pre">v</span></code>, telling which row of the reduced BA corresponds to
 which row of the uncompressed BA, i.e., <code class="docutils literal notranslate"><span class="pre">v[3]</span> <span class="pre">=</span> <span class="pre">5</span></code> means that the 3rd
 row of the reduced BA corresponds to the 5th row in the uncompressed
-version.</dd>
-<dt>Birth/Death-time:</dt>
-<dd>Index of the coresponding birth/death event in the filtration.
-This is always an <em>integer</em>.</dd>
-<dt>Birth/Death-value:</dt>
-<dd>If a filtration is induced by a real-valued function, this corresponds
+version.</p>
+</dd>
+<dt>Birth/Death-time:</dt><dd><p>Index of the coresponding birth/death event in the filtration.
+This is always an <em>integer</em>.</p>
+</dd>
+<dt>Birth/Death-value:</dt><dd><p>If a filtration is induced by a real-valued function, this corresponds
 to the value of this function corresponding to the birth/death event.
-This is always <em>real</em>-valued.</dd>
+This is always <em>real</em>-valued.</p>
+</dd>
 </dl>
 </div>
 <div class="section" id="limitations">
@@ -199,169 +198,145 @@ This is always <em>real</em>-valued.</dd>
 <code class="docutils literal notranslate"><span class="pre">float32_t</span></code> typing.</p>
 <dl class="function">
 <dt id="chofer_torchex.pershom.pershom_backend.calculate_persistence">
-<code class="descclassname">chofer_torchex.pershom.pershom_backend.</code><code class="descname">calculate_persistence</code><span class="sig-paren">(</span><em>compr_desc_sort_ba: torch.Tensor</em>, <em>ba_row_i_to_bm_col_i: torch.Tensor</em>, <em>simplex_dimension: torch.Tensor</em>, <em>max_dim_to_read_of_reduced_ba: int</em>, <em>max_pairs: int = -1</em><span class="sig-paren">)</span> &#x2192; List[List[torch.Tensor]]<a class="reference internal" href="_modules/chofer_torchex/pershom/pershom_backend.html#calculate_persistence"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chofer_torchex.pershom.pershom_backend.calculate_persistence" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">chofer_torchex.pershom.pershom_backend.</code><code class="sig-name descname">calculate_persistence</code><span class="sig-paren">(</span><em class="sig-param">compr_desc_sort_ba: torch.Tensor</em>, <em class="sig-param">ba_row_i_to_bm_col_i: torch.Tensor</em>, <em class="sig-param">simplex_dimension: torch.Tensor</em>, <em class="sig-param">max_dim_to_read_of_reduced_ba: int</em>, <em class="sig-param">max_pairs: int = -1</em><span class="sig-paren">)</span> &#x2192; List[List[torch.Tensor]]<a class="reference internal" href="_modules/chofer_torchex/pershom/pershom_backend.html#calculate_persistence"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chofer_torchex.pershom.pershom_backend.calculate_persistence" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the barcodes of the given encoded boundary array.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>compr_desc_sort_ba</strong> – A <cite>compressed descending sorted boundary array</cite>,
-see readme section top.</li>
-<li><strong>ba_row_i_to_bm_col_i</strong> – Vector whose i-th entry is the column index of the boundary
-matrix the i-th row in <code class="docutils literal notranslate"><span class="pre">compr_desc_sort_ba</span> <span class="pre">corresponds</span></code> to.</li>
-<li><strong>simplex_dimension</strong> – Vector whose i-th entry is the dimension if the i-th simplex in
-the given filtration</li>
-<li><strong>max_pairs</strong> – see <code class="docutils literal notranslate"><span class="pre">find_merge_pairings</span></code>.</li>
-<li><strong>max_dim_to_read_of_reduced_ba</strong> – features up to max_dim_to_read_of_reduced_ba are read from the
-reduced boundary array.</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>compr_desc_sort_ba</strong> – A <cite>compressed descending sorted boundary array</cite>,
+see readme section top.</p></li>
+<li><p><strong>ba_row_i_to_bm_col_i</strong> – Vector whose i-th entry is the column index of the boundary
+matrix the i-th row in <code class="docutils literal notranslate"><span class="pre">compr_desc_sort_ba</span> <span class="pre">corresponds</span></code> to.</p></li>
+<li><p><strong>simplex_dimension</strong> – Vector whose i-th entry is the dimension if the i-th simplex in
+the given filtration</p></li>
+<li><p><strong>max_pairs</strong> – see <code class="docutils literal notranslate"><span class="pre">find_merge_pairings</span></code>.</p></li>
+<li><p><strong>max_dim_to_read_of_reduced_ba</strong> – features up to max_dim_to_read_of_reduced_ba are read from the
+reduced boundary array.</p></li>
 </ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><p>List of birth/death times.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><p>List of birth/death times.</p>
 <p><code class="docutils literal notranslate"><span class="pre">ret[0][n]</span></code> are non essential birth/death-times of dimension <code class="docutils literal notranslate"><span class="pre">n</span></code>.</p>
 <p><code class="docutils literal notranslate"><span class="pre">ret[1][n]</span></code> are birth-times of essential classes of dimension <code class="docutils literal notranslate"><span class="pre">n</span></code>.</p>
 </p>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="function">
 <dt id="chofer_torchex.pershom.pershom_backend.find_merge_pairings">
-<code class="descclassname">chofer_torchex.pershom.pershom_backend.</code><code class="descname">find_merge_pairings</code><span class="sig-paren">(</span><em>pivots: torch.Tensor</em>, <em>max_pairs: int = -1</em><span class="sig-paren">)</span> &#x2192; torch.Tensor<a class="reference internal" href="_modules/chofer_torchex/pershom/pershom_backend.html#find_merge_pairings"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chofer_torchex.pershom.pershom_backend.find_merge_pairings" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">chofer_torchex.pershom.pershom_backend.</code><code class="sig-name descname">find_merge_pairings</code><span class="sig-paren">(</span><em class="sig-param">pivots: torch.Tensor</em>, <em class="sig-param">max_pairs: int = -1</em><span class="sig-paren">)</span> &#x2192; torch.Tensor<a class="reference internal" href="_modules/chofer_torchex/pershom/pershom_backend.html#find_merge_pairings"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chofer_torchex.pershom.pershom_backend.find_merge_pairings" title="Permalink to this definition">¶</a></dt>
 <dd><p>Finds the pairs which have to be merged in the current iteration of the
 matrix reduction.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>pivots</strong> – The pivots of a descending sorted boundary array.
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pivots</strong> – The pivots of a descending sorted boundary array.
 Expected size is <code class="docutils literal notranslate"><span class="pre">Nx1</span></code>, where N is the number of columns of the
-underlying descending sorted boundary array.</li>
-<li><strong>max_pairs</strong> – The output is at most a <code class="docutils literal notranslate"><span class="pre">max_pairs</span> <span class="pre">x</span> <span class="pre">2</span></code> Tensor. If set to
-default all possible merge pairs are returned.</li>
+underlying descending sorted boundary array.</p></li>
+<li><p><strong>max_pairs</strong> – The output is at most a <code class="docutils literal notranslate"><span class="pre">max_pairs</span> <span class="pre">x</span> <span class="pre">2</span></code> Tensor. If set to
+default all possible merge pairs are returned.</p></li>
 </ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">The merge pairs, <code class="docutils literal notranslate"><span class="pre">p</span></code>, for the current iteration of the reduction.
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The merge pairs, <code class="docutils literal notranslate"><span class="pre">p</span></code>, for the current iteration of the reduction.
 <code class="docutils literal notranslate"><span class="pre">p[i]</span></code> is a merge pair.
 In boundary matrix notation this would mean column <code class="docutils literal notranslate"><span class="pre">p[i][0]</span></code> has to
 be merged into column <code class="docutils literal notranslate"><span class="pre">p[i][1]</span></code>.</p>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="function">
 <dt id="chofer_torchex.pershom.pershom_backend.merge_columns_">
-<code class="descclassname">chofer_torchex.pershom.pershom_backend.</code><code class="descname">merge_columns_</code><span class="sig-paren">(</span><em>compr_desc_sort_ba: torch.Tensor</em>, <em>merge_pairs: torch.Tensor</em><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="_modules/chofer_torchex/pershom/pershom_backend.html#merge_columns_"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chofer_torchex.pershom.pershom_backend.merge_columns_" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">chofer_torchex.pershom.pershom_backend.</code><code class="sig-name descname">merge_columns_</code><span class="sig-paren">(</span><em class="sig-param">compr_desc_sort_ba: torch.Tensor</em>, <em class="sig-param">merge_pairs: torch.Tensor</em><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="_modules/chofer_torchex/pershom/pershom_backend.html#merge_columns_"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chofer_torchex.pershom.pershom_backend.merge_columns_" title="Permalink to this definition">¶</a></dt>
 <dd><p>Executes the given merging operations inplace on the descending
 sorted boundary array.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>compr_desc_sort_ba</strong> – see module description top.</li>
-<li><strong>merge_pairs</strong> – output of a <code class="docutils literal notranslate"><span class="pre">find_merge_pairings</span></code> call.</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>compr_desc_sort_ba</strong> – see module description top.</p></li>
+<li><p><strong>merge_pairs</strong> – output of a <code class="docutils literal notranslate"><span class="pre">find_merge_pairings</span></code> call.</p></li>
 </ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">None</p>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="function">
 <dt id="chofer_torchex.pershom.pershom_backend.read_barcodes">
-<code class="descclassname">chofer_torchex.pershom.pershom_backend.</code><code class="descname">read_barcodes</code><span class="sig-paren">(</span><em>pivots: torch.Tensor</em>, <em>simplex_dimension: torch.Tensor</em>, <em>max_dim_to_read_of_reduced_ba: int</em><span class="sig-paren">)</span> &#x2192; List[List[torch.Tensor]]<a class="reference internal" href="_modules/chofer_torchex/pershom/pershom_backend.html#read_barcodes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chofer_torchex.pershom.pershom_backend.read_barcodes" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">chofer_torchex.pershom.pershom_backend.</code><code class="sig-name descname">read_barcodes</code><span class="sig-paren">(</span><em class="sig-param">pivots: torch.Tensor</em>, <em class="sig-param">simplex_dimension: torch.Tensor</em>, <em class="sig-param">max_dim_to_read_of_reduced_ba: int</em><span class="sig-paren">)</span> &#x2192; List[List[torch.Tensor]]<a class="reference internal" href="_modules/chofer_torchex/pershom/pershom_backend.html#read_barcodes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chofer_torchex.pershom.pershom_backend.read_barcodes" title="Permalink to this definition">¶</a></dt>
 <dd><p>Reads the barcodes using the pivot of a reduced boundary array.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>pivots</strong> – pivots is the first column of a compr_desc_sort_ba</li>
-<li><strong>simplex_dimension</strong> – Vector whose i-th entry is the dimension if the i-th simplex in
-the given filtration.</li>
-<li><strong>max_dim_to_read_of_reduced_ba</strong> – features up to max_dim_to_read_of_reduced_ba are read from the
-reduced boundary array</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pivots</strong> – pivots is the first column of a compr_desc_sort_ba</p></li>
+<li><p><strong>simplex_dimension</strong> – Vector whose i-th entry is the dimension if the i-th simplex in
+the given filtration.</p></li>
+<li><p><strong>max_dim_to_read_of_reduced_ba</strong> – features up to max_dim_to_read_of_reduced_ba are read from the
+reduced boundary array</p></li>
 </ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><p>List of birth/death times.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><p>List of birth/death times.</p>
 <p><code class="docutils literal notranslate"><span class="pre">ret[0][n]</span></code> are non essential birth/death-times of dimension <code class="docutils literal notranslate"><span class="pre">n</span></code>.</p>
 <p><code class="docutils literal notranslate"><span class="pre">ret[1][n]</span></code> are birth-times of essential classes of dimension <code class="docutils literal notranslate"><span class="pre">n</span></code>.</p>
 </p>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="function">
 <dt id="chofer_torchex.pershom.pershom_backend.vr_persistence">
-<code class="descclassname">chofer_torchex.pershom.pershom_backend.</code><code class="descname">vr_persistence</code><span class="sig-paren">(</span><em>distance_matrix: torch.Tensor</em>, <em>max_dimension: int</em>, <em>max_ball_diameter: float = 0.0</em><span class="sig-paren">)</span> &#x2192; List[List[torch.Tensor]]<a class="reference internal" href="_modules/chofer_torchex/pershom/pershom_backend.html#vr_persistence"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chofer_torchex.pershom.pershom_backend.vr_persistence" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">chofer_torchex.pershom.pershom_backend.</code><code class="sig-name descname">vr_persistence</code><span class="sig-paren">(</span><em class="sig-param">distance_matrix: torch.Tensor</em>, <em class="sig-param">max_dimension: int</em>, <em class="sig-param">max_ball_diameter: float = 0.0</em><span class="sig-paren">)</span> &#x2192; List[List[torch.Tensor]]<a class="reference internal" href="_modules/chofer_torchex/pershom/pershom_backend.html#vr_persistence"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chofer_torchex.pershom.pershom_backend.vr_persistence" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the barcodes of the Vietoris-Rips complex of a given distance
 matrix.</p>
 <p><strong>Note</strong>: <code class="docutils literal notranslate"><span class="pre">distance_matrix</span></code> is assumed to be a square matrix.
 Practically, symmetry is <em>not</em> required and the upper diagonal part is
 <em>ignored</em>. For the computation, just the <em>lower</em> diagonal part is used.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>distance_matrix</strong> – Distance matrix the Vietoris-Rips complex is based on.</li>
-<li><strong>max_dimension</strong> – The dimension of the used Vietoris-Rips complex.</li>
-<li><strong>max_ball_diameter</strong> – If not 0, edges whose two defining vertices’ distance is greater
-than <code class="docutils literal notranslate"><span class="pre">max_ball_diameter</span></code> are ignored.</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>distance_matrix</strong> – Distance matrix the Vietoris-Rips complex is based on.</p></li>
+<li><p><strong>max_dimension</strong> – The dimension of the used Vietoris-Rips complex.</p></li>
+<li><p><strong>max_ball_diameter</strong> – If not 0, edges whose two defining vertices’ distance is greater
+than <code class="docutils literal notranslate"><span class="pre">max_ball_diameter</span></code> are ignored.</p></li>
 </ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><p>List of birth/death times.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><p>List of birth/death times.</p>
 <p><code class="docutils literal notranslate"><span class="pre">ret[0][n]</span></code> are non essential birth/death-<em>values</em> of dimension <code class="docutils literal notranslate"><span class="pre">n</span></code>.</p>
 <p><code class="docutils literal notranslate"><span class="pre">ret[1][n]</span></code> are birth-<em>values</em> of essential classes of
 dimension <code class="docutils literal notranslate"><span class="pre">n</span></code>.</p>
 </p>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="function">
 <dt id="chofer_torchex.pershom.pershom_backend.vr_persistence_l1">
-<code class="descclassname">chofer_torchex.pershom.pershom_backend.</code><code class="descname">vr_persistence_l1</code><span class="sig-paren">(</span><em>point_cloud: torch.Tensor</em>, <em>max_dimension: int</em>, <em>max_ball_diameter: float = 0.0</em><span class="sig-paren">)</span> &#x2192; List[List[torch.Tensor]]<a class="reference internal" href="_modules/chofer_torchex/pershom/pershom_backend.html#vr_persistence_l1"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chofer_torchex.pershom.pershom_backend.vr_persistence_l1" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">chofer_torchex.pershom.pershom_backend.</code><code class="sig-name descname">vr_persistence_l1</code><span class="sig-paren">(</span><em class="sig-param">point_cloud: torch.Tensor</em>, <em class="sig-param">max_dimension: int</em>, <em class="sig-param">max_ball_diameter: float = 0.0</em><span class="sig-paren">)</span> &#x2192; List[List[torch.Tensor]]<a class="reference internal" href="_modules/chofer_torchex/pershom/pershom_backend.html#vr_persistence_l1"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chofer_torchex.pershom.pershom_backend.vr_persistence_l1" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the barcodes of the Vietoris-Rips complex of a given point cloud
 w.r.t. the l1 (manhatten) distance.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>point_cloud</strong> – Point cloud from which the Vietoris-Rips complex is generated.</li>
-<li><strong>max_dimension</strong> – The dimension of the used Vietoris-Rips complex.</li>
-<li><strong>max_ball_diameter</strong> – If not 0, edges whose two defining vertices’ distance is greater
-than <code class="docutils literal notranslate"><span class="pre">max_ball_diameter</span></code> are ignored.</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>point_cloud</strong> – Point cloud from which the Vietoris-Rips complex is generated.</p></li>
+<li><p><strong>max_dimension</strong> – The dimension of the used Vietoris-Rips complex.</p></li>
+<li><p><strong>max_ball_diameter</strong> – If not 0, edges whose two defining vertices’ distance is greater
+than <code class="docutils literal notranslate"><span class="pre">max_ball_diameter</span></code> are ignored.</p></li>
 </ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><p>List of birth/death times.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><p>List of birth/death times.</p>
 <p><code class="docutils literal notranslate"><span class="pre">ret[0][n]</span></code> are non essential birth/death-<em>values</em> of dimension <code class="docutils literal notranslate"><span class="pre">n</span></code>.</p>
 <p><code class="docutils literal notranslate"><span class="pre">ret[1][n]</span></code> are birth-<em>values</em> of essential classes of
 dimension <code class="docutils literal notranslate"><span class="pre">n</span></code>.</p>
 </p>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </dd></dl>
 
 </div>
@@ -387,7 +362,7 @@ dimension <code class="docutils literal notranslate"><span class="pre">n</span><
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2019, Christoph D. Hofer
+        &copy; Copyright 2019, Christoph D. Hofer, Roland Kwitt
 
     </p>
   </div>

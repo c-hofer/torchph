@@ -1,5 +1,5 @@
 r"""
-This module exposes the C++/CUDA backend functionality for python.
+This module exposes the C++/CUDA backend functionality for Python.
 
 Terminology
 -----------
@@ -21,7 +21,7 @@ Descending sorted boundary array:
 
 
 Compressed descending sorted boundary array:
-    Same ase *descending sorted boundary array* but rows consisting only of -1
+    Same as *descending sorted boundary array* but rows consisting only of -1
     are omitted.
     This is sometimes used for efficiency purposes and is usually accompanied
     by a vector, ``v``, telling which row of the reduced BA corresponds to
@@ -264,13 +264,3 @@ def vr_persistence(
         distance_matrix,
         max_dimension,
         max_ball_diameter)
-
-
-
-
-
-
-
-    
-
-

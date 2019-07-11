@@ -6,8 +6,8 @@
 PyTorch extensions for persistent homology
 ==========================================
 
-This package contains the backend methods (to be used within the PyTorch environment) 
-for multiple works using persistent homology in machine learning problems. In particular, 
+This package contains the backend methods (to be used within the PyTorch environment)
+for multiple works using persistent homology in machine learning problems. In particular,
 the following publications are most relevant::
 
     @inproceedings{Hofer17a,
@@ -28,11 +28,18 @@ the following publications are most relevant::
         booktitle = {arXiv},
         year      = {2019}}
 
+.. note::
+  Note that not all of the available functionality is exposed in the
+  documentation yet.
 
+* `Installation`_
 * `Teaser`_
 * `Tutorials`_
 
-.. _functionality:
+Installation
+============
+
+tbd.
 
 Functionality
 =============
@@ -64,15 +71,15 @@ Tutorials can be found at https://github.com/c-hofer/chofer_torchex/tree/master/
 Teaser
 ======
 
-The following code snipped is a simple teaser showing how to compute 0-dim. persistent 
-homology of a (1) Vietoris-Rips filtration which uses the Manhatten distance between 
-samples and (2) doing the same using a pre-computed distance matrix. 
+The following code snipped is a simple teaser showing how to compute 0-dim. persistent
+homology of a (1) Vietoris-Rips filtration which uses the Manhatten distance between
+samples and (2) doing the same using a pre-computed distance matrix.
 
 .. code-block:: python
 
     device = "cuda:0"
 
-    # import numpy 
+    # import numpy
     import numpy as np
 
     # import VR persistence computation functionality
@@ -96,9 +103,9 @@ samples and (2) doing the same using a pre-computed distance matrix.
             )
         ).to("cuda:0")
     l_b, _ = vr_persistence(D, 0, 0)
-    print("Diff: ", 
+    print("Diff: ",
         (l_a[0].float()-l_b[0].float()).abs().sum().item())
-    
+
 
 Indices and tables
 ==================

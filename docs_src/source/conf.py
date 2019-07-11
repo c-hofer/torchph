@@ -20,8 +20,8 @@
 # -- Project information -----------------------------------------------------
 
 project = 'chofer_torchex'
-copyright = '2019, Christoph D. Hofer'
-author = 'Christoph D. Hofer'
+copyright = '2019, Christoph D. Hofer, Roland Kwitt'
+author = 'Christoph D. Hofer, Roland Kwitt'
 
 # The short X.Y version
 version = ''
@@ -73,7 +73,6 @@ exclude_patterns = []
 
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = None
-
 
 # -- Options for HTML output -------------------------------------------------
 

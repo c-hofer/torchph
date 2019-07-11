@@ -24,7 +24,8 @@
         <script type="text/javascript" src="../../../_static/jquery.js"></script>
         <script type="text/javascript" src="../../../_static/underscore.js"></script>
         <script type="text/javascript" src="../../../_static/doctools.js"></script>
-        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script type="text/javascript" src="../../../_static/language_data.js"></script>
+        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
     <script type="text/javascript" src="../../../_static/js/theme.js"></script>
 
@@ -146,7 +147,7 @@
             
   <h1>Source code for chofer_torchex.pershom.pershom_backend</h1><div class="highlight"><pre>
 <span></span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">This module exposes the C++/CUDA backend functionality for python.</span>
+<span class="sd">This module exposes the C++/CUDA backend functionality for Python.</span>
 
 <span class="sd">Terminology</span>
 <span class="sd">-----------</span>
@@ -168,7 +169,7 @@
 
 
 <span class="sd">Compressed descending sorted boundary array:</span>
-<span class="sd">    Same ase *descending sorted boundary array* but rows consisting only of -1</span>
+<span class="sd">    Same as *descending sorted boundary array* but rows consisting only of -1</span>
 <span class="sd">    are omitted.</span>
 <span class="sd">    This is sometimes used for efficiency purposes and is usually accompanied</span>
 <span class="sd">    by a vector, ``v``, telling which row of the reduced BA corresponds to</span>
@@ -411,16 +412,6 @@
         <span class="n">distance_matrix</span><span class="p">,</span>
         <span class="n">max_dimension</span><span class="p">,</span>
         <span class="n">max_ball_diameter</span><span class="p">)</span></div>
-
-
-
-
-
-
-
-    
-
-
 </pre></div>
 
            </div>
@@ -433,7 +424,7 @@
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2019, Christoph D. Hofer
+        &copy; Copyright 2019, Christoph D. Hofer, Roland Kwitt
 
     </p>
   </div>

@@ -24,7 +24,8 @@
         <script type="text/javascript" src="_static/jquery.js"></script>
         <script type="text/javascript" src="_static/underscore.js"></script>
         <script type="text/javascript" src="_static/doctools.js"></script>
-        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
     <script type="text/javascript" src="_static/js/theme.js"></script>
 
@@ -150,42 +151,39 @@
             
   <div class="section" id="module-chofer_torchex.nn.slayer">
 <span id="nn"></span><h1><code class="docutils literal notranslate"><span class="pre">nn</span></code><a class="headerlink" href="#module-chofer_torchex.nn.slayer" title="Permalink to this headline">¶</a></h1>
-<p>Implementation of <strong>differentiable vectorization layers</strong> for persistent homology barcodes.</p>
-<p>Examples for using these layers can be found in the <code class="docutils literal notranslate"><span class="pre">tutorials</span></code> subfolder of the
-<code class="docutils literal notranslate"><span class="pre">chofer_torchex</span></code> repository <a class="reference external" href="https://github.com/c-hofer/chofer_torchex">https://github.com/c-hofer/chofer_torchex</a>.</p>
+<p>Implementation of <strong>differentiable vectorization layers</strong> for persistent
+homology barcodes.</p>
+<p>Examples for using these layers can be found in the <code class="docutils literal notranslate"><span class="pre">tutorials</span></code> subfolder of
+the <code class="docutils literal notranslate"><span class="pre">chofer_torchex</span></code> repository <a class="reference external" href="https://github.com/c-hofer/chofer_torchex">https://github.com/c-hofer/chofer_torchex</a>.</p>
 <dl class="class">
 <dt id="chofer_torchex.nn.slayer.SLayerExponential">
-<em class="property">class </em><code class="descclassname">chofer_torchex.nn.slayer.</code><code class="descname">SLayerExponential</code><span class="sig-paren">(</span><em>n_elements: int</em>, <em>point_dimension: int = 2</em>, <em>centers_init: torch.Tensor = None</em>, <em>sharpness_init: torch.Tensor = None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chofer_torchex/nn/slayer.html#SLayerExponential"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chofer_torchex.nn.slayer.SLayerExponential" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">chofer_torchex.nn.slayer.</code><code class="sig-name descname">SLayerExponential</code><span class="sig-paren">(</span><em class="sig-param">n_elements: int</em>, <em class="sig-param">point_dimension: int = 2</em>, <em class="sig-param">centers_init: torch.Tensor = None</em>, <em class="sig-param">sharpness_init: torch.Tensor = None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chofer_torchex/nn/slayer.html#SLayerExponential"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chofer_torchex.nn.slayer.SLayerExponential" title="Permalink to this definition">¶</a></dt>
 <dd><p>Proposed input layer for multisets [1].</p>
 <dl class="method">
 <dt id="chofer_torchex.nn.slayer.SLayerExponential.__init__">
-<code class="descname">__init__</code><span class="sig-paren">(</span><em>n_elements: int</em>, <em>point_dimension: int = 2</em>, <em>centers_init: torch.Tensor = None</em>, <em>sharpness_init: torch.Tensor = None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chofer_torchex/nn/slayer.html#SLayerExponential.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chofer_torchex.nn.slayer.SLayerExponential.__init__" title="Permalink to this definition">¶</a></dt>
-<dd><table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>n_elements</strong> – Number of structure elements used.</li>
-<li><strong>point_dimension</strong> – D
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">n_elements: int</em>, <em class="sig-param">point_dimension: int = 2</em>, <em class="sig-param">centers_init: torch.Tensor = None</em>, <em class="sig-param">sharpness_init: torch.Tensor = None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chofer_torchex/nn/slayer.html#SLayerExponential.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chofer_torchex.nn.slayer.SLayerExponential.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>n_elements</strong> – Number of structure elements used.</p></li>
+<li><p><strong>point_dimension</strong> – D
 Dimensionality of the points of which the
-input multi set consists of.</li>
-<li><strong>centers_init</strong> – The initialization for the centers of the structure elements.</li>
-<li><strong>sharpness_init</strong> – Initialization for the sharpness of the structure elements.</li>
+input multi set consists of.</p></li>
+<li><p><strong>centers_init</strong> – The initialization for the centers of the structure elements.</p></li>
+<li><p><strong>sharpness_init</strong> – Initialization for the sharpness of the structure elements.</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="method">
 <dt id="chofer_torchex.nn.slayer.SLayerExponential.forward">
-<code class="descname">forward</code><span class="sig-paren">(</span><em>input</em><span class="sig-paren">)</span> &#x2192; torch.Tensor<a class="reference internal" href="_modules/chofer_torchex/nn/slayer.html#SLayerExponential.forward"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chofer_torchex.nn.slayer.SLayerExponential.forward" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">forward</code><span class="sig-paren">(</span><em class="sig-param">input</em><span class="sig-paren">)</span> &#x2192; torch.Tensor<a class="reference internal" href="_modules/chofer_torchex/nn/slayer.html#SLayerExponential.forward"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chofer_torchex.nn.slayer.SLayerExponential.forward" title="Permalink to this definition">¶</a></dt>
 <dd><p>Defines the computation performed at every call.</p>
 <p>Should be overridden by all subclasses.</p>
 <div class="admonition note">
-<p class="first admonition-title">Note</p>
-<p class="last">Although the recipe for forward pass needs to be defined within
+<p class="admonition-title">Note</p>
+<p>Although the recipe for forward pass needs to be defined within
 this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
 instead of this since the former takes care of running the
 registered hooks while the latter silently ignores them.</p>
@@ -196,35 +194,31 @@ registered hooks while the latter silently ignores them.</p>
 
 <dl class="class">
 <dt id="chofer_torchex.nn.slayer.SLayerRational">
-<em class="property">class </em><code class="descclassname">chofer_torchex.nn.slayer.</code><code class="descname">SLayerRational</code><span class="sig-paren">(</span><em>n_elements: int</em>, <em>point_dimension: int = 2</em>, <em>centers_init: torch.Tensor = None</em>, <em>sharpness_init: torch.Tensor = None</em>, <em>exponent_init: torch.Tensor = None</em>, <em>pointwise_activation_threshold=None</em>, <em>share_sharpness=False</em>, <em>share_exponent=False</em>, <em>freeze_exponent=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chofer_torchex/nn/slayer.html#SLayerRational"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chofer_torchex.nn.slayer.SLayerRational" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">chofer_torchex.nn.slayer.</code><code class="sig-name descname">SLayerRational</code><span class="sig-paren">(</span><em class="sig-param">n_elements: int</em>, <em class="sig-param">point_dimension: int = 2</em>, <em class="sig-param">centers_init: torch.Tensor = None</em>, <em class="sig-param">sharpness_init: torch.Tensor = None</em>, <em class="sig-param">exponent_init: torch.Tensor = None</em>, <em class="sig-param">pointwise_activation_threshold=None</em>, <em class="sig-param">share_sharpness=False</em>, <em class="sig-param">share_exponent=False</em>, <em class="sig-param">freeze_exponent=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chofer_torchex/nn/slayer.html#SLayerRational"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chofer_torchex.nn.slayer.SLayerRational" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="method">
 <dt id="chofer_torchex.nn.slayer.SLayerRational.__init__">
-<code class="descname">__init__</code><span class="sig-paren">(</span><em>n_elements: int</em>, <em>point_dimension: int = 2</em>, <em>centers_init: torch.Tensor = None</em>, <em>sharpness_init: torch.Tensor = None</em>, <em>exponent_init: torch.Tensor = None</em>, <em>pointwise_activation_threshold=None</em>, <em>share_sharpness=False</em>, <em>share_exponent=False</em>, <em>freeze_exponent=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chofer_torchex/nn/slayer.html#SLayerRational.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chofer_torchex.nn.slayer.SLayerRational.__init__" title="Permalink to this definition">¶</a></dt>
-<dd><table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>n_elements</strong> – Number of structure elements used.</li>
-<li><strong>point_dimension</strong> – Dimensionality of the points of which the input multi set
-consists of.</li>
-<li><strong>centers_init</strong> – The initialization for the centers of the structure elements.</li>
-<li><strong>sharpness_init</strong> – Initialization for the sharpness of the structure elements.</li>
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">n_elements: int</em>, <em class="sig-param">point_dimension: int = 2</em>, <em class="sig-param">centers_init: torch.Tensor = None</em>, <em class="sig-param">sharpness_init: torch.Tensor = None</em>, <em class="sig-param">exponent_init: torch.Tensor = None</em>, <em class="sig-param">pointwise_activation_threshold=None</em>, <em class="sig-param">share_sharpness=False</em>, <em class="sig-param">share_exponent=False</em>, <em class="sig-param">freeze_exponent=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chofer_torchex/nn/slayer.html#SLayerRational.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chofer_torchex.nn.slayer.SLayerRational.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>n_elements</strong> – Number of structure elements used.</p></li>
+<li><p><strong>point_dimension</strong> – Dimensionality of the points of which the input multi set
+consists of.</p></li>
+<li><p><strong>centers_init</strong> – The initialization for the centers of the structure elements.</p></li>
+<li><p><strong>sharpness_init</strong> – Initialization for the sharpness of the structure elements.</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="method">
 <dt id="chofer_torchex.nn.slayer.SLayerRational.forward">
-<code class="descname">forward</code><span class="sig-paren">(</span><em>input</em><span class="sig-paren">)</span> &#x2192; torch.Tensor<a class="reference internal" href="_modules/chofer_torchex/nn/slayer.html#SLayerRational.forward"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chofer_torchex.nn.slayer.SLayerRational.forward" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">forward</code><span class="sig-paren">(</span><em class="sig-param">input</em><span class="sig-paren">)</span> &#x2192; torch.Tensor<a class="reference internal" href="_modules/chofer_torchex/nn/slayer.html#SLayerRational.forward"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chofer_torchex.nn.slayer.SLayerRational.forward" title="Permalink to this definition">¶</a></dt>
 <dd><p>Defines the computation performed at every call.</p>
 <p>Should be overridden by all subclasses.</p>
 <div class="admonition note">
-<p class="first admonition-title">Note</p>
-<p class="last">Although the recipe for forward pass needs to be defined within
+<p class="admonition-title">Note</p>
+<p>Although the recipe for forward pass needs to be defined within
 this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
 instead of this since the former takes care of running the
 registered hooks while the latter silently ignores them.</p>
@@ -235,36 +229,32 @@ registered hooks while the latter silently ignores them.</p>
 
 <dl class="class">
 <dt id="chofer_torchex.nn.slayer.SLayerRationalHat">
-<em class="property">class </em><code class="descclassname">chofer_torchex.nn.slayer.</code><code class="descname">SLayerRationalHat</code><span class="sig-paren">(</span><em>n_elements: int</em>, <em>point_dimension: int = 2</em>, <em>centers_init: torch.Tensor = None</em>, <em>radius_init: float = 1</em>, <em>exponent: int = 1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chofer_torchex/nn/slayer.html#SLayerRationalHat"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chofer_torchex.nn.slayer.SLayerRationalHat" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">chofer_torchex.nn.slayer.</code><code class="sig-name descname">SLayerRationalHat</code><span class="sig-paren">(</span><em class="sig-param">n_elements: int</em>, <em class="sig-param">point_dimension: int = 2</em>, <em class="sig-param">centers_init: torch.Tensor = None</em>, <em class="sig-param">radius_init: float = 1</em>, <em class="sig-param">exponent: int = 1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chofer_torchex/nn/slayer.html#SLayerRationalHat"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chofer_torchex.nn.slayer.SLayerRationalHat" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="method">
 <dt id="chofer_torchex.nn.slayer.SLayerRationalHat.__init__">
-<code class="descname">__init__</code><span class="sig-paren">(</span><em>n_elements: int</em>, <em>point_dimension: int = 2</em>, <em>centers_init: torch.Tensor = None</em>, <em>radius_init: float = 1</em>, <em>exponent: int = 1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chofer_torchex/nn/slayer.html#SLayerRationalHat.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chofer_torchex.nn.slayer.SLayerRationalHat.__init__" title="Permalink to this definition">¶</a></dt>
-<dd><table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>n_elements</strong> – Number of structure elements used.</li>
-<li><strong>point_dimension</strong> – Dimensionality of the points of which the input multi
-set consists of.</li>
-<li><strong>centers_init</strong> – The initialization for the centers of the structure elements.</li>
-<li><strong>radius_init</strong> – Initialization for radius of zero level-set of the hat.</li>
-<li><strong>exponent</strong> – Exponent of the rationals forming the hat.</li>
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">n_elements: int</em>, <em class="sig-param">point_dimension: int = 2</em>, <em class="sig-param">centers_init: torch.Tensor = None</em>, <em class="sig-param">radius_init: float = 1</em>, <em class="sig-param">exponent: int = 1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chofer_torchex/nn/slayer.html#SLayerRationalHat.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chofer_torchex.nn.slayer.SLayerRationalHat.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>n_elements</strong> – Number of structure elements used.</p></li>
+<li><p><strong>point_dimension</strong> – Dimensionality of the points of which the input multi
+set consists of.</p></li>
+<li><p><strong>centers_init</strong> – The initialization for the centers of the structure elements.</p></li>
+<li><p><strong>radius_init</strong> – Initialization for radius of zero level-set of the hat.</p></li>
+<li><p><strong>exponent</strong> – Exponent of the rationals forming the hat.</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="method">
 <dt id="chofer_torchex.nn.slayer.SLayerRationalHat.forward">
-<code class="descname">forward</code><span class="sig-paren">(</span><em>input</em><span class="sig-paren">)</span> &#x2192; torch.Tensor<a class="reference internal" href="_modules/chofer_torchex/nn/slayer.html#SLayerRationalHat.forward"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chofer_torchex.nn.slayer.SLayerRationalHat.forward" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">forward</code><span class="sig-paren">(</span><em class="sig-param">input</em><span class="sig-paren">)</span> &#x2192; torch.Tensor<a class="reference internal" href="_modules/chofer_torchex/nn/slayer.html#SLayerRationalHat.forward"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chofer_torchex.nn.slayer.SLayerRationalHat.forward" title="Permalink to this definition">¶</a></dt>
 <dd><p>Defines the computation performed at every call.</p>
 <p>Should be overridden by all subclasses.</p>
 <div class="admonition note">
-<p class="first admonition-title">Note</p>
-<p class="last">Although the recipe for forward pass needs to be defined within
+<p class="admonition-title">Note</p>
+<p>Although the recipe for forward pass needs to be defined within
 this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
 instead of this since the former takes care of running the
 registered hooks while the latter silently ignores them.</p>
@@ -275,25 +265,34 @@ registered hooks while the latter silently ignores them.</p>
 
 <dl class="function">
 <dt id="chofer_torchex.nn.slayer.prepare_batch">
-<code class="descclassname">chofer_torchex.nn.slayer.</code><code class="descname">prepare_batch</code><span class="sig-paren">(</span><em>batch: List[torch.Tensor], point_dim: int = None</em><span class="sig-paren">)</span> &#x2192; Tuple[torch.Tensor, torch.Tensor, int, int]<a class="reference internal" href="_modules/chofer_torchex/nn/slayer.html#prepare_batch"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chofer_torchex.nn.slayer.prepare_batch" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">chofer_torchex.nn.slayer.</code><code class="sig-name descname">prepare_batch</code><span class="sig-paren">(</span><em class="sig-param">batch: List[torch.Tensor], point_dim: int = None</em><span class="sig-paren">)</span> &#x2192; Tuple[torch.Tensor, torch.Tensor, int, int]<a class="reference internal" href="_modules/chofer_torchex/nn/slayer.html#prepare_batch"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chofer_torchex.nn.slayer.prepare_batch" title="Permalink to this definition">¶</a></dt>
 <dd><p>This method ‘vectorizes’ the multiset in order to take advances of GPU
 processing. The policy is to embed all multisets in batch to the highest
 dimensionality occurring in batch, i.e., <code class="docutils literal notranslate"><span class="pre">max(t.size()[0]</span></code> for <code class="docutils literal notranslate"><span class="pre">t</span></code> in batch).</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>batch</strong> – The input batch to process.</li>
-<li><strong>point_dim</strong> – The dimension of the points the inputs consist of.</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>batch</strong> – The input batch to process as a list of tensors.</p></li>
+<li><p><strong>point_dim</strong> – The dimension of the points the inputs consist of.</p></li>
 </ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">Tensor with size <code class="docutils literal notranslate"><span class="pre">batch_size</span></code> x <code class="docutils literal notranslate"><span class="pre">n_max_points</span></code> x <code class="docutils literal notranslate"><span class="pre">point_dim</span></code>.</p>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A four-tuple consisting of (1) the constructed <code class="docutils literal notranslate"><span class="pre">batch</span></code>, i.e., a
+tensor with size
+<code class="docutils literal notranslate"><span class="pre">batch_size</span></code> x <code class="docutils literal notranslate"><span class="pre">n_max_points</span></code> x <code class="docutils literal notranslate"><span class="pre">point_dim</span></code>; (2) a tensor
+<code class="docutils literal notranslate"><span class="pre">not_dummy</span></code> of size <code class="docutils literal notranslate"><span class="pre">batch_size</span></code> x <code class="docutils literal notranslate"><span class="pre">n_max_points</span></code>, where
+<code class="docutils literal notranslate"><span class="pre">1</span></code> at position (i,j) indicates if the point is a dummy point,
+whereas <code class="docutils literal notranslate"><span class="pre">0</span></code> indicates a dummy point used for padding; (3)
+the max. number of points and (4) the batch size.</p>
+</dd>
+</dl>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">chofer_torchex.nn.slayer</span> <span class="k">import</span> <span class="n">prepare_batch</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">torch</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">2</span><span class="p">),</span> <span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span><span class="mi">2</span><span class="p">)]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">batch</span><span class="p">,</span> <span class="n">not_dummy</span><span class="p">,</span> <span class="n">max_pts</span><span class="p">,</span> <span class="n">batch_size</span> <span class="o">=</span> <span class="n">prepare_batch</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 </div>
@@ -318,7 +317,7 @@ dimensionality occurring in batch, i.e., <code class="docutils literal notransla
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2019, Christoph D. Hofer
+        &copy; Copyright 2019, Christoph D. Hofer, Roland Kwitt
 
     </p>
   </div>

@@ -9,7 +9,7 @@ def ds_random_subset(
         percentage: float=None,
         absolute_size: int=None,
         replace: bool=False):
-    """
+    r"""
     Represents a fixed random subset of the given dataset.
 
     Args:
@@ -18,7 +18,12 @@ def ds_random_subset(
         absolute_size (int): Absolute size of the subset to use.
         replace (bool): Draw with replacement.
 
-    Returns: torch.utils.data.dataset.Dataset
+    Returns:
+        A ``torch.utils.data.dataset.Dataset`` with randomly selected samples.
+
+    .. note::
+        ``percentage`` and ``absolute_size`` are mutally exclusive. So only
+        one of them can be specified.
     """
     assert isinstance(dataset, torch.utils.data.dataset.Dataset)
     assert percentage is not None or absolute_size is not None
@@ -49,7 +54,9 @@ def ds_label_filter(
         dataset (torch.utils.data.dataset.Dataset): Target dataset.
         labels (tuple or list): White list of labels to use.
 
-    Returns: torch.utils.data.dataset.Dataset
+    Returns:
+        A ``torch.utils.data.dataset.Dataset`` only containing samples having
+        the selected labels.
     """
     assert isinstance(dataset, torch.utils.data.dataset.Dataset)
     assert isinstance(labels, (tuple, list)), "labels is expected to be list or tuple."

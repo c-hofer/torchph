@@ -24,7 +24,8 @@
         <script type="text/javascript" src="_static/jquery.js"></script>
         <script type="text/javascript" src="_static/underscore.js"></script>
         <script type="text/javascript" src="_static/doctools.js"></script>
-        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
     <script type="text/javascript" src="_static/js/theme.js"></script>
 
@@ -151,42 +152,44 @@
 <span id="utils"></span><h1><code class="docutils literal notranslate"><span class="pre">utils</span></code><a class="headerlink" href="#module-chofer_torchex.utils.data.ds_operations" title="Permalink to this headline">¶</a></h1>
 <dl class="function">
 <dt id="chofer_torchex.utils.data.ds_operations.ds_label_filter">
-<code class="descclassname">chofer_torchex.utils.data.ds_operations.</code><code class="descname">ds_label_filter</code><span class="sig-paren">(</span><em>dataset: torch.utils.data.dataset.Dataset, labels: Union[tuple, list]</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chofer_torchex/utils/data/ds_operations.html#ds_label_filter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chofer_torchex.utils.data.ds_operations.ds_label_filter" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">chofer_torchex.utils.data.ds_operations.</code><code class="sig-name descname">ds_label_filter</code><span class="sig-paren">(</span><em class="sig-param">dataset: torch.utils.data.dataset.Dataset, labels: Union[tuple, list]</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chofer_torchex/utils/data/ds_operations.html#ds_label_filter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chofer_torchex.utils.data.ds_operations.ds_label_filter" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a dataset with samples having selected labels.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>dataset</strong> (<em>torch.utils.data.dataset.Dataset</em>) – Target dataset.</li>
-<li><strong>labels</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.7)"><em>tuple</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.7)"><em>list</em></a>) – White list of labels to use.</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dataset</strong> (<em>torch.utils.data.dataset.Dataset</em>) – Target dataset.</p></li>
+<li><p><strong>labels</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.7)"><em>tuple</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.7)"><em>list</em></a>) – White list of labels to use.</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
-<p>Returns: torch.utils.data.dataset.Dataset</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A <code class="docutils literal notranslate"><span class="pre">torch.utils.data.dataset.Dataset</span></code> only containing samples having
+the selected labels.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="function">
 <dt id="chofer_torchex.utils.data.ds_operations.ds_random_subset">
-<code class="descclassname">chofer_torchex.utils.data.ds_operations.</code><code class="descname">ds_random_subset</code><span class="sig-paren">(</span><em>dataset: torch.utils.data.dataset.Dataset</em>, <em>percentage: float = None</em>, <em>absolute_size: int = None</em>, <em>replace: bool = False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chofer_torchex/utils/data/ds_operations.html#ds_random_subset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chofer_torchex.utils.data.ds_operations.ds_random_subset" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">chofer_torchex.utils.data.ds_operations.</code><code class="sig-name descname">ds_random_subset</code><span class="sig-paren">(</span><em class="sig-param">dataset: torch.utils.data.dataset.Dataset</em>, <em class="sig-param">percentage: float = None</em>, <em class="sig-param">absolute_size: int = None</em>, <em class="sig-param">replace: bool = False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chofer_torchex/utils/data/ds_operations.html#ds_random_subset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chofer_torchex.utils.data.ds_operations.ds_random_subset" title="Permalink to this definition">¶</a></dt>
 <dd><p>Represents a fixed random subset of the given dataset.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>dataset</strong> (<em>torch.utils.data.dataset.Dataset</em>) – Target dataset.</li>
-<li><strong>percentage</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><em>float</em></a>) – Percentage of target dataset to use (within [0,1]).</li>
-<li><strong>absolute_size</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><em>int</em></a>) – Absolute size of the subset to use.</li>
-<li><strong>replace</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><em>bool</em></a>) – Draw with replacement.</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dataset</strong> (<em>torch.utils.data.dataset.Dataset</em>) – Target dataset.</p></li>
+<li><p><strong>percentage</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><em>float</em></a>) – Percentage of target dataset to use (within [0,1]).</p></li>
+<li><p><strong>absolute_size</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><em>int</em></a>) – Absolute size of the subset to use.</p></li>
+<li><p><strong>replace</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><em>bool</em></a>) – Draw with replacement.</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
-<p>Returns: torch.utils.data.dataset.Dataset</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A <code class="docutils literal notranslate"><span class="pre">torch.utils.data.dataset.Dataset</span></code> with randomly selected samples.</p>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><code class="docutils literal notranslate"><span class="pre">percentage</span></code> and <code class="docutils literal notranslate"><span class="pre">absolute_size</span></code> are mutally exclusive. So only
+one of them can be specified.</p>
+</div>
 </dd></dl>
 
 </div>
@@ -209,7 +212,7 @@
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2019, Christoph D. Hofer
+        &copy; Copyright 2019, Christoph D. Hofer, Roland Kwitt
 
     </p>
   </div>

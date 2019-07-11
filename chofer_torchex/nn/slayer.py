@@ -1,10 +1,11 @@
 r"""
-Implementation of **differentiable vectorization layers** for persistent homology barcodes.
 
-Examples for using these layers can be found in the ``tutorials`` subfolder of the 
-``chofer_torchex`` repository https://github.com/c-hofer/chofer_torchex.
+Implementation of **differentiable vectorization layers** for persistent
+homology barcodes.
+
+Examples for using these layers can be found in the ``tutorials`` subfolder of
+the ``chofer_torchex`` repository https://github.com/c-hofer/chofer_torchex.
 """
-
 import torch
 import numpy as np
 from torch.tensor import Tensor
@@ -30,14 +31,26 @@ def prepare_batch(
 
     Args:
         batch:
-            The input batch to process.
+            The input batch to process as a list of tensors.
 
         point_dim:
             The dimension of the points the inputs consist of.
 
     Returns:
-        Tensor with size ``batch_size`` x ``n_max_points`` x ``point_dim``.
+        A four-tuple consisting of (1) the constructed ``batch``, i.e., a
+        tensor with size
+        ``batch_size`` x ``n_max_points`` x ``point_dim``; (2) a tensor
+        ``not_dummy`` of size ``batch_size`` x ``n_max_points``, where
+        ``1`` at position (i,j) indicates if the point is a dummy point,
+        whereas ``0`` indicates a dummy point used for padding; (3)
+        the max. number of points and (4) the batch size.
 
+    Example::
+
+        >>> from chofer_torchex.nn.slayer import prepare_batch
+        >>> import torch
+        >>> x = [torch.rand(10,2), torch.rand(20,2)]
+        >>> batch, not_dummy, max_pts, batch_size = prepare_batch(x)
     """
     if point_dim is None:
         point_dim = batch[0].size(1)
