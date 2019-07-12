@@ -108,6 +108,7 @@ samples and (2) doing the same using a pre-computed distance matrix.
     tutorials/SLayer.ipynb
     tutorials/ToyDiffVR.ipynb
     tutorials/ComparisonSOTA.ipynb
+    tutorials/InputOptim.ipynb
 
 Indices and tables
 ==================
