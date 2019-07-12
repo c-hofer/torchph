@@ -11,6 +11,8 @@ to facilitate usage for people familiar with PyTorch.
 The folder *tutorials* contains some minimalistic examples in form of Jupyter notebooks
 to demonstrate how to use the `PyTorch` extensions. 
 
+**Note**: For most up-to-date implementations and documentation, checkout the `pershom_devel` branch.
+
 ## Associated publications
 
 If you use any of these extensions, please cite the following works (depending on which functionality you use, obviously :)
