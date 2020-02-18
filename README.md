@@ -1,15 +1,38 @@
-This branch contains most up-to-date implementations, improvements and documentation. We are in the process of merging this branch into master as soon as it is stable. 
+# chofer_torchex
 
-We are also moving all documentation away from the `README.md` file into a sphinx-generated documentation. To build the documentation and obtain all installation instructions, tutorials, etc., follow the instructions below:
+In this repository I gather my extensions to [PyTorch](http://pytorch.org). 
+The packaging structure tries to reproduce PyTorch's structure in order 
+to facilitate usage for people familiar with PyTorch. 
+
+## Documentation
+
+[Read the docs!](https://c-hofer.github.io/chofer_torchex/)
+
+The folder *tutorials* contains some minimalistic examples in form of Jupyter notebooks
+to demonstrate how to use the `PyTorch` extensions. 
+
+**Note**: For most up-to-date implementations and documentation, checkout the `pershom_devel` branch.
+
+## Associated publications
+
+If you use any of these extensions, please cite the following works (depending on which functionality you use, obviously :)
 
 ```bash
-git clone https://github.com/c-hofer/chofer_torchex.git
-git checkout persom_devel
-git pull
-pip install sphinx
-pip install nbsphinx
-cd chofer_torchex
-bash update_docs.sh
-```
+@inproceedings{Hofer17a,
+  author    = {C.~Hofer, R.~Kwitt, M.~Niethammer and A.~Uhl},
+  title     = {Deep Learning with Topological Signatures},
+  booktitle = {NIPS},
+  year      = {2017}}
 
-Then open `docs/index.html`.
+@inproceedings{Hofer19a,
+  author    = {C.~Hofer, R.~Kwitt, M.~Dixit and M.~Niethammer},
+  title     = {Connectivity-Optimized Representation Learning via Persistent Homology},
+  booktitle = {ICML},
+  year      = {2019}}
+
+@inproceedings{Hofer19b,
+  author    = {C.~Hofer, R.~Kwitt and M.~Niethammer},
+  title     = {Graph Filtration Learning},
+  booktitle = {arXiv},
+  year      = {2019}}
+```
