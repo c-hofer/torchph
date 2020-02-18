@@ -25,6 +25,7 @@
         <script type="text/javascript" src="_static/underscore.js"></script>
         <script type="text/javascript" src="_static/doctools.js"></script>
         <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
     
     <script type="text/javascript" src="_static/js/theme.js"></script>
 
@@ -35,6 +36,7 @@
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="utils" href="utils.html" />
     <link rel="prev" title="nn" href="nn.html" /> 
 </head>
 
@@ -79,13 +81,26 @@
               
             
             
-              <ul class="current">
+              <p class="caption"><span class="caption-text">Get Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="install/index.html">Installation</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Modules</span></p>
+<ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="nn.html"><code class="docutils literal notranslate"><span class="pre">nn</span></code></a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#"><code class="docutils literal notranslate"><span class="pre">pershom</span></code></a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#terminology">Terminology</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#limitations">Limitations</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="utils.html"><code class="docutils literal notranslate"><span class="pre">utils</span></code></a></li>
+</ul>
+<p class="caption"><span class="caption-text">Notebooks</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/SLayer.html">Differentiable barcode vectorization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/ToyDiffVR.html">Differentiable Vietoris-Rips persistent homology</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/ComparisonSOTA.html">Comparison to SOTA</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/InputOptim.html">Input space optimization</a></li>
 </ul>
 
             
@@ -150,15 +165,39 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="module-chofer_torchex.pershom.pershom_backend">
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast,
+.nboutput.nblast {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast + .nbinput {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<div class="section" id="module-chofer_torchex.pershom.pershom_backend">
 <span id="pershom"></span><h1><code class="docutils literal notranslate"><span class="pre">pershom</span></code><a class="headerlink" href="#module-chofer_torchex.pershom.pershom_backend" title="Permalink to this headline">¶</a></h1>
-<p>This module exposes the C++/CUDA backend functionality for python.</p>
+<p>This module exposes the C++/CUDA backend functionality for Python.</p>
 <div class="section" id="terminology">
 <h2>Terminology<a class="headerlink" href="#terminology" title="Permalink to this headline">¶</a></h2>
 <dl class="docutils">
-<dt>descending sorted boundary array:</dt>
-<dd><p class="first">Boundary array which encodes the boundary matrix (BM) for a given filtration
-in column first order.
+<dt>Descending sorted boundary array:</dt>
+<dd><p class="first">Boundary array which encodes the boundary matrix (BM) for a given
+filtration in column first order.
 Let BA be the descending_sorted_boundary of BM, then
 <code class="docutils literal notranslate"><span class="pre">BA[i,</span> <span class="pre">:]</span></code> is the i-th column of BM.
 Content encoded as decreasingly sorted list, embedded into the array
@@ -174,17 +213,18 @@ then <span class="math notranslate nohighlight">\(\partial(v_6) = v_3 + v_4 + v_
 </dl>
 </div></blockquote>
 </dd>
-<dt>compressed descending sorted boundary array:</dt>
-<dd>Same ase <em>descending sorted boundary array</em> but rows consisting only of -1
+<dt>Compressed descending sorted boundary array:</dt>
+<dd>Same as <em>descending sorted boundary array</em> but rows consisting only of -1
 are omitted.
 This is sometimes used for efficiency purposes and is usually accompanied
-by a vector, <code class="docutils literal notranslate"><span class="pre">v</span></code>, telling which row of the reduced BA corresponds to which
-row of the uncompressed BA, i.e., <code class="docutils literal notranslate"><span class="pre">v[3]</span> <span class="pre">=</span> <span class="pre">5</span></code> means that the 3rd row of
-the reduced BA corresponds to the 5th row in the uncompressed version.</dd>
-<dt>birth/death-time:</dt>
+by a vector, <code class="docutils literal notranslate"><span class="pre">v</span></code>, telling which row of the reduced BA corresponds to
+which row of the uncompressed BA, i.e., <code class="docutils literal notranslate"><span class="pre">v[3]</span> <span class="pre">=</span> <span class="pre">5</span></code> means that the 3rd
+row of the reduced BA corresponds to the 5th row in the uncompressed
+version.</dd>
+<dt>Birth/Death-time:</dt>
 <dd>Index of the coresponding birth/death event in the filtration.
 This is always an <em>integer</em>.</dd>
-<dt>birth/deat-value:</dt>
+<dt>Birth/Death-value:</dt>
 <dd>If a filtration is induced by a real-valued function, this corresponds
 to the value of this function corresponding to the birth/death event.
 This is always <em>real</em>-valued.</dd>
@@ -307,9 +347,9 @@ reduced boundary array</li>
 <code class="descclassname">chofer_torchex.pershom.pershom_backend.</code><code class="descname">vr_persistence</code><span class="sig-paren">(</span><em>distance_matrix: torch.Tensor</em>, <em>max_dimension: int</em>, <em>max_ball_diameter: float = 0.0</em><span class="sig-paren">)</span> &#x2192; List[List[torch.Tensor]]<a class="reference internal" href="_modules/chofer_torchex/pershom/pershom_backend.html#vr_persistence"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chofer_torchex.pershom.pershom_backend.vr_persistence" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the barcodes of the Vietoris-Rips complex of a given distance
 matrix.</p>
-<p><strong>Note</strong>: <code class="docutils literal notranslate"><span class="pre">distance_matrix</span></code> is assumed to be a square matrix. Practically,
-symetry is <em>not</em> required and the upper diagonal part is <em>ignored</em>.
-For the computation, just the <em>lower</em> diagonal part is used.</p>
+<p><strong>Note</strong>: <code class="docutils literal notranslate"><span class="pre">distance_matrix</span></code> is assumed to be a square matrix.
+Practically, symmetry is <em>not</em> required and the upper diagonal part is
+<em>ignored</em>. For the computation, just the <em>lower</em> diagonal part is used.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -372,6 +412,8 @@ dimension <code class="docutils literal notranslate"><span class="pre">n</span><
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
+        <a href="utils.html" class="btn btn-neutral float-right" title="utils" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
       
         <a href="nn.html" class="btn btn-neutral float-left" title="nn" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
@@ -382,7 +424,7 @@ dimension <code class="docutils literal notranslate"><span class="pre">n</span><
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2019, Christoph D. Hofer
+        &copy; Copyright 2019, Christoph D. Hofer, Roland Kwitt
 
     </p>
   </div>

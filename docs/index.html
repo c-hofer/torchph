@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Welcome to chofer_torchex’s documentation! &mdash; chofer_torchex 0.0.1 documentation</title>
+  <title>PyTorch extensions for persistent homology &mdash; chofer_torchex 0.0.1 documentation</title>
   
 
   
@@ -25,6 +25,7 @@
         <script type="text/javascript" src="_static/underscore.js"></script>
         <script type="text/javascript" src="_static/doctools.js"></script>
         <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
     
     <script type="text/javascript" src="_static/js/theme.js"></script>
 
@@ -35,7 +36,7 @@
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="nn" href="nn.html" /> 
+    <link rel="next" title="Installation" href="install/index.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -79,9 +80,22 @@
               
             
             
-              <ul>
+              <p class="caption"><span class="caption-text">Get Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="install/index.html">Installation</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Modules</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="nn.html"><code class="docutils literal notranslate"><span class="pre">nn</span></code></a></li>
 <li class="toctree-l1"><a class="reference internal" href="pershom.html"><code class="docutils literal notranslate"><span class="pre">pershom</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="utils.html"><code class="docutils literal notranslate"><span class="pre">utils</span></code></a></li>
+</ul>
+<p class="caption"><span class="caption-text">Notebooks</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/SLayer.html">Differentiable barcode vectorization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/ToyDiffVR.html">Differentiable Vietoris-Rips persistent homology</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/ComparisonSOTA.html">Comparison to SOTA</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/InputOptim.html">Input space optimization</a></li>
 </ul>
 
             
@@ -127,7 +141,7 @@
     
       <li><a href="#">Docs</a> &raquo;</li>
         
-      <li>Welcome to chofer_torchex’s documentation!</li>
+      <li>PyTorch extensions for persistent homology</li>
     
     
       <li class="wy-breadcrumbs-aside">
@@ -146,21 +160,111 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="welcome-to-chofer-torchex-s-documentation">
-<h1>Welcome to chofer_torchex’s documentation!<a class="headerlink" href="#welcome-to-chofer-torchex-s-documentation" title="Permalink to this headline">¶</a></h1>
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast,
+.nboutput.nblast {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast + .nbinput {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<div class="section" id="pytorch-extensions-for-persistent-homology">
+<h1>PyTorch extensions for persistent homology<a class="headerlink" href="#pytorch-extensions-for-persistent-homology" title="Permalink to this headline">¶</a></h1>
+<p>This package contains the backend methods (to be used within the PyTorch environment)
+for multiple works using persistent homology in machine learning problems. In particular,
+the following publications are most relevant:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nd">@inproceedings</span><span class="p">{</span><span class="n">Hofer17a</span><span class="p">,</span>
+    <span class="n">author</span>    <span class="o">=</span> <span class="p">{</span><span class="n">C</span><span class="o">.~</span><span class="n">Hofer</span><span class="p">,</span> <span class="n">R</span><span class="o">.~</span><span class="n">Kwitt</span><span class="p">,</span> <span class="n">M</span><span class="o">.~</span><span class="n">Niethammer</span> <span class="ow">and</span> <span class="n">A</span><span class="o">.~</span><span class="n">Uhl</span><span class="p">},</span>
+    <span class="n">title</span>     <span class="o">=</span> <span class="p">{</span><span class="n">Deep</span> <span class="n">Learning</span> <span class="k">with</span> <span class="n">Topological</span> <span class="n">Signatures</span><span class="p">},</span>
+    <span class="n">booktitle</span> <span class="o">=</span> <span class="p">{</span><span class="n">NIPS</span><span class="p">},</span>
+    <span class="n">year</span>      <span class="o">=</span> <span class="p">{</span><span class="mi">2017</span><span class="p">}}</span>
+
+<span class="nd">@inproceedings</span><span class="p">{</span><span class="n">Hofer19a</span><span class="p">,</span>
+    <span class="n">author</span>    <span class="o">=</span> <span class="p">{</span><span class="n">C</span><span class="o">.~</span><span class="n">Hofer</span><span class="p">,</span> <span class="n">R</span><span class="o">.~</span><span class="n">Kwitt</span><span class="p">,</span> <span class="n">M</span><span class="o">.~</span><span class="n">Dixit</span> <span class="ow">and</span> <span class="n">M</span><span class="o">.~</span><span class="n">Niethammer</span><span class="p">},</span>
+    <span class="n">title</span>     <span class="o">=</span> <span class="p">{</span><span class="n">Connectivity</span><span class="o">-</span><span class="n">Optimized</span> <span class="n">Representation</span> <span class="n">Learning</span> <span class="n">via</span> <span class="n">Persistent</span> <span class="n">Homology</span><span class="p">},</span>
+    <span class="n">booktitle</span> <span class="o">=</span> <span class="p">{</span><span class="n">ICML</span><span class="p">},</span>
+    <span class="n">year</span>      <span class="o">=</span> <span class="p">{</span><span class="mi">2019</span><span class="p">}}</span>
+
+<span class="nd">@inproceedings</span><span class="p">{</span><span class="n">Hofer19b</span><span class="p">,</span>
+    <span class="n">author</span>    <span class="o">=</span> <span class="p">{</span><span class="n">C</span><span class="o">.~</span><span class="n">Hofer</span><span class="p">,</span> <span class="n">R</span><span class="o">.~</span><span class="n">Kwitt</span> <span class="ow">and</span> <span class="n">M</span><span class="o">.~</span><span class="n">Niethammer</span><span class="p">},</span>
+    <span class="n">title</span>     <span class="o">=</span> <span class="p">{</span><span class="n">Graph</span> <span class="n">Filtration</span> <span class="n">Learning</span><span class="p">},</span>
+    <span class="n">booktitle</span> <span class="o">=</span> <span class="p">{</span><span class="n">arXiv</span><span class="p">},</span>
+    <span class="n">year</span>      <span class="o">=</span> <span class="p">{</span><span class="mi">2019</span><span class="p">}}</span>
+</pre></div>
 </div>
-<div class="section" id="module-chofer_torchex">
-<span id="chofer-torchex-package"></span><h1><code class="docutils literal notranslate"><span class="pre">chofer_torchex</span></code> Package<a class="headerlink" href="#module-chofer_torchex" title="Permalink to this headline">¶</a></h1>
-<p><strong>Sub-Modules:</strong></p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Note that not all of the available functionality is exposed in the
+documentation yet.</p>
+</div>
+</div>
+<div class="section" id="get-started">
+<h1>Get started<a class="headerlink" href="#get-started" title="Permalink to this headline">¶</a></h1>
 <div class="toctree-wrapper compound">
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="nn.html"><code class="docutils literal notranslate"><span class="pre">nn</span></code></a></li>
-<li class="toctree-l1"><a class="reference internal" href="pershom.html"><code class="docutils literal notranslate"><span class="pre">pershom</span></code></a><ul>
-<li class="toctree-l2"><a class="reference internal" href="pershom.html#terminology">Terminology</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pershom.html#limitations">Limitations</a></li>
+</div>
+<p>Follow the <a class="reference internal" href="install/index.html"><span class="doc">instructions</span></a> to install <code class="docutils literal notranslate"><span class="pre">chofer_torchex</span></code>.</p>
+</div>
+<div class="section" id="functionality">
+<h1>Functionality<a class="headerlink" href="#functionality" title="Permalink to this headline">¶</a></h1>
+<ul class="simple">
+<li>Vietoris-Rips (VR) persistent homology (from point clouds and distance matrices)</li>
+<li>Vertex-based filtrations (e.g., usable for graphs)</li>
+<li>Learnable vectorizations of persistence barcodes</li>
 </ul>
-</li>
-</ul>
+<p>All of this functionality is available for <strong>GPU</strong> computations and can easily be
+used within the PyTorch environment.</p>
+<p>The following <strong>simple example</strong> is a teaser showing how to compute 0-dim. persistent
+homology of a (1) Vietoris-Rips filtration which uses the Manhatten distance between
+samples and (2) doing the same using a pre-computed distance matrix.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">device</span> <span class="o">=</span> <span class="s2">&quot;cuda:0&quot;</span>
+
+<span class="c1"># import numpy</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+
+<span class="c1"># import VR persistence computation functionality</span>
+<span class="kn">from</span> <span class="nn">chofer_torchex.pershom</span> <span class="kn">import</span> <span class="n">vr_persistence_l1</span><span class="p">,</span> <span class="n">vr_persistence</span>
+
+<span class="c1"># import scipy methods to compute pairwise distance matrices</span>
+<span class="kn">from</span> <span class="nn">scipy.spatial.distance</span> <span class="kn">import</span> <span class="n">pdist</span>
+<span class="kn">from</span> <span class="nn">scipy.spatial.distance</span> <span class="kn">import</span> <span class="n">squareform</span>
+
+<span class="c1"># create 10-dim. point cloud with 100 samples</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+
+<span class="c1"># compute VR persistent homology (using l1 metric)</span>
+<span class="n">X</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+<span class="n">l_a</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">vr_persistence_l1</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">contiguous</span><span class="p">(),</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
+
+<span class="c1"># compute the same using a pre-computed distance matrix</span>
+<span class="n">D</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span>
+        <span class="n">squareform</span><span class="p">(</span>
+            <span class="n">pdist</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">metric</span><span class="o">=</span><span class="s1">&#39;cityblock&#39;</span><span class="p">)</span>
+        <span class="p">)</span>
+    <span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">&quot;cuda:0&quot;</span><span class="p">)</span>
+<span class="n">l_b</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">vr_persistence</span><span class="p">(</span><span class="n">D</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s2">&quot;Diff: &quot;</span><span class="p">,</span>
+    <span class="p">(</span><span class="n">l_a</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">float</span><span class="p">()</span><span class="o">-</span><span class="n">l_b</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">float</span><span class="p">())</span><span class="o">.</span><span class="n">abs</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
+</pre></div>
+</div>
+<div class="toctree-wrapper compound">
+</div>
+<div class="toctree-wrapper compound">
 </div>
 </div>
 <div class="section" id="indices-and-tables">
@@ -180,7 +284,7 @@
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="nn.html" class="btn btn-neutral float-right" title="nn" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="install/index.html" class="btn btn-neutral float-right" title="Installation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
     </div>
@@ -190,7 +294,7 @@
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2019, Christoph D. Hofer
+        &copy; Copyright 2019, Christoph D. Hofer, Roland Kwitt
 
     </p>
   </div>

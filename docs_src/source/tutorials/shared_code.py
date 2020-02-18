@@ -14,7 +14,9 @@ def check_chofer_torchex_availability():
 
         except ImportError as ex:
             raise ImportError(
-"""
-Could not import chofer_torchex. Running your python interpreter in the 'tutorials' sub folder could resolve this issue. 
-"""
+                """
+                Could not import chofer_torchex. Running your python \ 
+                interpreter in the 'tutorials' sub folder could resolve \
+                this issue.
+                """
             ) from ex

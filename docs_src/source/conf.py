@@ -20,8 +20,8 @@
 # -- Project information -----------------------------------------------------
 
 project = 'chofer_torchex'
-copyright = '2019, Christoph D. Hofer'
-author = 'Christoph D. Hofer'
+copyright = '2019, Christoph D. Hofer, Roland Kwitt'
+author = 'Christoph D. Hofer, Roland Kwitt'
 
 # The short X.Y version
 version = ''
@@ -39,6 +39,9 @@ release = '0.0.1'
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
+    'nbsphinx',
+    'sphinx.ext.autosummary',
+    'sphinx.ext.coverage',
     'sphinx.ext.napoleon',
     'sphinx.ext.autodoc',
     'sphinx.ext.intersphinx',
@@ -69,11 +72,11 @@ language = None
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
-exclude_patterns = []
+exclude_patterns = ['_build', '**.ipynb_checkpoints']
+
 
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = None
-
 
 # -- Options for HTML output -------------------------------------------------
 

@@ -7,9 +7,8 @@ def histogram_intersection_loss(input: torch.Tensor,
                                 reduce: bool=True,
                                 symetric_version: bool=True)->torch.Tensor:
     r"""
-    This loss function is based on the `Histogram Intersection` score introduced in
-    #TODO ref needed
-
+    This loss function is based on the `Histogram Intersection` score. 
+    
     The output is the *negative* Histogram Intersection Score.
 
     Args:

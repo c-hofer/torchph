@@ -35,5 +35,10 @@ If you use any of these extensions, please cite the following works (depending o
   title     = {Graph Filtration Learning},
   booktitle = {arXiv},
   year      = {2019}}
-```
 
+@inproceedings{Hofer19c,
+  author    = {C.~Hofer, R.~Kwitt, and M.~Niethammer},
+  title     = {Learning Representations of Persistence Barcodes Homology},
+  booktitle = {JMLR},
+  year      = {2019}}
+```
