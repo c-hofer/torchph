@@ -67,7 +67,7 @@ try:
     __C = load(
         'pershom_cuda_ext',
         src_files,
-        verbose=True)
+        verbose=False)
 
 except Exception as ex:
     print("Error in {}. Failed jit compilation. Maybe your CUDA environment \
