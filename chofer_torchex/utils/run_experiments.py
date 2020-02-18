@@ -1,10 +1,14 @@
 from typing import Callable
 import torch
-import torch.multiprocessing as mp
-import inspect
+import multiprocessing as mp
 import itertools
 import contextlib
 import sys
+import traceback
+import time
+
+
+from pathlib import Path
 
 
 class DummyFile(object):
@@ -21,52 +25,137 @@ def nostdout():
     sys.stdout = save_stdout
 
 
-class _Task():
+class _ErrorCatchingProcess(mp.Process):
+    def __init__(self, *args, **kwargs):
+        mp.Process.__init__(self, *args, **kwargs)
+        self._pconn, self._cconn = mp.Pipe()
+        self._exception = None
+
+    def run(self):
+        try:
+            mp.Process.run(self)
+            self._cconn.send(None)
+        except Exception as e:
+            tb = traceback.format_exc()
+            self._cconn.send((e, tb))
+
+    @property
+    def exception(self):
+        if self._pconn.poll():
+            self._exception = self._pconn.recv()
+        return self._exception
+
+
+class _GPUTask():
     def __init__(
             self,
-            experiment_fn,
-            device_manager,
-            lock):
+            fn,
+            args_kwargs,
+            gpu_id):
 
-        self.fn = experiment_fn
-        self.device_manager = device_manager
-        self.lock = lock
+        self.fn = fn
+        self.args_kwargs = args_kwargs
+        self.gpu_id = gpu_id
 
-    def __call__(self, args_kwargs):
-        with self.lock:
+    def __call__(self):
+        with torch.cuda.device(self.gpu_id):
+            with nostdout():
+                args, kwargs = self.args_kwargs
+                self.fn(*args, **kwargs)
 
-            device_id = None
-            min_counter = min(self.device_manager.values())
 
-            # find one of the devices currently running the least number
-            # of jobs and take it ...
-            for k, v in self.device_manager.items():
-                if v == min_counter:
-                    device_id = k
+class Distributor:
 
-                    break
+    def __init__(self,
+                 fn: Callable,
+                 args_kwargs: list,
+                 visible_devices: list,
+                 num_max_jobs_on_device: int,
+                 log_file_path=None):
 
-            self.device_manager[device_id] += 1
+        self.visible_devices = visible_devices
+        self.counter = {k: 0 for k in visible_devices}
 
-        assert device_id is not None
-        args, kwargs = args_kwargs
+        self.fn = fn
+        self.args_kwargs = args_kwargs
+        self.num_max_jobs = num_max_jobs_on_device
+        self.log_file_path = None if log_file_path is None else Path(
+            log_file_path)
 
-        try:
-            with torch.cuda.device(device_id):
-                with nostdout():
-                    result = self.fn(*args, **kwargs)
+        if self.log_file_path is not None:
+            assert self.log_file_path.parent.is_dir()
 
-        except Exception as ex:
-            with self.lock:
-                self.device_manager[device_id] -= 1
+        self.progress_wheel = itertools.cycle(['|', '/', '-', '\\'])
 
-            return ex, args_kwargs
+    def _log(self, *args):
+        print(*args)
 
-        else:
-            with self.lock:
-                self.device_manager[device_id] -= 1
+        if self.log_file_path is not None:
+            with open(self.log_file_path, 'w') as fid:
+                print(*args, file=fid)
 
-            return result, args_kwargs
+    def _iter_free_devices(self):
+        for k, v in self.counter.items():
+            if v < self.num_max_jobs:
+                yield k
+
+    def run(self):
+
+        q = list(enumerate(self.args_kwargs))
+
+        processes = []
+
+        finished_jobs = 0
+        num_jobs = len(q)
+
+        error_args_kwargs = []
+
+        s = '=== Starting {} jobs on devices {} with {} jobs per device ==='
+        self._log(s.format(
+            num_jobs,
+            ', '.join((str(i) for i in self.visible_devices)),
+            self.num_max_jobs))
+
+        while True:
+
+            for gpu_id, (id, args_kwargs) in zip(self._iter_free_devices(), q):
+
+                task = _GPUTask(self.fn, args_kwargs, gpu_id)
+                proc = _ErrorCatchingProcess(group=None, target=task)
+                proc.gpu_id = gpu_id
+                proc.args_kwargs_id = id
+
+                self.counter[gpu_id] += 1
+                q.remove((id, args_kwargs))
+                processes.append(proc)
+
+                proc.start()
+                time.sleep(1.0) # to make sure startup phases of process do not
+                # interleave
+
+            for p in processes:
+
+                if p.exitcode is not None:
+                    processes.remove(p)
+                    self.counter[p.gpu_id] -= 1
+                    finished_jobs += 1
+                    print('Finished job {}/{}'.format(finished_jobs, num_jobs))
+
+                    if p.exception is not None:
+                        self._log('=== ERROR (job {}) ==='.format(
+                            p.args_kwargs_id))
+                        self._log(p.exception)
+                        self._log('=============')
+                        error_args_kwargs.append(
+                            (p.exception, p.args_kwargs_id))
+
+            if len(processes) == 0:
+                break
+
+            time.sleep(0.25)
+            print(next(self.progress_wheel), end='\r')
+
+        return error_args_kwargs
 
 
 def scatter_fn_on_devices(
@@ -79,40 +168,14 @@ def scatter_fn_on_devices(
     assert isinstance(visible_devices, list)
     assert all((i < torch.cuda.device_count() for i in visible_devices))
 
-    num_device = len(visible_devices)
-
-    manager = mp.Manager()
-    device_counter = manager.dict({t: 0 for t in visible_devices})
-    lock = manager.Lock()
-
-    task = _Task(
+    d = Distributor(
         fn,
-        device_counter,
-        lock)
+        fn_args_kwargs,
+        visible_devices,
+        max_process_on_device
+    )
 
-    ret = []
-    with mp.Pool(num_device*max_process_on_device, maxtasksperchild=1) as pool:
-
-        for i, r in enumerate(pool.imap_unordered(task, fn_args_kwargs)):
-
-            ret.append(r)
-            result, args_kwargs = r
-
-            if not isinstance(result, Exception):
-                print("# Finished job {}/{}".format(
-                    i + 1,
-                    len(fn_args_kwargs)))
-
-            else:
-                print("#")
-                print("# Error in job {}/{}".format(i, len(args_kwargs)))
-                print("#")
-                print("# Error:", type(result))
-                print(repr(result))
-                print("# experiment configuration:")
-                print(args_kwargs)
-
-    return ret
+    return d.run()
 
 
 def keychain_value_iter(d, key_chain=None, allowed_values=None):
