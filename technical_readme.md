@@ -2,7 +2,6 @@
 
 ```bash
 git clone https://github.com/c-hofer/chofer_torchex.git
-git checkout persom_devel
 git pull
 pip install sphinx
 pip install nbsphinx
