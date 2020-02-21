@@ -2,25 +2,18 @@
  "cells": [
   {
    "cell_type": "markdown",
-   "metadata": {
-    "deletable": true,
-    "editable": true
-   },
+   "metadata": {},
    "source": [
-    "# SLayer Tutorial\n",
+    "# Differentiable barcode vectorization\n",
     "\n",
-    "This tutorial gives you a brief insight in the functionalities offered by the `nn.SLayer` \n",
+    "This tutorial gives you a brief insight in the functionalities offered by the `nn.SLayerExponential` \n",
     "module. It assumes familarity with standard `PyTorch` functionality. \n"
    ]
   },
   {
    "cell_type": "code",
-   "execution_count": 24,
-   "metadata": {
-    "collapsed": true,
-    "deletable": true,
-    "editable": true
-   },
+   "execution_count": 3,
+   "metadata": {},
    "outputs": [],
    "source": [
     "from shared_code import check_chofer_torchex_availability\n",
@@ -29,38 +22,27 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 25,
-   "metadata": {
-    "collapsed": true,
-    "deletable": true,
-    "editable": true
-   },
+   "execution_count": 4,
+   "metadata": {},
    "outputs": [],
    "source": [
-    "from chofer_torchex.nn import SLayer\n",
+    "from chofer_torchex.nn import SLayerExponential\n",
     "\n",
     "# create an instance with 3 structure elements over \\R^2\n",
-    "sl = SLayer(3, 2)"
+    "sl = SLayerExponential(3, 2)"
    ]
   },
   {
    "cell_type": "markdown",
-   "metadata": {
-    "deletable": true,
-    "editable": true
-   },
+   "metadata": {},
    "source": [
-    "`nn.SLayer` is a `torch.nn.Module` ... "
+    "`nn.SLayerExponential` is a `torch.nn.Module` ... "
    ]
   },
   {
    "cell_type": "code",
-   "execution_count": 26,
-   "metadata": {
-    "collapsed": false,
-    "deletable": true,
-    "editable": true
-   },
+   "execution_count": 5,
+   "metadata": {},
    "outputs": [
     {
      "data": {
@@ -68,7 +50,7 @@
        "True"
       ]
      },
-     "execution_count": 26,
+     "execution_count": 5,
      "metadata": {},
      "output_type": "execute_result"
     }
@@ -80,39 +62,28 @@
   },
   {
    "cell_type": "markdown",
-   "metadata": {
-    "deletable": true,
-    "editable": true
-   },
+   "metadata": {},
    "source": [
     "... now we can do all the beautiful stuff which is inherited from `torch.nn.Module`, e.g.,"
    ]
   },
   {
    "cell_type": "code",
-   "execution_count": 27,
-   "metadata": {
-    "collapsed": false,
-    "deletable": true,
-    "editable": true
-   },
+   "execution_count": 6,
+   "metadata": {},
    "outputs": [
     {
      "name": "stdout",
      "output_type": "stream",
      "text": [
       "Parameter containing:\n",
-      " 0.2816  0.4501\n",
-      " 0.9266  0.2779\n",
-      " 0.6380  0.5584\n",
-      "[torch.FloatTensor of size 3x2]\n",
-      "\n",
+      "tensor([[0.3424, 0.1891],\n",
+      "        [0.1751, 0.1890],\n",
+      "        [0.4058, 0.0261]], requires_grad=True)\n",
       "Parameter containing:\n",
-      " 3  3\n",
-      " 3  3\n",
-      " 3  3\n",
-      "[torch.FloatTensor of size 3x2]\n",
-      "\n"
+      "tensor([[3., 3.],\n",
+      "        [3., 3.],\n",
+      "        [3., 3.]], requires_grad=True)\n"
      ]
     }
    ],
@@ -123,10 +94,7 @@
   },
   {
    "cell_type": "markdown",
-   "metadata": {
-    "deletable": true,
-    "editable": true
-   },
+   "metadata": {},
    "source": [
     "The module has **two** parameters: \n",
     "1. `centers` : controls the centers of the structure elements. \n",
@@ -137,38 +105,43 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 28,
-   "metadata": {
-    "collapsed": false,
-    "deletable": true,
-    "editable": true
-   },
+   "execution_count": 7,
+   "metadata": {},
    "outputs": [
     {
      "name": "stdout",
      "output_type": "stream",
      "text": [
       "Parameter containing:\n",
-      " 0.0000  0.0000\n",
-      " 0.5000  0.5000\n",
-      " 1.0000  1.0000\n",
-      "[torch.FloatTensor of size 3x2]\n",
-      "\n",
+      "tensor([[0.0000, 0.0000],\n",
+      "        [0.5000, 0.5000],\n",
+      "        [1.0000, 1.0000]], requires_grad=True)\n",
       "Parameter containing:\n",
-      " 1  1\n",
-      " 2  2\n",
-      " 3  3\n",
-      "[torch.FloatTensor of size 3x2]\n",
-      "\n"
+      "tensor([[1., 1.],\n",
+      "        [2., 2.],\n",
+      "        [3., 3.]], requires_grad=True)\n"
      ]
     }
    ],
    "source": [
     "# here is an initialization example\n",
-    "centers_init = torch.Tensor([[0,0], [0.5, 0.5], [1,1]])\n",
-    "sharpness_init = torch.Tensor([[1,1], [2,2], [3,3]])\n",
+    "centers_init = torch.Tensor(\n",
+    "    [\n",
+    "        [0,0], \n",
+    "        [0.5, 0.5], \n",
+    "        [1,1]\n",
+    "    ]\n",
+    ")\n",
     "\n",
-    "sl = SLayer(3, 2, \n",
+    "sharpness_init = torch.Tensor(\n",
+    "    [\n",
+    "        [1,1], \n",
+    "        [2,2], \n",
+    "        [3,3]\n",
+    "    ]\n",
+    ")\n",
+    "\n",
+    "sl = SLayerExponential(3, 2, \n",
     "            centers_init=centers_init, \n",
     "            sharpness_init=sharpness_init)\n",
     "\n",
@@ -178,22 +151,15 @@
   },
   {
    "cell_type": "markdown",
-   "metadata": {
-    "deletable": true,
-    "editable": true
-   },
+   "metadata": {},
    "source": [
-    "The simplest input form for `nn.SLayer` is a `list` of `torch.Tensor` objects which are treated as a *batch*. "
+    "The simplest input form for `nn.SLayerExponential` is a `list` of `torch.Tensor` objects which are treated as a *batch*. "
    ]
   },
   {
    "cell_type": "code",
-   "execution_count": 29,
-   "metadata": {
-    "collapsed": false,
-    "deletable": true,
-    "editable": true
-   },
+   "execution_count": 8,
+   "metadata": {},
    "outputs": [
     {
      "name": "stdout",
@@ -217,10 +183,7 @@
   },
   {
    "cell_type": "markdown",
-   "metadata": {
-    "deletable": true,
-    "editable": true
-   },
+   "metadata": {},
    "source": [
     "As we see the output dimensionality is `(4, 3)` since\n",
     "we have a batch of size `4` and `3` structure elements. \n",
@@ -233,24 +196,17 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 30,
-   "metadata": {
-    "collapsed": false,
-    "deletable": true,
-    "editable": true
-   },
+   "execution_count": 9,
+   "metadata": {},
    "outputs": [
     {
      "name": "stdout",
      "output_type": "stream",
      "text": [
-      "Variable containing:\n",
-      " 1.0000e+00  1.3534e-01  1.5230e-08\n",
-      " 2.0000e+00  2.7067e-01  3.0460e-08\n",
-      " 1.1353e+00  2.7067e-01  1.0000e+00\n",
-      " 1.1353e+00  2.7067e-01  1.0000e+00\n",
-      "[torch.FloatTensor of size 4x3]\n",
-      "\n"
+      "tensor([[1.0000e+00, 1.3534e-01, 1.5230e-08],\n",
+      "        [2.0000e+00, 2.7067e-01, 3.0460e-08],\n",
+      "        [1.1353e+00, 2.7067e-01, 1.0000e+00],\n",
+      "        [1.1353e+00, 2.7067e-01, 1.0000e+00]], grad_fn=<SqueezeBackward0>)\n"
      ]
     }
    ],
@@ -260,10 +216,7 @@
   },
   {
    "cell_type": "markdown",
-   "metadata": {
-    "deletable": true,
-    "editable": true
-   },
+   "metadata": {},
    "source": [
     "**We observe the following:**\n",
     "\n",
@@ -276,29 +229,22 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 31,
-   "metadata": {
-    "collapsed": false,
-    "deletable": true,
-    "editable": true
-   },
+   "execution_count": 10,
+   "metadata": {},
    "outputs": [
     {
      "name": "stdout",
      "output_type": "stream",
      "text": [
-      "Variable containing:\n",
-      " 1  0  0\n",
-      " 2  0  0\n",
-      " 1  0  1\n",
-      " 1  0  1\n",
-      "[torch.FloatTensor of size 4x3]\n",
-      "\n"
+      "tensor([[1., 0., 0.],\n",
+      "        [2., 0., 0.],\n",
+      "        [1., 0., 1.],\n",
+      "        [1., 0., 1.]], grad_fn=<SqueezeBackward0>)\n"
      ]
     }
    ],
    "source": [
-    "sl = SLayer(3, 2, \n",
+    "sl = SLayerExponential(3, 2, \n",
     "            centers_init=centers_init, \n",
     "            sharpness_init=10*sharpness_init)\n",
     "print(sl(batch))"
@@ -306,80 +252,54 @@
   },
   {
    "cell_type": "markdown",
-   "metadata": {
-    "deletable": true,
-    "editable": true
-   },
+   "metadata": {},
    "source": [
-    "**Performance tip:** \n",
-    "`nn.SLayer` has a static method called `prepare_batch`. Here a lot of stuff is done \n",
-    "which is faster on `cpu` than on `gpu` as there is looping involved. \n",
-    "You can use this method in your training environment to separate batch preparation from \n",
-    "the actual calculation of the output as `nn.SLayer` recognizes a prepared batch if it gets one..."
+    "Below is a small toy model to illustrate the applicatation of `SLayerExponential`:"
    ]
   },
   {
    "cell_type": "code",
-   "execution_count": 32,
-   "metadata": {
-    "collapsed": false,
-    "deletable": true,
-    "editable": true
-   },
+   "execution_count": 11,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "class ToyModel(torch.nn.Module):\n",
+    "    def __init__(self):\n",
+    "        super().__init__() \n",
+    "        self.slayer = SLayerExponential(50, 2)\n",
+    "        self.linear = torch.nn.Linear(50, 10)\n",
+    "        \n",
+    "    def forward(self, inp):\n",
+    "        x = self.slayer(inp)\n",
+    "        x = self.linear(x)\n",
+    "        return x "
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 12,
+   "metadata": {},
    "outputs": [
     {
-     "data": {
-      "text/plain": [
-       "Variable containing:\n",
-       " 1  0  0\n",
-       " 2  0  0\n",
-       " 1  0  1\n",
-       " 1  0  1\n",
-       "[torch.FloatTensor of size 4x3]"
-      ]
-     },
-     "execution_count": 32,
-     "metadata": {},
-     "output_type": "execute_result"
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "torch.Size([3, 10])\n"
+     ]
     }
    ],
    "source": [
-    "batch = SLayer.prepare_batch(batch, point_dim=2)\n",
-    "sl(batch)"
+    "model = ToyModel()\n",
+    "inp = [torch.rand(10,2), torch.rand(20,2), torch.rand(30,2)]\n",
+    "out = model(inp)\n",
+    "print(out.size())"
    ]
   },
   {
    "cell_type": "markdown",
-   "metadata": {
-    "deletable": true,
-    "editable": true
-   },
+   "metadata": {},
    "source": [
-    "**`nn.SLayer` is an input layer ONLY!**\n",
-    "This means you can only use `nn.SLayer` as input layer for your model as you can not differentiate w.r.t. its input. This is also the reason why it accepts `Tensors` and *not* `Variables` as input. <br>\n",
-    "\n",
-    "An example of a model is shown below:"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": 33,
-   "metadata": {
-    "collapsed": true,
-    "deletable": true,
-    "editable": true
-   },
-   "outputs": [],
-   "source": [
-    "class MyModel(torch.nn.Module):\n",
-    "    def __init__(self):\n",
-    "        self.slayer = SLayer(50, 2)\n",
-    "        self.linear = torch.nn.Linear(50, 10)\n",
-    "        \n",
-    "    def forward(self, input):\n",
-    "        x = self.slayer(input)\n",
-    "        x = self.linear(x)\n",
-    "        return x "
+    "More information about different structure elements, i.e., `SLayerRational` and `SLayerRationalHat`, see documentation."
    ]
   }
  ],
@@ -399,7 +319,7 @@
    "name": "python",
    "nbconvert_exporter": "python",
    "pygments_lexer": "ipython3",
-   "version": "3.5.2"
+   "version": "3.7.1"
   }
  },
  "nbformat": 4,

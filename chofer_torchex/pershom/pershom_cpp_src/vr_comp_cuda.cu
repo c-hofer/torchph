@@ -775,7 +775,7 @@ std::vector<std::vector<Tensor>> calculate_persistence_output_to_barcode_tensors
             birth_i = essentials.at(i).squeeze(); 
 
             if (birth_i.numel() == 0){
-                barcodes = torch::empty({0, 1}, filtration_values.options());
+                barcodes = torch::empty({0}, filtration_values.options());
             }
             else {
                 barcodes = filtration_values.index_select(0, birth_i); 
@@ -818,6 +818,7 @@ std::vector<std::vector<Tensor>> vr_persistence_l1(
     double max_ball_diameter){
 
     auto distance_matrix = l1_norm_distance_matrix(point_cloud);
+    
     return vr_persistence(distance_matrix, max_dimension, max_ball_diameter);
 }
 

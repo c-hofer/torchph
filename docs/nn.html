@@ -25,6 +25,7 @@
         <script type="text/javascript" src="_static/underscore.js"></script>
         <script type="text/javascript" src="_static/doctools.js"></script>
         <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
     
     <script type="text/javascript" src="_static/js/theme.js"></script>
 
@@ -36,7 +37,7 @@
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="pershom" href="pershom.html" />
-    <link rel="prev" title="Welcome to chofer_torchex’s documentation!" href="index.html" /> 
+    <link rel="prev" title="Installation" href="install/index.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -80,9 +81,22 @@
               
             
             
-              <ul class="current">
+              <p class="caption"><span class="caption-text">Get Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="install/index.html">Installation</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Modules</span></p>
+<ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#"><code class="docutils literal notranslate"><span class="pre">nn</span></code></a></li>
 <li class="toctree-l1"><a class="reference internal" href="pershom.html"><code class="docutils literal notranslate"><span class="pre">pershom</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="utils.html"><code class="docutils literal notranslate"><span class="pre">utils</span></code></a></li>
+</ul>
+<p class="caption"><span class="caption-text">Notebooks</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/SLayer.html">Differentiable barcode vectorization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/ToyDiffVR.html">Differentiable Vietoris-Rips persistent homology</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/ComparisonSOTA.html">Comparison to SOTA</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/InputOptim.html">Input space optimization</a></li>
 </ul>
 
             
@@ -147,20 +161,36 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="module-chofer_torchex.nn.slayer">
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast,
+.nboutput.nblast {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast + .nbinput {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<div class="section" id="module-chofer_torchex.nn.slayer">
 <span id="nn"></span><h1><code class="docutils literal notranslate"><span class="pre">nn</span></code><a class="headerlink" href="#module-chofer_torchex.nn.slayer" title="Permalink to this headline">¶</a></h1>
-<p>Implementation of the input layer for persistent homology barcodes
-proposed in:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">chofer2017c</span><span class="p">]</span>
-<span class="p">{</span>
-<span class="n">author</span>    <span class="o">=</span> <span class="p">{</span><span class="n">C</span><span class="o">.~</span><span class="n">Hofer</span> <span class="ow">and</span> <span class="n">R</span><span class="o">.~</span><span class="n">Kwitt</span> <span class="ow">and</span> <span class="n">M</span><span class="o">.~</span><span class="n">Niethammer</span> <span class="ow">and</span> <span class="n">A</span><span class="o">.~</span><span class="n">Uhl</span><span class="p">},</span>
-<span class="n">title</span>     <span class="o">=</span> <span class="p">{</span><span class="n">Deep</span> <span class="n">Learning</span> <span class="k">with</span> <span class="n">Topological</span> <span class="n">Signatures</span><span class="p">},</span>
-<span class="n">booktitle</span> <span class="o">=</span> <span class="p">{</span><span class="n">NIPS</span><span class="p">},</span>
-<span class="n">year</span>      <span class="o">=</span> <span class="mi">2017</span><span class="p">,</span>
-<span class="n">note</span>      <span class="o">=</span> <span class="p">{</span><span class="n">accepted</span><span class="p">}</span>
-<span class="p">}</span>
-</pre></div>
-</div>
+<p>Implementation of <strong>differentiable vectorization layers</strong> for persistent
+homology barcodes.</p>
+<p>Examples for using these layers can be found in the <code class="docutils literal notranslate"><span class="pre">tutorials</span></code> subfolder of
+the <code class="docutils literal notranslate"><span class="pre">chofer_torchex</span></code> repository <a class="reference external" href="https://github.com/c-hofer/chofer_torchex">https://github.com/c-hofer/chofer_torchex</a>.</p>
 <dl class="class">
 <dt id="chofer_torchex.nn.slayer.SLayerExponential">
 <em class="property">class </em><code class="descclassname">chofer_torchex.nn.slayer.</code><code class="descname">SLayerExponential</code><span class="sig-paren">(</span><em>n_elements: int</em>, <em>point_dimension: int = 2</em>, <em>centers_init: torch.Tensor = None</em>, <em>sharpness_init: torch.Tensor = None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/chofer_torchex/nn/slayer.html#SLayerExponential"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chofer_torchex.nn.slayer.SLayerExponential" title="Permalink to this definition">¶</a></dt>
@@ -214,8 +244,8 @@ registered hooks while the latter silently ignores them.</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>n_elements</strong> – Number of structure elements used.</li>
-<li><strong>point_dimension</strong> – Dimensionality of the points of which the input multi set consists
-of.</li>
+<li><strong>point_dimension</strong> – Dimensionality of the points of which the input multi set
+consists of.</li>
 <li><strong>centers_init</strong> – The initialization for the centers of the structure elements.</li>
 <li><strong>sharpness_init</strong> – Initialization for the sharpness of the structure elements.</li>
 </ul>
@@ -253,8 +283,8 @@ registered hooks while the latter silently ignores them.</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>n_elements</strong> – Number of structure elements used.</li>
-<li><strong>point_dimension</strong> – Dimensionality of the points of which the input multi set
-consists of.</li>
+<li><strong>point_dimension</strong> – Dimensionality of the points of which the input multi
+set consists of.</li>
 <li><strong>centers_init</strong> – The initialization for the centers of the structure elements.</li>
 <li><strong>radius_init</strong> – Initialization for radius of zero level-set of the hat.</li>
 <li><strong>exponent</strong> – Exponent of the rationals forming the hat.</li>
@@ -284,25 +314,37 @@ registered hooks while the latter silently ignores them.</p>
 <dl class="function">
 <dt id="chofer_torchex.nn.slayer.prepare_batch">
 <code class="descclassname">chofer_torchex.nn.slayer.</code><code class="descname">prepare_batch</code><span class="sig-paren">(</span><em>batch: List[torch.Tensor], point_dim: int = None</em><span class="sig-paren">)</span> &#x2192; Tuple[torch.Tensor, torch.Tensor, int, int]<a class="reference internal" href="_modules/chofer_torchex/nn/slayer.html#prepare_batch"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chofer_torchex.nn.slayer.prepare_batch" title="Permalink to this definition">¶</a></dt>
-<dd><p>This method ‘vectorizes’ the multiset in order to take advances of gpu
-processing.
-The policy is to embed all multisets in batch to the highest dimensionality
-occurring in batch, i.e., <code class="docutils literal notranslate"><span class="pre">max(t.size()[0]</span></code> for <code class="docutils literal notranslate"><span class="pre">t</span></code> in batch).</p>
+<dd><p>This method ‘vectorizes’ the multiset in order to take advances of GPU
+processing. The policy is to embed all multisets in batch to the highest
+dimensionality occurring in batch, i.e., <code class="docutils literal notranslate"><span class="pre">max(t.size()[0]</span></code> for <code class="docutils literal notranslate"><span class="pre">t</span></code> in batch).</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>batch</strong> – The input batch to process.</li>
+<li><strong>batch</strong> – The input batch to process as a list of tensors.</li>
 <li><strong>point_dim</strong> – The dimension of the points the inputs consist of.</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">Tensor with size <code class="docutils literal notranslate"><span class="pre">batch_size</span></code> x <code class="docutils literal notranslate"><span class="pre">n_max_points</span></code> x <code class="docutils literal notranslate"><span class="pre">point_dim</span></code>.</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">A four-tuple consisting of (1) the constructed <code class="docutils literal notranslate"><span class="pre">batch</span></code>, i.e., a
+tensor with size
+<code class="docutils literal notranslate"><span class="pre">batch_size</span></code> x <code class="docutils literal notranslate"><span class="pre">n_max_points</span></code> x <code class="docutils literal notranslate"><span class="pre">point_dim</span></code>; (2) a tensor
+<code class="docutils literal notranslate"><span class="pre">not_dummy</span></code> of size <code class="docutils literal notranslate"><span class="pre">batch_size</span></code> x <code class="docutils literal notranslate"><span class="pre">n_max_points</span></code>, where
+<code class="docutils literal notranslate"><span class="pre">1</span></code> at position (i,j) indicates if the point is a dummy point,
+whereas <code class="docutils literal notranslate"><span class="pre">0</span></code> indicates a dummy point used for padding; (3)
+the max. number of points and (4) the batch size.</p>
 </td>
 </tr>
 </tbody>
 </table>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">chofer_torchex.nn.slayer</span> <span class="k">import</span> <span class="n">prepare_batch</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">torch</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">2</span><span class="p">),</span> <span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span><span class="mi">2</span><span class="p">)]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">batch</span><span class="p">,</span> <span class="n">not_dummy</span><span class="p">,</span> <span class="n">max_pts</span><span class="p">,</span> <span class="n">batch_size</span> <span class="o">=</span> <span class="n">prepare_batch</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 </div>
@@ -318,7 +360,7 @@ occurring in batch, i.e., <code class="docutils literal notranslate"><span class
         <a href="pershom.html" class="btn btn-neutral float-right" title="pershom" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="index.html" class="btn btn-neutral float-left" title="Welcome to chofer_torchex’s documentation!" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="install/index.html" class="btn btn-neutral float-left" title="Installation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
@@ -327,7 +369,7 @@ occurring in batch, i.e., <code class="docutils literal notranslate"><span class
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2019, Christoph D. Hofer
+        &copy; Copyright 2019, Christoph D. Hofer, Roland Kwitt
 
     </p>
   </div>
