@@ -392,11 +392,12 @@ div.rendered_html tbody tr:hover {
 </style>
 <div class="section" id="Differentiable-Vietoris-Rips-persistent-homology">
 <h1>Differentiable Vietoris-Rips persistent homology<a class="headerlink" href="#Differentiable-Vietoris-Rips-persistent-homology" title="Permalink to this headline">¶</a></h1>
-<p>In this example, we essentially reproduce the toy experiment from</p>
+<p>In this example, we essentially reproduce the <em>toy experiment</em> from</p>
 <div class="line-block">
 <div class="line"><strong>Connectivity-Optimized Representation Learning via Persistent Homology</strong></div>
 <div class="line">C. Hofer, R. Kwitt, M. Dixit and M. Niethammer</div>
 <div class="line">ICML ‘19</div>
+<div class="line"><a class="reference external" href="http://proceedings.mlr.press/v97/hofer19a.html">Online</a></div>
 </div>
 <div class="section" id="Notation">
 <h2>Notation<a class="headerlink" href="#Notation" title="Permalink to this headline">¶</a></h2>
@@ -413,6 +414,16 @@ div.rendered_html tbody tr:hover {
 <div class="math notranslate nohighlight">
 \[L_\eta(S) = \sum_{t \in \dagger(S)} |\eta -\epsilon_t|\]</div>
 <p>is minimized over mini-batches of samples (<span class="math notranslate nohighlight">\(S\)</span>).</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[68]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="o">%</span><span class="k">load_ext</span> autoreload
+<span class="o">%</span><span class="k">autoreload</span> 2
+</pre></div>
+</div>
+</div>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[67]:
 </pre></div>
@@ -713,7 +724,7 @@ Epoch: 50 | Loss: 38.28
 <img alt="../_images/tutorials_ToyDiffVR_15_0.png" src="../_images/tutorials_ToyDiffVR_15_0.png" />
 </div>
 </div>
-<p><strong>Note</strong>: Observe how the <span class="math notranslate nohighlight">\([\hat{\alpha}, \hat{\beta}]\)</span> interval gets tighter throughout the epochs and <span class="math notranslate nohighlight">\(\hat{\varepsilon}\)</span> gets closer to <span class="math notranslate nohighlight">\(\eta=2\)</span>. However, arranging batches of size 50 in the desired manner is impossible in <span class="math notranslate nohighlight">\(\mathbb{R}^2\)</span> which is why the actual value of <span class="math notranslate nohighlight">\(2\)</span> is never reaches (for details see paper).</p>
+<p><strong>Note</strong>: Observe how the <span class="math notranslate nohighlight">\([\hat{\alpha}, \hat{\beta}]\)</span> interval gets tighter throughout the epochs and <span class="math notranslate nohighlight">\(\hat{\varepsilon}\)</span> gets closer to <span class="math notranslate nohighlight">\(\eta=2\)</span>. However, arranging batches of size 50 in the desired manner is impossible in <span class="math notranslate nohighlight">\(\mathbb{R}^2\)</span> which is why the actual value of <span class="math notranslate nohighlight">\(2\)</span> is never reached (for details see paper).</p>
 </div>
 </div>
 

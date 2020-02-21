@@ -385,9 +385,10 @@ div.rendered_html tbody tr:hover {
 </style>
 <div class="section" id="Differentiable-barcode-vectorization">
 <h1>Differentiable barcode vectorization<a class="headerlink" href="#Differentiable-barcode-vectorization" title="Permalink to this headline">¶</a></h1>
-<p>This tutorial gives you a brief insight in the functionalities offered by the <code class="docutils literal notranslate"><span class="pre">nn.SLayerExponential</span></code> module. It assumes familarity with standard <code class="docutils literal notranslate"><span class="pre">PyTorch</span></code> functionality.</p>
+<p>This tutorial gives you a brief insight in the functionalities offered by the <code class="docutils literal notranslate"><span class="pre">chofer_torchex.nn.SLayerExponential</span></code> module. It assumes familarity with standard <code class="docutils literal notranslate"><span class="pre">PyTorch</span></code> functionality.</p>
+<p>Also, <code class="docutils literal notranslate"><span class="pre">chofer_torchex.nn.SLayerExponential</span></code> is just one <em>structure element</em> and others are available as well (see documentation).</p>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -397,7 +398,7 @@ div.rendered_html tbody tr:hover {
 </div>
 </div>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -410,7 +411,7 @@ div.rendered_html tbody tr:hover {
 </div>
 <p><code class="docutils literal notranslate"><span class="pre">nn.SLayerExponential</span></code> is a <code class="docutils literal notranslate"><span class="pre">torch.nn.Module</span></code> …</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -420,7 +421,7 @@ div.rendered_html tbody tr:hover {
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
 </pre></div>
 </div>
 <div class="output_area highlight-none notranslate"><div class="highlight"><pre>
@@ -430,7 +431,7 @@ div.rendered_html tbody tr:hover {
 </div>
 <p>… now we can do all the beautiful stuff which is inherited from <code class="docutils literal notranslate"><span class="pre">torch.nn.Module</span></code>, e.g.,</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -445,9 +446,9 @@ div.rendered_html tbody tr:hover {
 <div class="output_area docutils container">
 <div class="highlight"><pre>
 Parameter containing:
-tensor([[0.3424, 0.1891],
-        [0.1751, 0.1890],
-        [0.4058, 0.0261]], requires_grad=True)
+tensor([[0.2269, 0.9433],
+        [0.7751, 0.4325],
+        [0.9901, 0.6370]], requires_grad=True)
 Parameter containing:
 tensor([[3., 3.],
         [3., 3.],
@@ -457,7 +458,7 @@ tensor([[3., 3.],
 <p>The module has <strong>two</strong> parameters: 1. <code class="docutils literal notranslate"><span class="pre">centers</span></code> : controls the centers of the structure elements. 2. <code class="docutils literal notranslate"><span class="pre">sharpness</span></code>: controls how tight the used Gaussians are. The higher the value, the tighter.</p>
 <p>Both can be initialized using the <code class="docutils literal notranslate"><span class="pre">centers_init</span></code> and <code class="docutils literal notranslate"><span class="pre">sharpness_init</span></code> keyword arguments, respectively.</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[17]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -504,7 +505,7 @@ tensor([[1., 1.],
 </div>
 <p>The simplest input form for <code class="docutils literal notranslate"><span class="pre">nn.SLayerExponential</span></code> is a <code class="docutils literal notranslate"><span class="pre">list</span></code> of <code class="docutils literal notranslate"><span class="pre">torch.Tensor</span></code> objects which are treated as a <em>batch</em>.</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[18]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -532,7 +533,7 @@ torch.Size([4, 3])
 <p>In other words, <code class="docutils literal notranslate"><span class="pre">output[i,</span> <span class="pre">j]</span> <span class="pre">=</span></code> “evaluation of structure element j on mset_i”</p>
 <p>Lets take a look …</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[19]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -559,7 +560,7 @@ tensor([[1.0000e+00, 1.3534e-01, 1.5230e-08],
 </ol>
 <p>Maybe this becomes more clear if we increase the sharpness of our structure elements a “little” …</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[20]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -583,7 +584,7 @@ tensor([[1., 0., 0.],
 </div>
 <p>Below is a small toy model to illustrate the applicatation of <code class="docutils literal notranslate"><span class="pre">SLayerExponential</span></code>:</p>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[21]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -601,7 +602,7 @@ tensor([[1., 0., 0.],
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[22]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -620,7 +621,12 @@ tensor([[1., 0., 0.],
 torch.Size([3, 10])
 </pre></div></div>
 </div>
-<p>More information about different structure elements, i.e., <code class="docutils literal notranslate"><span class="pre">SLayerRational</span></code> and <code class="docutils literal notranslate"><span class="pre">SLayerRationalHat</span></code>, see documentation.</p>
+<p>More information about alternative structure elements, i.e.,</p>
+<ul class="simple">
+<li><code class="docutils literal notranslate"><span class="pre">chofer_torchex.nn.SLayerRational</span></code></li>
+<li><code class="docutils literal notranslate"><span class="pre">chofer_torchex.nn.SLayerRationalHat</span></code></li>
+</ul>
+<p>see documentation.</p>
 </div>
 
 

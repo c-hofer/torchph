@@ -385,15 +385,16 @@ div.rendered_html tbody tr:hover {
 </style>
 <div class="section" id="Comparison-to-SOTA">
 <h1>Comparison to SOTA<a class="headerlink" href="#Comparison-to-SOTA" title="Permalink to this headline">¶</a></h1>
-<p>This notebook contains a comparison of the Vietoris-Rips (VR) persistent homology (PH) computation (on the GPU) implemented in <code class="docutils literal notranslate"><span class="pre">chofer_torchex</span></code> to the implementations available via <code class="docutils literal notranslate"><span class="pre">dionysus</span></code> and <code class="docutils literal notranslate"><span class="pre">ripser</span></code> (which is SOTA in terms of runtime).</p>
+<p>This notebook contains a comparison of the Vietoris-Rips (VR) persistent homology (PH) computation (on the GPU) implemented in <code class="docutils literal notranslate"><span class="pre">chofer_torchex</span></code> to the implementations available via <code class="docutils literal notranslate"><span class="pre">dionysus</span></code> (v2) and <code class="docutils literal notranslate"><span class="pre">ripser</span></code> (which is SOTA in terms of runtime).</p>
 <p>This runtime study is a small-scale version of the runtime study in</p>
 <div class="line-block">
 <div class="line"><strong>Connectivity-Optimized Representation Learning via Persistent Homology</strong></div>
 <div class="line">C. Hofer, R. Kwitt, M. Dixit and M. Niethammer</div>
 <div class="line">ICML ‘19</div>
+<div class="line"><a class="reference external" href="http://proceedings.mlr.press/v97/hofer19a.html">Online</a></div>
 </div>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -452,8 +453,8 @@ Requirement already satisfied: setuptools in /scratch4/chofer/opt/anaconda/envs/
 Requirement already satisfied: dionysus in /scratch4/chofer/opt/anaconda/envs/pyt_1.0/lib/python3.7/site-packages (2.0.6)
 </pre></div></div>
 </div>
-<div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -474,27 +475,14 @@ Requirement already satisfied: dionysus in /scratch4/chofer/opt/anaconda/envs/py
 
 <span class="kn">from</span> <span class="nn">sklearn</span> <span class="k">import</span> <span class="n">datasets</span>
 
-<span class="c1">#from chofer_torchex.pershom import pershom_backend</span>
 <span class="kn">from</span> <span class="nn">chofer_torchex.pershom</span> <span class="k">import</span> <span class="n">vr_persistence_l1</span><span class="p">,</span> <span class="n">vr_persistence</span>
 
-<span class="n">device</span> <span class="o">=</span> <span class="s1">&#39;cuda:0&#39;</span>
+<span class="n">device</span> <span class="o">=</span> <span class="s1">&#39;cuda&#39;</span>
 </pre></div>
 </div>
 </div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-Using /tmp/chofer_torch_extensions as PyTorch extensions root...
-Detected CUDA files, patching ldflags
-Emitting ninja build file /tmp/chofer_torch_extensions/pershom_cuda_ext/build.ninja...
-Building extension module pershom_cuda_ext...
-Loading extension module pershom_cuda_ext...
-</pre></div></div>
-</div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[22]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -502,13 +490,16 @@ Loading extension module pershom_cuda_ext...
     <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">n</span><span class="p">,</span><span class="mi">10</span><span class="p">)</span>
 
 <span class="k">def</span> <span class="nf">gen_circlces</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
-    <span class="k">return</span> <span class="n">datasets</span><span class="o">.</span><span class="n">make_circles</span><span class="p">(</span><span class="n">n_samples</span><span class="o">=</span><span class="n">n</span><span class="p">,</span> <span class="n">noise</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span> <span class="n">factor</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">datasets</span><span class="o">.</span><span class="n">make_circles</span><span class="p">(</span>
+        <span class="n">n_samples</span><span class="o">=</span><span class="n">n</span><span class="p">,</span>
+        <span class="n">noise</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span>
+        <span class="n">factor</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
 
-<span class="n">N</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">50</span><span class="p">,</span><span class="mi">400</span><span class="p">,</span><span class="mi">50</span><span class="p">)</span>
+<span class="n">N</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">50</span><span class="p">,</span><span class="mi">500</span><span class="p">,</span><span class="mi">50</span><span class="p">)</span>
 
 <span class="n">times</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
 
-<span class="n">f</span> <span class="o">=</span> <span class="n">gen_circlces</span>
+<span class="n">f</span> <span class="o">=</span> <span class="n">gen_random_10D_data</span>
 
 <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">N</span><span class="p">:</span>
     <span class="n">trials</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
@@ -559,10 +550,12 @@ Evaluating N=200
 Evaluating N=250
 Evaluating N=300
 Evaluating N=350
+Evaluating N=400
+Evaluating N=450
 </pre></div></div>
 </div>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[23]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -583,7 +576,7 @@ Evaluating N=350
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[24]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -612,7 +605,7 @@ Evaluating N=350
 </div>
 <p>Run a simple sanity check that all VR PH computations return the same result.</p>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[25]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -638,13 +631,13 @@ Evaluating N=350
 </div>
 </div>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[28]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="k">assert</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">dgm_ripser</span><span class="p">[</span><span class="mi">0</span><span class="p">][:,</span><span class="mi">1</span><span class="p">][:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">l</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()[:,</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">&lt;</span> <span class="mf">1e-5</span><span class="p">)</span>
-<span class="k">assert</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="nb">sorted</span><span class="p">([</span><span class="n">x</span><span class="o">.</span><span class="n">death</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">dgms</span><span class="p">[</span><span class="mi">0</span><span class="p">]])[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">l</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()[:,</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">&lt;</span> <span class="mf">1e-5</span><span class="p">)</span>
-<span class="k">assert</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">dgm_ripser</span><span class="p">[</span><span class="mi">0</span><span class="p">][:,</span><span class="mi">1</span><span class="p">][:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="nb">sorted</span><span class="p">([</span><span class="n">x</span><span class="o">.</span><span class="n">death</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">dgms</span><span class="p">[</span><span class="mi">0</span><span class="p">]])[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">&lt;</span> <span class="mf">1e-5</span><span class="p">)</span>
+<span></span><span class="k">assert</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">dgm_ripser</span><span class="p">[</span><span class="mi">0</span><span class="p">][:,</span><span class="mi">1</span><span class="p">][:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">l</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()[:,</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">&lt;</span> <span class="mf">1e-4</span><span class="p">)</span>
+<span class="k">assert</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="nb">sorted</span><span class="p">([</span><span class="n">x</span><span class="o">.</span><span class="n">death</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">dgms</span><span class="p">[</span><span class="mi">0</span><span class="p">]])[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">l</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()[:,</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">&lt;</span> <span class="mf">1e-4</span><span class="p">)</span>
+<span class="k">assert</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">dgm_ripser</span><span class="p">[</span><span class="mi">0</span><span class="p">][:,</span><span class="mi">1</span><span class="p">][:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="nb">sorted</span><span class="p">([</span><span class="n">x</span><span class="o">.</span><span class="n">death</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">dgms</span><span class="p">[</span><span class="mi">0</span><span class="p">]])[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">&lt;</span> <span class="mf">1e-4</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>

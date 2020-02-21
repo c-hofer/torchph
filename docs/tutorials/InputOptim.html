@@ -392,16 +392,16 @@ div.rendered_html tbody tr:hover {
 </style>
 <div class="section" id="Input-space-optimization">
 <h1>Input space optimization<a class="headerlink" href="#Input-space-optimization" title="Permalink to this headline">¶</a></h1>
-<p>In this toy example, we directly optimize point configurations in 2D. This is motivated by the following paper:</p>
+<p>In this toy example, we directly optimize point configurations in <span class="math notranslate nohighlight">\(\mathbb{R}^2\)</span>. The example is motivated by the toy experiments from the following paper:</p>
 <div class="line-block">
 <div class="line"><strong>A Topology Layer for Machine Learning</strong></div>
 <div class="line">R. Brüel-Gabrielsson, B. J. Nelson, A. Dwaraknath, P. Skraba, L. J. Guibas and G. Carlsson</div>
 <div class="line">arXiv, 2019</div>
 <div class="line"><a class="reference external" href="https://arxiv.org/abs/1905.12200">PDF</a></div>
 </div>
-<p><strong>Note</strong>: In all the following examples, we use the <span class="math notranslate nohighlight">\(l_1\)</span> norm during Vietoris-Rips PH computation (whereas the paper mentioned above uses <span class="math notranslate nohighlight">\(l_2\)</span>).</p>
+<p><strong>Note</strong>: In all the following examples, we use the <span class="math notranslate nohighlight">\(l_1\)</span> norm during Vietoris-Rips persistent homology computation (whereas the paper mentioned above uses <span class="math notranslate nohighlight">\(l_2\)</span>).</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[23]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[63]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -420,7 +420,7 @@ The autoreload extension is already loaded. To reload it, use:
 </pre></div></div>
 </div>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[24]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[58]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -436,7 +436,7 @@ The autoreload extension is already loaded. To reload it, use:
 <h2>Data<a class="headerlink" href="#Data" title="Permalink to this headline">¶</a></h2>
 <p>The toy data generated for this example is sampled from a 2D uniform distribution in <span class="math notranslate nohighlight">\([0,1]^2\)</span>. In particular, we sample 300 points.</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[27]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[59]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -460,7 +460,7 @@ The autoreload extension is already loaded. To reload it, use:
 <h3>Example 1<a class="headerlink" href="#Example-1" title="Permalink to this headline">¶</a></h3>
 <p><strong>Task</strong>: Optimize for uniform distribution of H0 lifetimes.</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[28]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[60]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -505,28 +505,19 @@ Iteration:  80 | Loss: 2.00
 Iteration: 100 | Loss: 1.69
 </pre></div></div>
 </div>
-<div class="nboutput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[28]:
-</pre></div>
-</div>
-<div class="output_area highlight-none notranslate"><div class="highlight"><pre>
-<span></span>[&lt;matplotlib.lines.Line2D at 0x7f64d4ec7b70&gt;]
-</pre></div>
-</div>
-</div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/tutorials_InputOptim_6_2.png" src="../_images/tutorials_InputOptim_6_2.png" />
+<img alt="../_images/tutorials_InputOptim_6_1.png" src="../_images/tutorials_InputOptim_6_1.png" />
 </div>
 </div>
 </div>
 <div class="section" id="Example-2">
 <h3>Example 2<a class="headerlink" href="#Example-2" title="Permalink to this headline">¶</a></h3>
-<p><strong>Task</strong>: Minimize (non-essential) H0 lifetimes (i.e., a slightly modified as in *Brüel-Gabrielsson et al., arXiv 2019, Fig. 1 top-right)</p>
+<p><strong>Task</strong>: Minimize (non-essential) H0 lifetimes (i.e., a slightly modified as in <em>Brüel-Gabrielsson et al., arXiv 2019</em>, Fig. 1 top-right)</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[29]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[61]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -571,28 +562,19 @@ Iteration:  80 | Loss: 4.43
 Iteration: 100 | Loss: 4.10
 </pre></div></div>
 </div>
-<div class="nboutput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[29]:
-</pre></div>
-</div>
-<div class="output_area highlight-none notranslate"><div class="highlight"><pre>
-<span></span>[&lt;matplotlib.lines.Line2D at 0x7f64d4f149b0&gt;]
-</pre></div>
-</div>
-</div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/tutorials_InputOptim_8_2.png" src="../_images/tutorials_InputOptim_8_2.png" />
+<img alt="../_images/tutorials_InputOptim_8_1.png" src="../_images/tutorials_InputOptim_8_1.png" />
 </div>
 </div>
 </div>
 <div class="section" id="Example-3">
 <h3>Example 3<a class="headerlink" href="#Example-3" title="Permalink to this headline">¶</a></h3>
-<p><strong>Task</strong>: Increase (non-essential) H0 lifetimes (i.e., a slightly modified version as in *Brüel-Gabrielsson et al., arXiv 2019, Fig. 1 top-left)</p>
+<p><strong>Task</strong>: Increase (non-essential) H0 lifetimes (i.e., a slightly modified version as in <em>Brüel-Gabrielsson et al., arXiv 2019</em>, Fig. 1 top-left)</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[31]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[62]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>

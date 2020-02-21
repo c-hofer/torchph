@@ -6,11 +6,12 @@
    "source": [
     "# Differentiable Vietoris-Rips persistent homology\n",
     "\n",
-    "In this example, we essentially reproduce the toy experiment from\n",
+    "In this example, we essentially reproduce the *toy experiment* from\n",
     "\n",
     "**Connectivity-Optimized Representation Learning via Persistent Homology**    \n",
     "C. Hofer, R. Kwitt, M. Dixit and M. Niethammer    \n",
-    "ICML '19\n",
+    "ICML '19    \n",
+    "[Online](http://proceedings.mlr.press/v97/hofer19a.html)\n",
     "\n",
     "## Notation\n",
     "\n",
@@ -31,8 +32,10 @@
    ]
   },
   {
-   "cell_type": "markdown",
+   "cell_type": "code",
+   "execution_count": 68,
    "metadata": {},
+   "outputs": [],
    "source": [
     "%load_ext autoreload\n",
     "%autoreload 2"
@@ -394,7 +397,7 @@
    "cell_type": "markdown",
    "metadata": {},
    "source": [
-    "**Note**: Observe how the $[\\hat{\\alpha}, \\hat{\\beta}]$ interval gets tighter throughout the epochs and $\\hat{\\varepsilon}$ gets closer to $\\eta=2$. However, arranging batches of size 50 in the desired manner is impossible in $\\mathbb{R}^2$ which is why the actual value of $2$ is never reaches (for details see paper)."
+    "**Note**: Observe how the $[\\hat{\\alpha}, \\hat{\\beta}]$ interval gets tighter throughout the epochs and $\\hat{\\varepsilon}$ gets closer to $\\eta=2$. However, arranging batches of size 50 in the desired manner is impossible in $\\mathbb{R}^2$ which is why the actual value of $2$ is never reached (for details see paper)."
    ]
   }
  ],

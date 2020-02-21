@@ -3,8 +3,7 @@ r"""
 Implementation of **differentiable vectorization layers** for persistent
 homology barcodes.
 
-Examples for using these layers can be found in the ``tutorials`` subfolder of
-the ``chofer_torchex`` repository https://github.com/c-hofer/chofer_torchex.
+For a basic tutorial click `here <tutorials/SLayer.html>`_.
 """
 import torch
 import numpy as np

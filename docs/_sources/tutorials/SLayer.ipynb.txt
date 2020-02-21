@@ -6,13 +6,15 @@
    "source": [
     "# Differentiable barcode vectorization\n",
     "\n",
-    "This tutorial gives you a brief insight in the functionalities offered by the `nn.SLayerExponential` \n",
-    "module. It assumes familarity with standard `PyTorch` functionality. \n"
+    "This tutorial gives you a brief insight in the functionalities offered by the `chofer_torchex.nn.SLayerExponential` \n",
+    "module. It assumes familarity with standard `PyTorch` functionality. \n",
+    "\n",
+    "Also, `chofer_torchex.nn.SLayerExponential` is just one *structure element* and others are available as well (see documentation)."
    ]
   },
   {
    "cell_type": "code",
-   "execution_count": 3,
+   "execution_count": 13,
    "metadata": {},
    "outputs": [],
    "source": [
@@ -22,7 +24,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 4,
+   "execution_count": 14,
    "metadata": {},
    "outputs": [],
    "source": [
@@ -41,7 +43,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 5,
+   "execution_count": 15,
    "metadata": {},
    "outputs": [
     {
@@ -50,7 +52,7 @@
        "True"
       ]
      },
-     "execution_count": 5,
+     "execution_count": 15,
      "metadata": {},
      "output_type": "execute_result"
     }
@@ -69,7 +71,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 6,
+   "execution_count": 16,
    "metadata": {},
    "outputs": [
     {
@@ -77,9 +79,9 @@
      "output_type": "stream",
      "text": [
       "Parameter containing:\n",
-      "tensor([[0.3424, 0.1891],\n",
-      "        [0.1751, 0.1890],\n",
-      "        [0.4058, 0.0261]], requires_grad=True)\n",
+      "tensor([[0.2269, 0.9433],\n",
+      "        [0.7751, 0.4325],\n",
+      "        [0.9901, 0.6370]], requires_grad=True)\n",
       "Parameter containing:\n",
       "tensor([[3., 3.],\n",
       "        [3., 3.],\n",
@@ -105,7 +107,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 7,
+   "execution_count": 17,
    "metadata": {},
    "outputs": [
     {
@@ -158,7 +160,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 8,
+   "execution_count": 18,
    "metadata": {},
    "outputs": [
     {
@@ -196,7 +198,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 9,
+   "execution_count": 19,
    "metadata": {},
    "outputs": [
     {
@@ -229,7 +231,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 10,
+   "execution_count": 20,
    "metadata": {},
    "outputs": [
     {
@@ -259,7 +261,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 11,
+   "execution_count": 21,
    "metadata": {},
    "outputs": [],
    "source": [
@@ -277,7 +279,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 12,
+   "execution_count": 22,
    "metadata": {},
    "outputs": [
     {
@@ -299,7 +301,12 @@
    "cell_type": "markdown",
    "metadata": {},
    "source": [
-    "More information about different structure elements, i.e., `SLayerRational` and `SLayerRationalHat`, see documentation."
+    "More information about alternative structure elements, i.e., \n",
+    "\n",
+    "- `chofer_torchex.nn.SLayerRational` \n",
+    "- `chofer_torchex.nn.SLayerRationalHat`\n",
+    "\n",
+    "see documentation."
    ]
   }
  ],
