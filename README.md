@@ -30,15 +30,21 @@ If you use any of these extensions, please cite the following works (depending o
   booktitle = {ICML},
   year      = {2019}}
 
-@inproceedings{Hofer19b,
-  author    = {C.~Hofer, R.~Kwitt and M.~Niethammer},
-  title     = {Graph Filtration Learning},
-  booktitle = {arXiv},
-  year      = {2019}}
-
 @inproceedings{Hofer19c,
   author    = {C.~Hofer, R.~Kwitt, and M.~Niethammer},
   title     = {Learning Representations of Persistence Barcodes Homology},
   booktitle = {JMLR},
   year      = {2019}}
+  
+@inproceedings{Hofer19b,
+  author    = {C.~Hofer, F.~Graf, R.~Kwitt, B.~Rieck and M.~Niethammer},
+  title     = {Graph Filtration Learning},
+  booktitle = {arXiv},
+  year      = {2020}}
+  
+@inproceedings{Hofer20a,     
+  author    = {C.~Hofer, F.~Graf, M.~Niethammer and R.~Kwitt},     
+  title     = {Topologically Densified Distributions},     
+  booktitle = {arXiv},    
+  year      = {2020}} 
 ```
