@@ -21,10 +21,12 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
-        <script type="text/javascript" src="../_static/jquery.js"></script>
-        <script type="text/javascript" src="../_static/underscore.js"></script>
-        <script type="text/javascript" src="../_static/doctools.js"></script>
-        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/language_data.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
         <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
     
     <script type="text/javascript" src="../_static/js/theme.js"></script>
@@ -89,7 +91,6 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../nn.html"><code class="docutils literal notranslate"><span class="pre">nn</span></code></a></li>
 <li class="toctree-l1"><a class="reference internal" href="../pershom.html"><code class="docutils literal notranslate"><span class="pre">pershom</span></code></a></li>
-<li class="toctree-l1"><a class="reference internal" href="../utils.html"><code class="docutils literal notranslate"><span class="pre">utils</span></code></a></li>
 </ul>
 <p class="caption"><span class="caption-text">Notebooks</span></p>
 <ul>
@@ -166,13 +167,13 @@
 /* CSS overrides for sphinx_rtd_theme */
 
 /* 24px margin */
-.nbinput.nblast,
-.nboutput.nblast {
+.nbinput.nblast.container,
+.nboutput.nblast.container {
     margin-bottom: 19px;  /* padding has already 5px */
 }
 
 /* ... except between code cells! */
-.nblast + .nbinput {
+.nblast.container + .nbinput.container {
     margin-top: -19px;
 }
 
@@ -189,10 +190,10 @@
 <h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h1>
 <p>The following setup was tested with the following system configuration:</p>
 <ul class="simple">
-<li>Ubuntu 18.04.2 LTS</li>
-<li>CUDA 10 (driver version 410.48)</li>
-<li>Anaconda (Python 3.7)</li>
-<li>PyTorch 1.1</li>
+<li><p>Ubuntu 18.04.2 LTS</p></li>
+<li><p>CUDA 10 (driver version 410.48)</p></li>
+<li><p>Anaconda (Python 3.7)</p></li>
+<li><p>PyTorch 1.1</p></li>
 </ul>
 <p>In the following, we assume that we work in <code class="docutils literal notranslate"><span class="pre">/tmp</span></code> (obviously, you have to
 change this to reflect your choice and using <code class="docutils literal notranslate"><span class="pre">/tmp</span></code> is, of course, not
@@ -224,8 +225,8 @@ conda develop /tmp/chofer_torchex
 </pre></div>
 </div>
 <div class="admonition note">
-<p class="first admonition-title">Note</p>
-<p class="last">At the moment, we only have GPU support available. CPU support
+<p class="admonition-title">Note</p>
+<p>At the moment, we only have GPU support available. CPU support
 is not planned yet, as many other packages exist which support
 PH computation on the CPU.</p>
 </div>
