@@ -45,6 +45,7 @@ Currently all ``cuda`` backend functionality **only** supports  ``int64_t`` and
 ``float32_t`` typing.
 
 """
+import warnings
 import os.path as pth
 from typing import List
 from torch import Tensor
@@ -63,6 +64,14 @@ for extension in ['*.cpp', '*.cu']:
 
 # jit compiling the c++ extension
 
+_failed_compilation_msg = \
+    """
+    Failed jit compilation in {}.
+    Error was `{}`.
+    The error will be re-raised calling any function in this module.
+    """
+
+__C = None
 try:
     __C = load(
         'pershom_cuda_ext',
@@ -70,15 +79,32 @@ try:
         verbose=False)
 
 except Exception as ex:
-    print("Error in {}. Failed jit compilation. Maybe your CUDA environment \
-           is messed up?".format(__file__))
-    print("Error was {}".format(ex))
+    warnings.warn(_failed_compilation_msg.format(__file__, ex))
+
+    class ErrorThrower(object):
+        ex = ex
+
+        def __getattr__(self, name):
+            raise self.ex 
+
+    __C = ErrorThrower()
+
+
+def _backend_guard(func):
+    if __C is not None:
+        return func
+
+    else:
+        def raise_error():
+            raise __COMPILATION_ERROR
+
+        return raise_error
 
 
 def find_merge_pairings(
         pivots: Tensor,
         max_pairs: int = -1
-        )->Tensor:
+) -> Tensor:
     """Finds the pairs which have to be merged in the current iteration of the
     matrix reduction.
 
@@ -104,7 +130,7 @@ def find_merge_pairings(
 def merge_columns_(
         compr_desc_sort_ba: Tensor,
         merge_pairs: Tensor
-        )->None:
+) -> None:
     r"""Executes the given merging operations inplace on the descending
     sorted boundary array.
 
@@ -125,7 +151,7 @@ def read_barcodes(
         pivots: Tensor,
         simplex_dimension: Tensor,
         max_dim_to_read_of_reduced_ba: int
-        )->List[List[Tensor]]:
+) -> List[List[Tensor]]:
     """Reads the barcodes using the pivot of a reduced boundary array.
 
     Arguments:
@@ -159,7 +185,7 @@ def calculate_persistence(
         simplex_dimension: Tensor,
         max_dim_to_read_of_reduced_ba: int,
         max_pairs: int = -1
-        )->List[List[Tensor]]:
+) -> List[List[Tensor]]:
     """Returns the barcodes of the given encoded boundary array.
 
     Arguments:
@@ -199,8 +225,8 @@ def calculate_persistence(
 def vr_persistence_l1(
         point_cloud: Tensor,
         max_dimension: int,
-        max_ball_diameter: float=0.0
-        )->List[List[Tensor]]:
+        max_ball_diameter: float = 0.0
+) -> List[List[Tensor]]:
     """Returns the barcodes of the Vietoris-Rips complex of a given point cloud
     w.r.t. the l1 (manhatten) distance.
 
@@ -232,8 +258,8 @@ def vr_persistence_l1(
 def vr_persistence(
         distance_matrix: Tensor,
         max_dimension: int,
-        max_ball_diameter: float=0.0
-        )->List[List[Tensor]]:
+        max_ball_diameter: float = 0.0
+) -> List[List[Tensor]]:
     """Returns the barcodes of the Vietoris-Rips complex of a given distance
     matrix.
 
