@@ -22,11 +22,19 @@ the following publications are most relevant::
         booktitle = {ICML},
         year      = {2019}}
 
-    @inproceedings{Hofer19b,
-        author    = {C.~Hofer, R.~Kwitt and M.~Niethammer},
+    @article{Hofer20a,
+        author    = {C.~Hofer, F.~Graf, B.~Rieck, R.~Kwitt and M.~Niethammer},
         title     = {Graph Filtration Learning},
-        booktitle = {arXiv},
+        journal   = {arXiv},
+        note      = {\url{https://arxiv.org/abs/1905.10996}},
         year      = {2019}}
+
+    @article{Hofer20b,
+        author    = {C.~Hofer, F.~Graf, M.~Niethammer and R.~Kwitt},
+        title     = {Topologically Densified Distributions},
+        journal   = {arXiv},
+        note      = {\url{https://arxiv.org/abs/2002.04805}},
+        year      = {2020}}
 
 .. note::
   Note that not all of the available functionality is exposed in the
