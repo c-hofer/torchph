@@ -1,8 +1,8 @@
 # torchph
 
-In this repository I gather my extensions to [PyTorch](http://pytorch.org). 
-The packaging structure tries to reproduce PyTorch's structure in order 
-to facilitate usage for people familiar with PyTorch. 
+This repository contains [PyTorch](http://pytorch.org) extensions to compute
+persistent homology and to differentiate through the persistent homology computation.
+The packaging structure is similar to PyTorch's structure to facilitate usage for people familiar with PyTorch. 
 
 ## Documentation
 
