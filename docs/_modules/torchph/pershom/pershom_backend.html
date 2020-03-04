@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>chofer_torchex.pershom.pershom_backend &mdash; chofer_torchex 0.0.1 documentation</title>
+  <title>torchph.pershom.pershom_backend &mdash; torchph 0.0.0 documentation</title>
   
 
   
@@ -51,7 +51,7 @@
           
 
           
-            <a href="../../../index.html" class="icon icon-home"> chofer_torchex
+            <a href="../../../index.html" class="icon icon-home"> torchph
           
 
           
@@ -110,7 +110,7 @@
       <nav class="wy-nav-top" aria-label="top navigation">
         
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="../../../index.html">chofer_torchex</a>
+          <a href="../../../index.html">torchph</a>
         
       </nav>
 
@@ -143,7 +143,7 @@
         
           <li><a href="../../index.html">Module code</a> &raquo;</li>
         
-      <li>chofer_torchex.pershom.pershom_backend</li>
+      <li>torchph.pershom.pershom_backend</li>
     
     
       <li class="wy-breadcrumbs-aside">
@@ -158,7 +158,7 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <h1>Source code for chofer_torchex.pershom.pershom_backend</h1><div class="highlight"><pre>
+  <h1>Source code for torchph.pershom.pershom_backend</h1><div class="highlight"><pre>
 <span></span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">This module exposes the C++/CUDA backend functionality for Python.</span>
 
@@ -262,7 +262,7 @@
         <span class="k">return</span> <span class="n">raise_error</span>
 
 
-<div class="viewcode-block" id="find_merge_pairings"><a class="viewcode-back" href="../../../pershom.html#chofer_torchex.pershom.pershom_backend.find_merge_pairings">[docs]</a><span class="k">def</span> <span class="nf">find_merge_pairings</span><span class="p">(</span>
+<div class="viewcode-block" id="find_merge_pairings"><a class="viewcode-back" href="../../../pershom.html#torchph.pershom.pershom_backend.find_merge_pairings">[docs]</a><span class="k">def</span> <span class="nf">find_merge_pairings</span><span class="p">(</span>
         <span class="n">pivots</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span>
         <span class="n">max_pairs</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
@@ -288,7 +288,7 @@
     <span class="k">return</span> <span class="n">__C</span><span class="o">.</span><span class="n">CalcPersCuda__find_merge_pairings</span><span class="p">(</span><span class="n">pivots</span><span class="p">,</span> <span class="n">max_pairs</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="merge_columns_"><a class="viewcode-back" href="../../../pershom.html#chofer_torchex.pershom.pershom_backend.merge_columns_">[docs]</a><span class="k">def</span> <span class="nf">merge_columns_</span><span class="p">(</span>
+<div class="viewcode-block" id="merge_columns_"><a class="viewcode-back" href="../../../pershom.html#torchph.pershom.pershom_backend.merge_columns_">[docs]</a><span class="k">def</span> <span class="nf">merge_columns_</span><span class="p">(</span>
         <span class="n">compr_desc_sort_ba</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span>
         <span class="n">merge_pairs</span><span class="p">:</span> <span class="n">Tensor</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -308,7 +308,7 @@
     <span class="n">__C</span><span class="o">.</span><span class="n">CalcPersCuda__merge_columns_</span><span class="p">(</span><span class="n">compr_desc_sort_ba</span><span class="p">,</span> <span class="n">merge_pairs</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="read_barcodes"><a class="viewcode-back" href="../../../pershom.html#chofer_torchex.pershom.pershom_backend.read_barcodes">[docs]</a><span class="k">def</span> <span class="nf">read_barcodes</span><span class="p">(</span>
+<div class="viewcode-block" id="read_barcodes"><a class="viewcode-back" href="../../../pershom.html#torchph.pershom.pershom_backend.read_barcodes">[docs]</a><span class="k">def</span> <span class="nf">read_barcodes</span><span class="p">(</span>
         <span class="n">pivots</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span>
         <span class="n">simplex_dimension</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span>
         <span class="n">max_dim_to_read_of_reduced_ba</span><span class="p">:</span> <span class="nb">int</span>
@@ -340,7 +340,7 @@
         <span class="n">max_dim_to_read_of_reduced_ba</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="calculate_persistence"><a class="viewcode-back" href="../../../pershom.html#chofer_torchex.pershom.pershom_backend.calculate_persistence">[docs]</a><span class="k">def</span> <span class="nf">calculate_persistence</span><span class="p">(</span>
+<div class="viewcode-block" id="calculate_persistence"><a class="viewcode-back" href="../../../pershom.html#torchph.pershom.pershom_backend.calculate_persistence">[docs]</a><span class="k">def</span> <span class="nf">calculate_persistence</span><span class="p">(</span>
         <span class="n">compr_desc_sort_ba</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span>
         <span class="n">ba_row_i_to_bm_col_i</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span>
         <span class="n">simplex_dimension</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span>
@@ -383,7 +383,7 @@
         <span class="n">max_pairs</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="vr_persistence_l1"><a class="viewcode-back" href="../../../pershom.html#chofer_torchex.pershom.pershom_backend.vr_persistence_l1">[docs]</a><span class="k">def</span> <span class="nf">vr_persistence_l1</span><span class="p">(</span>
+<div class="viewcode-block" id="vr_persistence_l1"><a class="viewcode-back" href="../../../pershom.html#torchph.pershom.pershom_backend.vr_persistence_l1">[docs]</a><span class="k">def</span> <span class="nf">vr_persistence_l1</span><span class="p">(</span>
         <span class="n">point_cloud</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span>
         <span class="n">max_dimension</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
         <span class="n">max_ball_diameter</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span>
@@ -416,7 +416,7 @@
         <span class="n">max_ball_diameter</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="vr_persistence"><a class="viewcode-back" href="../../../pershom.html#chofer_torchex.pershom.pershom_backend.vr_persistence">[docs]</a><span class="k">def</span> <span class="nf">vr_persistence</span><span class="p">(</span>
+<div class="viewcode-block" id="vr_persistence"><a class="viewcode-back" href="../../../pershom.html#torchph.pershom.pershom_backend.vr_persistence">[docs]</a><span class="k">def</span> <span class="nf">vr_persistence</span><span class="p">(</span>
         <span class="n">distance_matrix</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span>
         <span class="n">max_dimension</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
         <span class="n">max_ball_diameter</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span>
@@ -463,7 +463,7 @@
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2019, Christoph D. Hofer, Roland Kwitt
+        &copy; Copyright 2020, Christoph D. Hofer, Roland Kwitt
 
     </p>
   </div>

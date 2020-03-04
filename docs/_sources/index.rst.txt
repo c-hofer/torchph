@@ -1,4 +1,4 @@
-.. chofer_torchex documentation master file, created by
+.. torchph documentation master file, created by
    sphinx-quickstart on Mon Feb  4 13:39:08 2019.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
@@ -51,7 +51,7 @@ Get started
 
    install/index
 
-Follow the :doc:`instructions<install/index>` to install ``chofer_torchex``.
+Follow the :doc:`instructions<install/index>` to install ``torchph``.
 
 Functionality
 =============
@@ -74,7 +74,7 @@ samples and (2) doing the same using a pre-computed distance matrix.
     import numpy as np
 
     # import VR persistence computation functionality
-    from chofer_torchex.pershom import vr_persistence_l1, vr_persistence
+    from torchph.pershom import vr_persistence_l1, vr_persistence
 
     # import scipy methods to compute pairwise distance matrices
     from scipy.spatial.distance import pdist

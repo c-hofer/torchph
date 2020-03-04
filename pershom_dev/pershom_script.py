@@ -6,9 +6,9 @@ from cpu_sorted_boundary_array_implementation import SortedListBoundaryMatrix
 import torch 
 from time import time
 # from pershombox import toplex_persistence_diagrams
-import chofer_torchex.pershom.pershom_backend as pershom_backend
+import torchph.pershom.pershom_backend as pershom_backend
 import yep 
-from chofer_torchex.pershom.calculate_persistence import calculate_persistence
+from torchph.pershom.calculate_persistence import calculate_persistence
 import cProfile 
 from collections import Counter
 

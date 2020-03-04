@@ -30,20 +30,20 @@ Second, we install PyTorch (v1.4) using
     conda install pytorch torchvision cudatoolkit=10.1 -c pytorch
 
 
-Third, we clone the ``chofer_torchex`` repository from GitHub and make
+Third, we clone the ``torchph`` repository from GitHub and make
 it available within Anaconda.
 
 .. code-block:: bash
 
     cd /tmp/
-    git clone https://github.com/c-hofer/chofer_torchex.git
-    conda develop /tmp/chofer_torchex
+    git clone https://github.com/c-hofer/torchph.git
+    conda develop /tmp/torchph
 
 A quick check if everything works can be done with
 
 .. code-block:: python
 
-    >>> import chofer_torchex
+    >>> import torchph
 
 .. note::
 

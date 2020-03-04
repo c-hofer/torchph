@@ -2,7 +2,7 @@ import pytest
 import torch
 import glob
 import pickle
-import chofer_torchex.pershom.pershom_backend as pershom_backend
+import torchph.pershom.pershom_backend as pershom_backend
 from collections import Counter
 
 
