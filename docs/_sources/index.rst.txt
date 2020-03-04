@@ -97,7 +97,6 @@ samples and (2) doing the same using a pre-computed distance matrix.
 
     nn
     pershom
-    utils
 
 .. toctree::
     :caption: Notebooks
