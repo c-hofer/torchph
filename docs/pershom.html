@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>pershom &mdash; chofer_torchex 0.0.1 documentation</title>
+  <title>pershom &mdash; torchph 0.0.0 documentation</title>
   
 
   
@@ -53,7 +53,7 @@
           
 
           
-            <a href="index.html" class="icon icon-home"> chofer_torchex
+            <a href="index.html" class="icon icon-home"> torchph
           
 
           
@@ -116,7 +116,7 @@
       <nav class="wy-nav-top" aria-label="top navigation">
         
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="index.html">chofer_torchex</a>
+          <a href="index.html">torchph</a>
         
       </nav>
 
@@ -190,8 +190,8 @@
     text-align: unset;
 }
 </style>
-<div class="section" id="module-chofer_torchex.pershom.pershom_backend">
-<span id="pershom"></span><h1><code class="docutils literal notranslate"><span class="pre">pershom</span></code><a class="headerlink" href="#module-chofer_torchex.pershom.pershom_backend" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="module-torchph.pershom.pershom_backend">
+<span id="pershom"></span><h1><code class="docutils literal notranslate"><span class="pre">pershom</span></code><a class="headerlink" href="#module-torchph.pershom.pershom_backend" title="Permalink to this headline">¶</a></h1>
 <p>This module exposes the C++/CUDA backend functionality for Python.</p>
 <div class="section" id="terminology">
 <h2>Terminology<a class="headerlink" href="#terminology" title="Permalink to this headline">¶</a></h2>
@@ -234,8 +234,8 @@ This is always <em>real</em>-valued.</p>
 <p>Currently all <code class="docutils literal notranslate"><span class="pre">cuda</span></code> backend functionality <strong>only</strong> supports  <code class="docutils literal notranslate"><span class="pre">int64_t</span></code> and
 <code class="docutils literal notranslate"><span class="pre">float32_t</span></code> typing.</p>
 <dl class="function">
-<dt id="chofer_torchex.pershom.pershom_backend.calculate_persistence">
-<code class="sig-prename descclassname">chofer_torchex.pershom.pershom_backend.</code><code class="sig-name descname">calculate_persistence</code><span class="sig-paren">(</span><em class="sig-param">compr_desc_sort_ba: torch.Tensor</em>, <em class="sig-param">ba_row_i_to_bm_col_i: torch.Tensor</em>, <em class="sig-param">simplex_dimension: torch.Tensor</em>, <em class="sig-param">max_dim_to_read_of_reduced_ba: int</em>, <em class="sig-param">max_pairs: int = -1</em><span class="sig-paren">)</span> &#x2192; List[List[torch.Tensor]]<a class="reference internal" href="_modules/chofer_torchex/pershom/pershom_backend.html#calculate_persistence"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chofer_torchex.pershom.pershom_backend.calculate_persistence" title="Permalink to this definition">¶</a></dt>
+<dt id="torchph.pershom.pershom_backend.calculate_persistence">
+<code class="sig-prename descclassname">torchph.pershom.pershom_backend.</code><code class="sig-name descname">calculate_persistence</code><span class="sig-paren">(</span><em class="sig-param">compr_desc_sort_ba: torch.Tensor</em>, <em class="sig-param">ba_row_i_to_bm_col_i: torch.Tensor</em>, <em class="sig-param">simplex_dimension: torch.Tensor</em>, <em class="sig-param">max_dim_to_read_of_reduced_ba: int</em>, <em class="sig-param">max_pairs: int = -1</em><span class="sig-paren">)</span> &#x2192; List[List[torch.Tensor]]<a class="reference internal" href="_modules/torchph/pershom/pershom_backend.html#calculate_persistence"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torchph.pershom.pershom_backend.calculate_persistence" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the barcodes of the given encoded boundary array.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -261,8 +261,8 @@ reduced boundary array.</p></li>
 </dd></dl>
 
 <dl class="function">
-<dt id="chofer_torchex.pershom.pershom_backend.find_merge_pairings">
-<code class="sig-prename descclassname">chofer_torchex.pershom.pershom_backend.</code><code class="sig-name descname">find_merge_pairings</code><span class="sig-paren">(</span><em class="sig-param">pivots: torch.Tensor</em>, <em class="sig-param">max_pairs: int = -1</em><span class="sig-paren">)</span> &#x2192; torch.Tensor<a class="reference internal" href="_modules/chofer_torchex/pershom/pershom_backend.html#find_merge_pairings"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chofer_torchex.pershom.pershom_backend.find_merge_pairings" title="Permalink to this definition">¶</a></dt>
+<dt id="torchph.pershom.pershom_backend.find_merge_pairings">
+<code class="sig-prename descclassname">torchph.pershom.pershom_backend.</code><code class="sig-name descname">find_merge_pairings</code><span class="sig-paren">(</span><em class="sig-param">pivots: torch.Tensor</em>, <em class="sig-param">max_pairs: int = -1</em><span class="sig-paren">)</span> &#x2192; torch.Tensor<a class="reference internal" href="_modules/torchph/pershom/pershom_backend.html#find_merge_pairings"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torchph.pershom.pershom_backend.find_merge_pairings" title="Permalink to this definition">¶</a></dt>
 <dd><p>Finds the pairs which have to be merged in the current iteration of the
 matrix reduction.</p>
 <dl class="field-list simple">
@@ -285,8 +285,8 @@ be merged into column <code class="docutils literal notranslate"><span class="pr
 </dd></dl>
 
 <dl class="function">
-<dt id="chofer_torchex.pershom.pershom_backend.merge_columns_">
-<code class="sig-prename descclassname">chofer_torchex.pershom.pershom_backend.</code><code class="sig-name descname">merge_columns_</code><span class="sig-paren">(</span><em class="sig-param">compr_desc_sort_ba: torch.Tensor</em>, <em class="sig-param">merge_pairs: torch.Tensor</em><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="_modules/chofer_torchex/pershom/pershom_backend.html#merge_columns_"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chofer_torchex.pershom.pershom_backend.merge_columns_" title="Permalink to this definition">¶</a></dt>
+<dt id="torchph.pershom.pershom_backend.merge_columns_">
+<code class="sig-prename descclassname">torchph.pershom.pershom_backend.</code><code class="sig-name descname">merge_columns_</code><span class="sig-paren">(</span><em class="sig-param">compr_desc_sort_ba: torch.Tensor</em>, <em class="sig-param">merge_pairs: torch.Tensor</em><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="_modules/torchph/pershom/pershom_backend.html#merge_columns_"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torchph.pershom.pershom_backend.merge_columns_" title="Permalink to this definition">¶</a></dt>
 <dd><p>Executes the given merging operations inplace on the descending
 sorted boundary array.</p>
 <dl class="field-list simple">
@@ -303,8 +303,8 @@ sorted boundary array.</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="chofer_torchex.pershom.pershom_backend.read_barcodes">
-<code class="sig-prename descclassname">chofer_torchex.pershom.pershom_backend.</code><code class="sig-name descname">read_barcodes</code><span class="sig-paren">(</span><em class="sig-param">pivots: torch.Tensor</em>, <em class="sig-param">simplex_dimension: torch.Tensor</em>, <em class="sig-param">max_dim_to_read_of_reduced_ba: int</em><span class="sig-paren">)</span> &#x2192; List[List[torch.Tensor]]<a class="reference internal" href="_modules/chofer_torchex/pershom/pershom_backend.html#read_barcodes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chofer_torchex.pershom.pershom_backend.read_barcodes" title="Permalink to this definition">¶</a></dt>
+<dt id="torchph.pershom.pershom_backend.read_barcodes">
+<code class="sig-prename descclassname">torchph.pershom.pershom_backend.</code><code class="sig-name descname">read_barcodes</code><span class="sig-paren">(</span><em class="sig-param">pivots: torch.Tensor</em>, <em class="sig-param">simplex_dimension: torch.Tensor</em>, <em class="sig-param">max_dim_to_read_of_reduced_ba: int</em><span class="sig-paren">)</span> &#x2192; List[List[torch.Tensor]]<a class="reference internal" href="_modules/torchph/pershom/pershom_backend.html#read_barcodes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torchph.pershom.pershom_backend.read_barcodes" title="Permalink to this definition">¶</a></dt>
 <dd><p>Reads the barcodes using the pivot of a reduced boundary array.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -326,8 +326,8 @@ reduced boundary array</p></li>
 </dd></dl>
 
 <dl class="function">
-<dt id="chofer_torchex.pershom.pershom_backend.vr_persistence">
-<code class="sig-prename descclassname">chofer_torchex.pershom.pershom_backend.</code><code class="sig-name descname">vr_persistence</code><span class="sig-paren">(</span><em class="sig-param">distance_matrix: torch.Tensor</em>, <em class="sig-param">max_dimension: int</em>, <em class="sig-param">max_ball_diameter: float = 0.0</em><span class="sig-paren">)</span> &#x2192; List[List[torch.Tensor]]<a class="reference internal" href="_modules/chofer_torchex/pershom/pershom_backend.html#vr_persistence"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chofer_torchex.pershom.pershom_backend.vr_persistence" title="Permalink to this definition">¶</a></dt>
+<dt id="torchph.pershom.pershom_backend.vr_persistence">
+<code class="sig-prename descclassname">torchph.pershom.pershom_backend.</code><code class="sig-name descname">vr_persistence</code><span class="sig-paren">(</span><em class="sig-param">distance_matrix: torch.Tensor</em>, <em class="sig-param">max_dimension: int</em>, <em class="sig-param">max_ball_diameter: float = 0.0</em><span class="sig-paren">)</span> &#x2192; List[List[torch.Tensor]]<a class="reference internal" href="_modules/torchph/pershom/pershom_backend.html#vr_persistence"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torchph.pershom.pershom_backend.vr_persistence" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the barcodes of the Vietoris-Rips complex of a given distance
 matrix.</p>
 <p><strong>Note</strong>: <code class="docutils literal notranslate"><span class="pre">distance_matrix</span></code> is assumed to be a square matrix.
@@ -353,8 +353,8 @@ dimension <code class="docutils literal notranslate"><span class="pre">n</span><
 </dd></dl>
 
 <dl class="function">
-<dt id="chofer_torchex.pershom.pershom_backend.vr_persistence_l1">
-<code class="sig-prename descclassname">chofer_torchex.pershom.pershom_backend.</code><code class="sig-name descname">vr_persistence_l1</code><span class="sig-paren">(</span><em class="sig-param">point_cloud: torch.Tensor</em>, <em class="sig-param">max_dimension: int</em>, <em class="sig-param">max_ball_diameter: float = 0.0</em><span class="sig-paren">)</span> &#x2192; List[List[torch.Tensor]]<a class="reference internal" href="_modules/chofer_torchex/pershom/pershom_backend.html#vr_persistence_l1"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#chofer_torchex.pershom.pershom_backend.vr_persistence_l1" title="Permalink to this definition">¶</a></dt>
+<dt id="torchph.pershom.pershom_backend.vr_persistence_l1">
+<code class="sig-prename descclassname">torchph.pershom.pershom_backend.</code><code class="sig-name descname">vr_persistence_l1</code><span class="sig-paren">(</span><em class="sig-param">point_cloud: torch.Tensor</em>, <em class="sig-param">max_dimension: int</em>, <em class="sig-param">max_ball_diameter: float = 0.0</em><span class="sig-paren">)</span> &#x2192; List[List[torch.Tensor]]<a class="reference internal" href="_modules/torchph/pershom/pershom_backend.html#vr_persistence_l1"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torchph.pershom.pershom_backend.vr_persistence_l1" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the barcodes of the Vietoris-Rips complex of a given point cloud
 w.r.t. the l1 (manhatten) distance.</p>
 <dl class="field-list simple">
@@ -399,7 +399,7 @@ dimension <code class="docutils literal notranslate"><span class="pre">n</span><
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2019, Christoph D. Hofer, Roland Kwitt
+        &copy; Copyright 2020, Christoph D. Hofer, Roland Kwitt
 
     </p>
   </div>

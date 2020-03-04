@@ -1,5 +1,5 @@
 ``pershom``
 ===========
 
-.. automodule:: chofer_torchex.pershom.pershom_backend
+.. automodule:: torchph.pershom.pershom_backend
    :members:

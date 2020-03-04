@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>chofer_torchex.nn.slayer &mdash; chofer_torchex 0.0.1 documentation</title>
+  <title>torchph.nn.slayer &mdash; torchph 0.0.0 documentation</title>
   
 
   
@@ -51,7 +51,7 @@
           
 
           
-            <a href="../../../index.html" class="icon icon-home"> chofer_torchex
+            <a href="../../../index.html" class="icon icon-home"> torchph
           
 
           
@@ -110,7 +110,7 @@
       <nav class="wy-nav-top" aria-label="top navigation">
         
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="../../../index.html">chofer_torchex</a>
+          <a href="../../../index.html">torchph</a>
         
       </nav>
 
@@ -143,7 +143,7 @@
         
           <li><a href="../../index.html">Module code</a> &raquo;</li>
         
-      <li>chofer_torchex.nn.slayer</li>
+      <li>torchph.nn.slayer</li>
     
     
       <li class="wy-breadcrumbs-aside">
@@ -158,7 +158,7 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <h1>Source code for chofer_torchex.nn.slayer</h1><div class="highlight"><pre>
+  <h1>Source code for torchph.nn.slayer</h1><div class="highlight"><pre>
 <span></span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 
 <span class="sd">Implementation of **differentiable vectorization layers** for persistent</span>
@@ -180,7 +180,7 @@
 <span class="c1"># region helper functions</span>
 
 
-<div class="viewcode-block" id="prepare_batch"><a class="viewcode-back" href="../../../nn.html#chofer_torchex.nn.slayer.prepare_batch">[docs]</a><span class="k">def</span> <span class="nf">prepare_batch</span><span class="p">(</span>
+<div class="viewcode-block" id="prepare_batch"><a class="viewcode-back" href="../../../nn.html#torchph.nn.slayer.prepare_batch">[docs]</a><span class="k">def</span> <span class="nf">prepare_batch</span><span class="p">(</span>
         <span class="n">batch</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Tensor</span><span class="p">],</span>
         <span class="n">point_dim</span><span class="p">:</span> <span class="nb">int</span><span class="o">=</span><span class="kc">None</span>
         <span class="p">)</span><span class="o">-&gt;</span><span class="n">Tuple</span><span class="p">[</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
@@ -207,7 +207,7 @@
 
 <span class="sd">    Example::</span>
 
-<span class="sd">        &gt;&gt;&gt; from chofer_torchex.nn.slayer import prepare_batch</span>
+<span class="sd">        &gt;&gt;&gt; from torchph.nn.slayer import prepare_batch</span>
 <span class="sd">        &gt;&gt;&gt; import torch</span>
 <span class="sd">        &gt;&gt;&gt; x = [torch.rand(10,2), torch.rand(20,2)]</span>
 <span class="sd">        &gt;&gt;&gt; batch, not_dummy, max_pts, batch_size = prepare_batch(x)</span>
@@ -314,11 +314,11 @@
 <span class="c1"># endregion</span>
 
 
-<div class="viewcode-block" id="SLayerExponential"><a class="viewcode-back" href="../../../nn.html#chofer_torchex.nn.slayer.SLayerExponential">[docs]</a><span class="k">class</span> <span class="nc">SLayerExponential</span><span class="p">(</span><span class="n">Module</span><span class="p">):</span>
+<div class="viewcode-block" id="SLayerExponential"><a class="viewcode-back" href="../../../nn.html#torchph.nn.slayer.SLayerExponential">[docs]</a><span class="k">class</span> <span class="nc">SLayerExponential</span><span class="p">(</span><span class="n">Module</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Proposed input layer for multisets [1].</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-<div class="viewcode-block" id="SLayerExponential.__init__"><a class="viewcode-back" href="../../../nn.html#chofer_torchex.nn.slayer.SLayerExponential.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_elements</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+<div class="viewcode-block" id="SLayerExponential.__init__"><a class="viewcode-back" href="../../../nn.html#torchph.nn.slayer.SLayerExponential.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_elements</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
                  <span class="n">point_dimension</span><span class="p">:</span> <span class="nb">int</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
                  <span class="n">centers_init</span><span class="p">:</span> <span class="n">Tensor</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                  <span class="n">sharpness_init</span><span class="p">:</span> <span class="n">Tensor</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
@@ -356,7 +356,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">centers</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="n">centers_init</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">sharpness</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="n">sharpness_init</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="SLayerExponential.forward"><a class="viewcode-back" href="../../../nn.html#chofer_torchex.nn.slayer.SLayerExponential.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">input</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">Tensor</span><span class="p">:</span>
+<div class="viewcode-block" id="SLayerExponential.forward"><a class="viewcode-back" href="../../../nn.html#torchph.nn.slayer.SLayerExponential.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">input</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">Tensor</span><span class="p">:</span>
         <span class="n">batch</span><span class="p">,</span> <span class="n">not_dummy_points</span><span class="p">,</span> <span class="n">max_points</span><span class="p">,</span> <span class="n">batch_size</span> <span class="o">=</span> <span class="n">prepare_batch_if_necessary</span><span class="p">(</span>
             <span class="nb">input</span><span class="p">,</span>
             <span class="n">point_dimension</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">point_dimension</span><span class="p">)</span>
@@ -390,10 +390,10 @@
         <span class="k">return</span> <span class="s1">&#39;SLayerExponential (... -&gt; </span><span class="si">{}</span><span class="s1"> )&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_elements</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="SLayerRational"><a class="viewcode-back" href="../../../nn.html#chofer_torchex.nn.slayer.SLayerRational">[docs]</a><span class="k">class</span> <span class="nc">SLayerRational</span><span class="p">(</span><span class="n">Module</span><span class="p">):</span>
+<div class="viewcode-block" id="SLayerRational"><a class="viewcode-back" href="../../../nn.html#torchph.nn.slayer.SLayerRational">[docs]</a><span class="k">class</span> <span class="nc">SLayerRational</span><span class="p">(</span><span class="n">Module</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-<div class="viewcode-block" id="SLayerRational.__init__"><a class="viewcode-back" href="../../../nn.html#chofer_torchex.nn.slayer.SLayerRational.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_elements</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+<div class="viewcode-block" id="SLayerRational.__init__"><a class="viewcode-back" href="../../../nn.html#torchph.nn.slayer.SLayerRational.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_elements</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
                  <span class="n">point_dimension</span><span class="p">:</span> <span class="nb">int</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
                  <span class="n">centers_init</span><span class="p">:</span> <span class="n">Tensor</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                  <span class="n">sharpness_init</span><span class="p">:</span> <span class="n">Tensor</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
@@ -455,7 +455,7 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">exponent</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="n">exponent_init</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="SLayerRational.forward"><a class="viewcode-back" href="../../../nn.html#chofer_torchex.nn.slayer.SLayerRational.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">input</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">Tensor</span><span class="p">:</span>
+<div class="viewcode-block" id="SLayerRational.forward"><a class="viewcode-back" href="../../../nn.html#torchph.nn.slayer.SLayerRational.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">input</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">Tensor</span><span class="p">:</span>
         <span class="n">batch</span><span class="p">,</span> <span class="n">not_dummy_points</span><span class="p">,</span> <span class="n">max_points</span><span class="p">,</span> <span class="n">batch_size</span> <span class="o">=</span> <span class="n">prepare_batch_if_necessary</span><span class="p">(</span>
             <span class="nb">input</span><span class="p">,</span>
             <span class="n">point_dimension</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">point_dimension</span><span class="p">)</span>
@@ -505,10 +505,10 @@
         <span class="k">return</span> <span class="s1">&#39;SLayerRational (... -&gt; </span><span class="si">{}</span><span class="s1"> )&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_elements</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="SLayerRationalHat"><a class="viewcode-back" href="../../../nn.html#chofer_torchex.nn.slayer.SLayerRationalHat">[docs]</a><span class="k">class</span> <span class="nc">SLayerRationalHat</span><span class="p">(</span><span class="n">Module</span><span class="p">):</span>
+<div class="viewcode-block" id="SLayerRationalHat"><a class="viewcode-back" href="../../../nn.html#torchph.nn.slayer.SLayerRationalHat">[docs]</a><span class="k">class</span> <span class="nc">SLayerRationalHat</span><span class="p">(</span><span class="n">Module</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-<div class="viewcode-block" id="SLayerRationalHat.__init__"><a class="viewcode-back" href="../../../nn.html#chofer_torchex.nn.slayer.SLayerRationalHat.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_elements</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+<div class="viewcode-block" id="SLayerRationalHat.__init__"><a class="viewcode-back" href="../../../nn.html#torchph.nn.slayer.SLayerRationalHat.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_elements</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
                  <span class="n">point_dimension</span><span class="p">:</span> <span class="nb">int</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
                  <span class="n">centers_init</span><span class="p">:</span> <span class="n">Tensor</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                  <span class="n">radius_init</span><span class="p">:</span> <span class="nb">float</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
@@ -552,7 +552,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">radius</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="n">radius_init</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">norm_p</span> <span class="o">=</span> <span class="mi">1</span></div>
 
-<div class="viewcode-block" id="SLayerRationalHat.forward"><a class="viewcode-back" href="../../../nn.html#chofer_torchex.nn.slayer.SLayerRationalHat.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">input</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">Tensor</span><span class="p">:</span>
+<div class="viewcode-block" id="SLayerRationalHat.forward"><a class="viewcode-back" href="../../../nn.html#torchph.nn.slayer.SLayerRationalHat.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">input</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">Tensor</span><span class="p">:</span>
         <span class="n">batch</span><span class="p">,</span> <span class="n">not_dummy_points</span><span class="p">,</span> <span class="n">max_points</span><span class="p">,</span> <span class="n">batch_size</span> <span class="o">=</span> <span class="n">prepare_batch_if_necessary</span><span class="p">(</span>
             <span class="nb">input</span><span class="p">,</span>
             <span class="n">point_dimension</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">point_dimension</span><span class="p">)</span>
@@ -663,7 +663,7 @@
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2019, Christoph D. Hofer, Roland Kwitt
+        &copy; Copyright 2020, Christoph D. Hofer, Roland Kwitt
 
     </p>
   </div>

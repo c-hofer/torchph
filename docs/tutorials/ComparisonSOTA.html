@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Comparison to SOTA &mdash; chofer_torchex 0.0.1 documentation</title>
+  <title>Comparison to SOTA &mdash; torchph 0.0.0 documentation</title>
   
 
   
@@ -53,7 +53,7 @@
           
 
           
-            <a href="../index.html" class="icon icon-home"> chofer_torchex
+            <a href="../index.html" class="icon icon-home"> torchph
           
 
           
@@ -112,7 +112,7 @@
       <nav class="wy-nav-top" aria-label="top navigation">
         
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="../index.html">chofer_torchex</a>
+          <a href="../index.html">torchph</a>
         
       </nav>
 
@@ -406,7 +406,7 @@ div.rendered_html tbody tr:hover {
 </style>
 <div class="section" id="Comparison-to-SOTA">
 <h1>Comparison to SOTA<a class="headerlink" href="#Comparison-to-SOTA" title="Permalink to this headline">¶</a></h1>
-<p>This notebook contains a comparison of the Vietoris-Rips (VR) persistent homology (PH) computation (on the GPU) implemented in <code class="docutils literal notranslate"><span class="pre">chofer_torchex</span></code> to the implementations available via <code class="docutils literal notranslate"><span class="pre">dionysus</span></code> (v2) and <code class="docutils literal notranslate"><span class="pre">ripser</span></code> (which is SOTA in terms of runtime).</p>
+<p>This notebook contains a comparison of the Vietoris-Rips (VR) persistent homology (PH) computation (on the GPU) implemented in <code class="docutils literal notranslate"><span class="pre">torchph</span></code> to the implementations available via <code class="docutils literal notranslate"><span class="pre">dionysus</span></code> (v2) and <code class="docutils literal notranslate"><span class="pre">ripser</span></code> (which is SOTA in terms of runtime).</p>
 <p>This runtime study is a small-scale version of the runtime study in</p>
 <div class="line-block">
 <div class="line"><strong>Connectivity-Optimized Representation Learning via Persistent Homology</strong></div>
@@ -438,44 +438,21 @@ div.rendered_html tbody tr:hover {
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-<span class="ansi-yellow-fg">WARNING: Keyring is skipped due to an exception: Failed to unlock the collection!</span>
-<span class="ansi-yellow-fg">WARNING: Keyring is skipped due to an exception: Failed to unlock the collection!</span>
-Collecting ripser
-<span class="ansi-yellow-fg">  WARNING: Keyring is skipped due to an exception: Failed to unlock the collection!</span>
-  Downloading ripser-0.4.1.tar.gz (79 kB)
-     |████████████████████████████████| 79 kB 1.1 MB/s eta 0:00:011
-Requirement already satisfied: Cython in /scratch4/chofer/opt/anaconda/envs/pyt_1.4/lib/python3.7/site-packages (from ripser) (0.29.15)
+Requirement already satisfied: ripser in /scratch4/chofer/opt/anaconda/envs/pyt_1.4/lib/python3.7/site-packages (0.4.1)
 Requirement already satisfied: numpy in /scratch4/chofer/opt/anaconda/envs/pyt_1.4/lib/python3.7/site-packages (from ripser) (1.18.1)
 Requirement already satisfied: scipy in /scratch4/chofer/opt/anaconda/envs/pyt_1.4/lib/python3.7/site-packages (from ripser) (1.4.1)
+Requirement already satisfied: persim in /scratch4/chofer/opt/anaconda/envs/pyt_1.4/lib/python3.7/site-packages (from ripser) (0.1.2)
+Requirement already satisfied: Cython in /scratch4/chofer/opt/anaconda/envs/pyt_1.4/lib/python3.7/site-packages (from ripser) (0.29.15)
 Requirement already satisfied: scikit-learn in /scratch4/chofer/opt/anaconda/envs/pyt_1.4/lib/python3.7/site-packages (from ripser) (0.22.1)
-<span class="ansi-yellow-fg">WARNING: Keyring is skipped due to an exception: Failed to unlock the collection!</span>
-<span class="ansi-yellow-fg">WARNING: Keyring is skipped due to an exception: Failed to unlock the collection!</span>
-Collecting persim
-<span class="ansi-yellow-fg">  WARNING: Keyring is skipped due to an exception: Failed to unlock the collection!</span>
-  Downloading persim-0.1.2-py3-none-any.whl (21 kB)
-Requirement already satisfied: joblib&gt;=0.11 in /scratch4/chofer/opt/anaconda/envs/pyt_1.4/lib/python3.7/site-packages (from scikit-learn-&gt;ripser) (0.14.1)
-<span class="ansi-yellow-fg">WARNING: Keyring is skipped due to an exception: Failed to unlock the collection!</span>
-<span class="ansi-yellow-fg">WARNING: Keyring is skipped due to an exception: Failed to unlock the collection!</span>
-Collecting hopcroftkarp
-<span class="ansi-yellow-fg">  WARNING: Keyring is skipped due to an exception: Failed to unlock the collection!</span>
-  Downloading hopcroftkarp-1.2.5.tar.gz (16 kB)
 Requirement already satisfied: matplotlib in /scratch4/chofer/opt/anaconda/envs/pyt_1.4/lib/python3.7/site-packages (from persim-&gt;ripser) (3.1.3)
+Requirement already satisfied: hopcroftkarp in /scratch4/chofer/opt/anaconda/envs/pyt_1.4/lib/python3.7/site-packages (from persim-&gt;ripser) (1.2.5)
+Requirement already satisfied: joblib&gt;=0.11 in /scratch4/chofer/opt/anaconda/envs/pyt_1.4/lib/python3.7/site-packages (from scikit-learn-&gt;ripser) (0.14.1)
+Requirement already satisfied: pyparsing!=2.0.4,!=2.1.2,!=2.1.6,&gt;=2.0.1 in /scratch4/chofer/opt/anaconda/envs/pyt_1.4/lib/python3.7/site-packages (from matplotlib-&gt;persim-&gt;ripser) (2.4.6)
 Requirement already satisfied: python-dateutil&gt;=2.1 in /scratch4/chofer/opt/anaconda/envs/pyt_1.4/lib/python3.7/site-packages (from matplotlib-&gt;persim-&gt;ripser) (2.8.1)
 Requirement already satisfied: kiwisolver&gt;=1.0.1 in /scratch4/chofer/opt/anaconda/envs/pyt_1.4/lib/python3.7/site-packages (from matplotlib-&gt;persim-&gt;ripser) (1.1.0)
 Requirement already satisfied: cycler&gt;=0.10 in /scratch4/chofer/opt/anaconda/envs/pyt_1.4/lib/python3.7/site-packages (from matplotlib-&gt;persim-&gt;ripser) (0.10.0)
-Requirement already satisfied: pyparsing!=2.0.4,!=2.1.2,!=2.1.6,&gt;=2.0.1 in /scratch4/chofer/opt/anaconda/envs/pyt_1.4/lib/python3.7/site-packages (from matplotlib-&gt;persim-&gt;ripser) (2.4.6)
 Requirement already satisfied: six&gt;=1.5 in /scratch4/chofer/opt/anaconda/envs/pyt_1.4/lib/python3.7/site-packages (from python-dateutil&gt;=2.1-&gt;matplotlib-&gt;persim-&gt;ripser) (1.14.0)
 Requirement already satisfied: setuptools in /scratch4/chofer/opt/anaconda/envs/pyt_1.4/lib/python3.7/site-packages (from kiwisolver&gt;=1.0.1-&gt;matplotlib-&gt;persim-&gt;ripser) (45.2.0.post20200210)
-Building wheels for collected packages: ripser, hopcroftkarp
-  Building wheel for ripser (setup.py) ... done
-  Created wheel for ripser: filename=ripser-0.4.1-cp37-cp37m-linux_x86_64.whl size=426019 sha256=7b1e03f55f19162b8cf150d455dc7e0b072fb9b6d9578d3562cf94a4b39b330d
-  Stored in directory: /home/pma/chofer/.cache/pip/wheels/8e/a8/4c/8b2a78c679fbb09f7a22995fc5fe285e9c0336e25e2b3771ff
-  Building wheel for hopcroftkarp (setup.py) ... done
-  Created wheel for hopcroftkarp: filename=hopcroftkarp-1.2.5-py2.py3-none-any.whl size=18092 sha256=ff95cd7c6db6146df50d31cad0dcff7ec2978ade6bb9b8dc8a45ec1b60f31f66
-  Stored in directory: /home/pma/chofer/.cache/pip/wheels/d2/9f/a8/67f1b86e47cd17338d3d07939f4660378e65b758c4594f96e3
-Successfully built ripser hopcroftkarp
-Installing collected packages: hopcroftkarp, persim, ripser
-Successfully installed hopcroftkarp-1.2.5 persim-0.1.2 ripser-0.4.1
 </pre></div></div>
 </div>
 <div class="nbinput docutils container">
@@ -493,11 +470,7 @@ Successfully installed hopcroftkarp-1.2.5 persim-0.1.2 ripser-0.4.1
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-<span class="ansi-yellow-fg">WARNING: Keyring is skipped due to an exception: Failed to unlock the collection!</span>
-<span class="ansi-yellow-fg">WARNING: Keyring is skipped due to an exception: Failed to unlock the collection!</span>
-Processing /home/pma/chofer/.cache/pip/wheels/18/42/ed/40d587d62cfde0767cb6d0d3fb9c8f5c9c64e83b647f14365d/dionysus-2.0.6-cp37-cp37m-linux_x86_64.whl
-Installing collected packages: dionysus
-Successfully installed dionysus-2.0.6
+Requirement already satisfied: dionysus in /scratch4/chofer/opt/anaconda/envs/pyt_1.4/lib/python3.7/site-packages (2.0.6)
 </pre></div></div>
 </div>
 <div class="nbinput nblast docutils container">
@@ -522,7 +495,7 @@ Successfully installed dionysus-2.0.6
 
 <span class="kn">from</span> <span class="nn">sklearn</span> <span class="kn">import</span> <span class="n">datasets</span>
 
-<span class="kn">from</span> <span class="nn">chofer_torchex.pershom</span> <span class="kn">import</span> <span class="n">vr_persistence_l1</span><span class="p">,</span> <span class="n">vr_persistence</span>
+<span class="kn">from</span> <span class="nn">torchph.pershom</span> <span class="kn">import</span> <span class="n">vr_persistence_l1</span><span class="p">,</span> <span class="n">vr_persistence</span>
 
 <span class="n">device</span> <span class="o">=</span> <span class="s1">&#39;cuda&#39;</span>
 </pre></div>
@@ -561,11 +534,11 @@ Successfully installed dionysus-2.0.6
 
         <span class="n">X</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
 
-        <span class="c1"># Timing chofer_torchex</span>
+        <span class="c1"># Timing torchph</span>
         <span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
         <span class="n">l</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">vr_persistence_l1</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">contiguous</span><span class="p">(),</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
         <span class="n">t1</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
-        <span class="n">trials</span><span class="p">[</span><span class="s1">&#39;chofer_torchex&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">t1</span><span class="o">-</span><span class="n">t0</span><span class="p">)</span>
+        <span class="n">trials</span><span class="p">[</span><span class="s1">&#39;torchph&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">t1</span><span class="o">-</span><span class="n">t0</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="s1">&#39;ripser&#39;</span> <span class="ow">in</span> <span class="n">sys</span><span class="o">.</span><span class="n">modules</span><span class="p">:</span>
             <span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
@@ -611,7 +584,7 @@ Evaluating N=450
     <span class="n">methods</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;ripser&#39;</span><span class="p">)</span>
 <span class="k">if</span> <span class="s1">&#39;dionysus&#39;</span> <span class="ow">in</span> <span class="n">sys</span><span class="o">.</span><span class="n">modules</span><span class="p">:</span>
     <span class="n">methods</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;dionysus&#39;</span><span class="p">)</span>
-<span class="n">methods</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;chofer_torchex&#39;</span><span class="p">)</span>
+<span class="n">methods</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;torchph&#39;</span><span class="p">)</span>
 
 <span class="n">T</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">N</span><span class="p">),</span><span class="mi">3</span><span class="p">))</span>
 <span class="n">S</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">N</span><span class="p">),</span><span class="mi">3</span><span class="p">))</span>
@@ -710,7 +683,7 @@ Evaluating N=450
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2019, Christoph D. Hofer, Roland Kwitt
+        &copy; Copyright 2020, Christoph D. Hofer, Roland Kwitt
 
     </p>
   </div>
