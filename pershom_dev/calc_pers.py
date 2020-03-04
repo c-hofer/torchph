@@ -1,5 +1,5 @@
 import torch
-import chofer_torchex.pershom.pershom_backend as pershom_backend
+import torchph.pershom.pershom_backend as pershom_backend
 
 device = torch.device('cuda')
 dtype = torch.int64

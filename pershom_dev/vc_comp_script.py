@@ -1,4 +1,4 @@
-import chofer_torchex.pershom.pershom_backend as pershom_backend
+import torchph.pershom.pershom_backend as pershom_backend
 import torch
 import time
 from scipy.special import binom

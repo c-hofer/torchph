@@ -1,5 +1,5 @@
 ``nn`` 
 ======
 
-.. automodule:: chofer_torchex.nn.slayer
+.. automodule:: torchph.nn.slayer
    :members:

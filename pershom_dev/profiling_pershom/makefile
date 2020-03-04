@@ -23,11 +23,11 @@ profile: profile_case.o pershom.o pershom_cuda.o
 profile_case.o : 
 	$(CC) $(FLAGS) -c profile_case.cpp $(INC) $(LIB)
 
-pershom.o: ../../chofer_torchex/pershom/pershom_cpp_src/pershom.cpp
-	$(CC) $(FLAGS) -c ../../chofer_torchex/pershom/pershom_cpp_src/pershom.cpp $(INC) $(LIB)
+pershom.o: ../../torchph/pershom/pershom_cpp_src/pershom.cpp
+	$(CC) $(FLAGS) -c ../../torchph/pershom/pershom_cpp_src/pershom.cpp $(INC) $(LIB)
 
-pershom_cuda.o: ../../chofer_torchex/pershom/pershom_cpp_src/pershom_cuda.cu 
-	nvcc -std=c++11 -c  ../../chofer_torchex/pershom/pershom_cpp_src/pershom_cuda.cu $(INC) $(LIB)
+pershom_cuda.o: ../../torchph/pershom/pershom_cpp_src/pershom_cuda.cu 
+	nvcc -std=c++11 -c  ../../torchph/pershom/pershom_cpp_src/pershom_cuda.cu $(INC) $(LIB)
 
 clean:
 	rm -r *.o

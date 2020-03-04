@@ -1,4 +1,4 @@
-# chofer_torchex
+# torchph
 
 In this repository I gather my extensions to [PyTorch](http://pytorch.org). 
 The packaging structure tries to reproduce PyTorch's structure in order 
@@ -6,12 +6,10 @@ to facilitate usage for people familiar with PyTorch.
 
 ## Documentation
 
-[Read the docs!](https://c-hofer.github.io/chofer_torchex/)
+[Read the docs!](https://c-hofer.github.io/torchph/)
 
 The folder *tutorials* contains some minimalistic examples in form of Jupyter notebooks
 to demonstrate how to use the `PyTorch` extensions. 
-
-**Note**: For most up-to-date implementations and documentation, checkout the `pershom_devel` branch.
 
 ## Associated publications
 

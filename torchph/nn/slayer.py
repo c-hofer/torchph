@@ -46,7 +46,7 @@ def prepare_batch(
 
     Example::
 
-        >>> from chofer_torchex.nn.slayer import prepare_batch
+        >>> from torchph.nn.slayer import prepare_batch
         >>> import torch
         >>> x = [torch.rand(10,2), torch.rand(20,2)]
         >>> batch, not_dummy, max_pts, batch_size = prepare_batch(x)
