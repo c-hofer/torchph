@@ -1,8 +1,9 @@
 # torchph
 
-This repository contains [PyTorch](http://pytorch.org) extensions to compute
-persistent homology and to differentiate through the persistent homology computation.
-The packaging structure is similar to PyTorch's structure to facilitate usage for people familiar with PyTorch. 
+This repository contains [PyTorch](http://pytorch.org) extensions to **compute**
+persistent homology and to **differentiate** through the persistent homology computation.
+The packaging structure is similar to PyTorch's structure to facilitate usage for people 
+familiar with PyTorch. 
 
 ## Documentation
 
