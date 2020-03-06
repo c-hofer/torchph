@@ -22,9 +22,9 @@ the following publications are most relevant::
         booktitle = {ICML},
         year      = {2019}}
 
-    @inproceedings{Hofer19b,
+    @article{Hofer19b,
         author    = {C.~Hofer, R.~Kwitt, and M.~Niethammer},
-        title     = {Learning Representations of Persistence Barcodes Homology},
+        title     = {Learning Representations of Persistence Barcodes},
         booktitle = {JMLR},
         year      = {2019}}
 

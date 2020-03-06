@@ -28,7 +28,7 @@ If you use any of these extensions, please cite the following works (depending o
   booktitle = {ICML},
   year      = {2019}}
 
-@inproceedings{Hofer19b,
+@article{Hofer19b,
   author    = {C.~Hofer, R.~Kwitt, and M.~Niethammer},
   title     = {Learning Representations of Persistence Barcodes},
   booktitle = {JMLR},
