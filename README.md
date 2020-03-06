@@ -9,7 +9,7 @@ familiar with PyTorch.
 
 [Read the docs!](https://c-hofer.github.io/torchph/)
 
-The folder *tutorials* contains some minimalistic examples in form of Jupyter notebooks
+The folder *tutorials* (within `docs`) contains some (more or less) minimalistic examples in form of Jupyter notebooks
 to demonstrate how to use the `PyTorch` extensions. 
 
 ## Associated publications
