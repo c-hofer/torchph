@@ -47,12 +47,16 @@ Currently all ``cuda`` backend functionality **only** supports  ``int64_t`` and
 """
 import warnings
 import os.path as pth
+import torch
 from typing import List
 from torch import Tensor
 from glob import glob
 
 
 from torch.utils.cpp_extension import load
+
+
+EPSILON = 0.000001
 
 
 __module_file_dir = pth.dirname(pth.realpath(__file__))
@@ -85,7 +89,7 @@ except Exception as ex:
         ex = ex
 
         def __getattr__(self, name):
-            raise self.ex 
+            raise self.ex
 
     __C = ErrorThrower()
 
@@ -255,6 +259,49 @@ def vr_persistence_l1(
         max_ball_diameter)
 
 
+def vr_persistence_l2(
+        point_cloud: Tensor,
+        max_dimension: int,
+        max_ball_diameter: float = 0.0
+) -> List[List[Tensor]]:
+    r"""Returns the barcodes of the Vietoris-Rips complex of a given point cloud
+    w.r.t. the l2 (euclidean) distance.
+
+    .. warning:: 
+
+        If ``point_cloud`` has entries whose pairwise distances are 0, the 
+        gradient would not be defined as ``sqrt`` is involved. Thus, we add an :math:`\varepsilon` to those entries. This is defined in the ``EPSILON`` variable of this module. 
+
+    Args:
+        point_cloud:
+            Point cloud from which the Vietoris-Rips complex is generated.
+
+        max_dimension:
+            The dimension of the used Vietoris-Rips complex.
+
+        max_ball_diameter:
+            If not 0, edges whose two defining vertices' distance is greater
+            than ``max_ball_diameter`` are ignored.
+
+    Returns:
+        List of birth/death times.
+
+        ``ret[0][n]`` are non essential birth/death-*values* of dimension ``n``.
+
+        ``ret[1][n]`` are birth-*values* of essential classes of
+        dimension ``n``.
+    """
+    D = (point_cloud.unsqueeze(0) - point_cloud.unsqueeze(1)).pow(2).sum(2)
+    tmp = torch.zeros_like(D)
+    tmp[D == 0.0] = EPSILON
+    D = D + tmp
+    D = D.sqrt()
+    return __C.VRCompCuda__vr_persistence(
+        D,
+        max_dimension,
+        max_ball_diameter)
+
+
 def vr_persistence(
         distance_matrix: Tensor,
         max_dimension: int,
@@ -290,3 +337,84 @@ def vr_persistence(
         distance_matrix,
         max_dimension,
         max_ball_diameter)
+
+
+# region unofficial part functionality
+
+
+class _VrPersistenceL_1:
+    def __call__(self, point_cloud):
+        D = (point_cloud.unsqueeze(0) - point_cloud.unsqueeze(1)).abs().sum(2)
+
+        return vr_persistence(D, 0, 0)
+
+
+class _VrPersistenceL_2:
+    def __call__(self, point_cloud):
+        D = (point_cloud.unsqueeze(0) - point_cloud.unsqueeze(1)).pow(2).sum(2)
+        tmp = torch.zeros_like(D)
+        tmp[D == 0.0] = EPSILON
+        D = D + tmp
+        D = D.sqrt()
+        return vr_persistence(D, 0, 0)
+
+
+class _VrPersistenceL_p:
+    """
+    IMPORTANT: This handles 0 distance differently than VrPersistenceL_2.
+    Since p < 0 is possible we have to handle zero-instances at already at 
+    *coordinate* (opposed to VrPersistenceL_2 where this is done after coordinate
+    summation). 
+    """
+
+    def __init__(self, p):
+        self.p = float(p)
+
+    def __call__(self, point_cloud):
+        D = (point_cloud.unsqueeze(0) - point_cloud.unsqueeze(1)).abs()
+
+        tmp = torch.zeros_like(D)
+        tmp[D < EPSILON] = EPSILON
+        D = D + tmp
+
+        D = D.pow(self.p)
+        D = D.sum(2)
+
+        D = D.pow(1./self.p)
+
+        return vr_persistence(D, 0, 0)
+
+
+class _VrPersistenceL_inf:
+    def __call__(self, point_cloud):
+        D = (point_cloud.unsqueeze(0) - point_cloud.unsqueeze(1)).abs()
+        D = D.max(dim=-1)[0]
+
+        return vr_persistence(D, 0, 0)
+
+
+class _VrPersistenceF_p:
+    def __init__(self, p):
+        self.p = float(p)
+
+    def __call__(self, point_cloud):
+        D = (point_cloud.unsqueeze(0) - point_cloud.unsqueeze(1)).abs()
+
+        tmp = torch.zeros_like(D)
+        tmp[D < EPSILON] = EPSILON
+        D = D + tmp
+
+        D = D.pow(self.p)
+        D = D.sum(2)
+
+        return vr_persistence(D, 0, 0)
+
+
+class _VrPersistenceF_0:
+    def __call__(self, point_cloud):
+        D = (point_cloud.unsqueeze(0) - point_cloud.unsqueeze(1)).abs()
+
+        D = D / (1. + D)
+        D = D.sum(2)
+
+        return vr_persistence(D, 0, 0)

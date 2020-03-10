@@ -376,6 +376,35 @@ dimension <code class="docutils literal notranslate"><span class="pre">n</span><
 </dl>
 </dd></dl>
 
+<dl class="function">
+<dt id="torchph.pershom.pershom_backend.vr_persistence_l2">
+<code class="sig-prename descclassname">torchph.pershom.pershom_backend.</code><code class="sig-name descname">vr_persistence_l2</code><span class="sig-paren">(</span><em class="sig-param">point_cloud: torch.Tensor</em>, <em class="sig-param">max_dimension: int</em>, <em class="sig-param">max_ball_diameter: float = 0.0</em><span class="sig-paren">)</span> &#x2192; List[List[torch.Tensor]]<a class="reference internal" href="_modules/torchph/pershom/pershom_backend.html#vr_persistence_l2"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torchph.pershom.pershom_backend.vr_persistence_l2" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the barcodes of the Vietoris-Rips complex of a given point cloud
+w.r.t. the l2 (euclidean) distance.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>If <code class="docutils literal notranslate"><span class="pre">point_cloud</span></code> has entries whose pairwise distances are 0, the
+gradient would not be defined as <code class="docutils literal notranslate"><span class="pre">sqrt</span></code> is involved. Thus, we add an <span class="math notranslate nohighlight">\(\varepsilon\)</span> to those entries. This is defined in the <code class="docutils literal notranslate"><span class="pre">EPSILON</span></code> variable of this module.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>point_cloud</strong> – Point cloud from which the Vietoris-Rips complex is generated.</p></li>
+<li><p><strong>max_dimension</strong> – The dimension of the used Vietoris-Rips complex.</p></li>
+<li><p><strong>max_ball_diameter</strong> – If not 0, edges whose two defining vertices’ distance is greater
+than <code class="docutils literal notranslate"><span class="pre">max_ball_diameter</span></code> are ignored.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><p>List of birth/death times.</p>
+<p><code class="docutils literal notranslate"><span class="pre">ret[0][n]</span></code> are non essential birth/death-<em>values</em> of dimension <code class="docutils literal notranslate"><span class="pre">n</span></code>.</p>
+<p><code class="docutils literal notranslate"><span class="pre">ret[1][n]</span></code> are birth-<em>values</em> of essential classes of
+dimension <code class="docutils literal notranslate"><span class="pre">n</span></code>.</p>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
 </div>
 </div>
 

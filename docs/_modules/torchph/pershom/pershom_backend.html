@@ -246,7 +246,7 @@
         <span class="n">ex</span> <span class="o">=</span> <span class="n">ex</span>
 
         <span class="k">def</span> <span class="fm">__getattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="bp">self</span><span class="o">.</span><span class="n">ex</span> 
+            <span class="k">raise</span> <span class="bp">self</span><span class="o">.</span><span class="n">ex</span>
 
     <span class="n">__C</span> <span class="o">=</span> <span class="n">ErrorThrower</span><span class="p">()</span>
 
@@ -416,6 +416,49 @@
         <span class="n">max_ball_diameter</span><span class="p">)</span></div>
 
 
+<div class="viewcode-block" id="vr_persistence_l2"><a class="viewcode-back" href="../../../pershom.html#torchph.pershom.pershom_backend.vr_persistence_l2">[docs]</a><span class="k">def</span> <span class="nf">vr_persistence_l2</span><span class="p">(</span>
+        <span class="n">point_cloud</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span>
+        <span class="n">max_dimension</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">max_ball_diameter</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]]:</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Returns the barcodes of the Vietoris-Rips complex of a given point cloud</span>
+<span class="sd">    w.r.t. the l2 (euclidean) distance.</span>
+
+<span class="sd">    .. warning:: </span>
+
+<span class="sd">        If ``point_cloud`` has entries whose pairwise distances are 0, the </span>
+<span class="sd">        gradient would not be defined as ``sqrt`` is involved. Thus, we add an :math:`\varepsilon` to those entries. This is defined in the ``EPSILON`` variable of this module. </span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        point_cloud:</span>
+<span class="sd">            Point cloud from which the Vietoris-Rips complex is generated.</span>
+
+<span class="sd">        max_dimension:</span>
+<span class="sd">            The dimension of the used Vietoris-Rips complex.</span>
+
+<span class="sd">        max_ball_diameter:</span>
+<span class="sd">            If not 0, edges whose two defining vertices&#39; distance is greater</span>
+<span class="sd">            than ``max_ball_diameter`` are ignored.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        List of birth/death times.</span>
+
+<span class="sd">        ``ret[0][n]`` are non essential birth/death-*values* of dimension ``n``.</span>
+
+<span class="sd">        ``ret[1][n]`` are birth-*values* of essential classes of</span>
+<span class="sd">        dimension ``n``.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">D</span> <span class="o">=</span> <span class="p">(</span><span class="n">point_cloud</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">-</span> <span class="n">point_cloud</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">pow</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+    <span class="n">tmp</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">D</span><span class="p">)</span>
+    <span class="n">tmp</span><span class="p">[</span><span class="n">D</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">]</span> <span class="o">=</span> <span class="n">EPSILON</span>
+    <span class="n">D</span> <span class="o">=</span> <span class="n">D</span> <span class="o">+</span> <span class="n">tmp</span>
+    <span class="n">D</span> <span class="o">=</span> <span class="n">D</span><span class="o">.</span><span class="n">sqrt</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">__C</span><span class="o">.</span><span class="n">VRCompCuda__vr_persistence</span><span class="p">(</span>
+        <span class="n">D</span><span class="p">,</span>
+        <span class="n">max_dimension</span><span class="p">,</span>
+        <span class="n">max_ball_diameter</span><span class="p">)</span></div>
+
+
 <div class="viewcode-block" id="vr_persistence"><a class="viewcode-back" href="../../../pershom.html#torchph.pershom.pershom_backend.vr_persistence">[docs]</a><span class="k">def</span> <span class="nf">vr_persistence</span><span class="p">(</span>
         <span class="n">distance_matrix</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span>
         <span class="n">max_dimension</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
@@ -451,6 +494,94 @@
         <span class="n">distance_matrix</span><span class="p">,</span>
         <span class="n">max_dimension</span><span class="p">,</span>
         <span class="n">max_ball_diameter</span><span class="p">)</span></div>
+
+
+<span class="c1"># region unofficial part functionality</span>
+
+
+<span class="k">class</span> <span class="nc">_VrPersistenceL_1</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">point_cloud</span><span class="p">):</span>
+        <span class="n">D</span> <span class="o">=</span> <span class="p">(</span><span class="n">point_cloud</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">-</span> <span class="n">point_cloud</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">abs</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">vr_persistence</span><span class="p">(</span><span class="n">D</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">_VrPersistenceL_2</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">point_cloud</span><span class="p">):</span>
+        <span class="n">D</span> <span class="o">=</span> <span class="p">(</span><span class="n">point_cloud</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">-</span> <span class="n">point_cloud</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">pow</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+        <span class="n">tmp</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">D</span><span class="p">)</span>
+        <span class="n">tmp</span><span class="p">[</span><span class="n">D</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">]</span> <span class="o">=</span> <span class="n">EPSILON</span>
+        <span class="n">D</span> <span class="o">=</span> <span class="n">D</span> <span class="o">+</span> <span class="n">tmp</span>
+        <span class="n">D</span> <span class="o">=</span> <span class="n">D</span><span class="o">.</span><span class="n">sqrt</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">vr_persistence</span><span class="p">(</span><span class="n">D</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">_VrPersistenceL_p</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    IMPORTANT: This handles 0 distance differently than VrPersistenceL_2.</span>
+<span class="sd">    Since p &lt; 0 is possible we have to handle zero-instances at already at </span>
+<span class="sd">    *coordinate* (opposed to VrPersistenceL_2 where this is done after coordinate</span>
+<span class="sd">    summation). </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">p</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">point_cloud</span><span class="p">):</span>
+        <span class="n">D</span> <span class="o">=</span> <span class="p">(</span><span class="n">point_cloud</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">-</span> <span class="n">point_cloud</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">abs</span><span class="p">()</span>
+
+        <span class="n">tmp</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">D</span><span class="p">)</span>
+        <span class="n">tmp</span><span class="p">[</span><span class="n">D</span> <span class="o">&lt;</span> <span class="n">EPSILON</span><span class="p">]</span> <span class="o">=</span> <span class="n">EPSILON</span>
+        <span class="n">D</span> <span class="o">=</span> <span class="n">D</span> <span class="o">+</span> <span class="n">tmp</span>
+
+        <span class="n">D</span> <span class="o">=</span> <span class="n">D</span><span class="o">.</span><span class="n">pow</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">p</span><span class="p">)</span>
+        <span class="n">D</span> <span class="o">=</span> <span class="n">D</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+
+        <span class="n">D</span> <span class="o">=</span> <span class="n">D</span><span class="o">.</span><span class="n">pow</span><span class="p">(</span><span class="mf">1.</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">p</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">vr_persistence</span><span class="p">(</span><span class="n">D</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">_VrPersistenceL_inf</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">point_cloud</span><span class="p">):</span>
+        <span class="n">D</span> <span class="o">=</span> <span class="p">(</span><span class="n">point_cloud</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">-</span> <span class="n">point_cloud</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">abs</span><span class="p">()</span>
+        <span class="n">D</span> <span class="o">=</span> <span class="n">D</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">vr_persistence</span><span class="p">(</span><span class="n">D</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">_VrPersistenceF_p</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">p</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">point_cloud</span><span class="p">):</span>
+        <span class="n">D</span> <span class="o">=</span> <span class="p">(</span><span class="n">point_cloud</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">-</span> <span class="n">point_cloud</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">abs</span><span class="p">()</span>
+
+        <span class="n">tmp</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">D</span><span class="p">)</span>
+        <span class="n">tmp</span><span class="p">[</span><span class="n">D</span> <span class="o">&lt;</span> <span class="n">EPSILON</span><span class="p">]</span> <span class="o">=</span> <span class="n">EPSILON</span>
+        <span class="n">D</span> <span class="o">=</span> <span class="n">D</span> <span class="o">+</span> <span class="n">tmp</span>
+
+        <span class="n">D</span> <span class="o">=</span> <span class="n">D</span><span class="o">.</span><span class="n">pow</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">p</span><span class="p">)</span>
+        <span class="n">D</span> <span class="o">=</span> <span class="n">D</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">vr_persistence</span><span class="p">(</span><span class="n">D</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">_VrPersistenceL_Inf</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">point_cloud</span><span class="p">):</span>
+        <span class="n">D</span> <span class="o">=</span> <span class="p">(</span><span class="n">point_cloud</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">-</span> <span class="n">point_cloud</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
+        <span class="n">D</span> <span class="o">=</span> <span class="n">D</span><span class="o">.</span><span class="n">abs</span><span class="p">()</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">2</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">vr_persistence</span><span class="p">(</span><span class="n">D</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">_VrPersistenceF_0</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">point_cloud</span><span class="p">):</span>
+        <span class="n">D</span> <span class="o">=</span> <span class="p">(</span><span class="n">point_cloud</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">-</span> <span class="n">point_cloud</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">abs</span><span class="p">()</span>
+
+        <span class="n">D</span> <span class="o">=</span> <span class="n">D</span> <span class="o">/</span> <span class="p">(</span><span class="mf">1.</span> <span class="o">+</span> <span class="n">D</span><span class="p">)</span>
+        <span class="n">D</span> <span class="o">=</span> <span class="n">D</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">vr_persistence</span><span class="p">(</span><span class="n">D</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
 </pre></div>
 
            </div>
