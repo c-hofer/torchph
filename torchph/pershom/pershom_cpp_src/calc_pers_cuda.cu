@@ -97,15 +97,15 @@ Tensor find_slicing_indices_cuda_kernel_call(
     const int blocks = pivots.size(0) / threads_per_block + 1;
 
     find_left_slicings_indices_cuda_kernel<scalar_t><<<blocks, threads_per_block, 0, at::cuda::getCurrentCUDAStream()>>>(
-        pivots.data<scalar_t>(),
-        output.data<scalar_t>(),
+        pivots.data_ptr<scalar_t>(),
+        output.data_ptr<scalar_t>(),
         pivots.size(0));
 
     cudaCheckError(); 
 
     find_right_slicings_indices_cuda_kernel<scalar_t><<<blocks, threads_per_block, 0, at::cuda::getCurrentCUDAStream()>>>(
-        pivots.data<scalar_t>(),
-        output.data<scalar_t>(),
+        pivots.data_ptr<scalar_t>(),
+        output.data_ptr<scalar_t>(),
         pivots.size(0));
 
     cudaCheckError(); 
@@ -222,9 +222,9 @@ Tensor sorted_pivot_indices_to_merge_pairs_cuda_kernel_call(
     const int threads_per_block_apply_slicings = 256;
     const int blocks_apply_slicings = slicings.size(0) / threads_per_block_apply_slicings + 1;
     extract_slicings_cuda_kernel<<<threads_per_block_apply_slicings, blocks_apply_slicings, 0, at::cuda::getCurrentCUDAStream()>>>(
-        input.data<int64_t>(),
-        slicings.data<int64_t>(),
-        extracted_slicings.data<int64_t>(),
+        input.data_ptr<int64_t>(),
+        slicings.data_ptr<int64_t>(),
+        extracted_slicings.data_ptr<int64_t>(),
         extracted_slicings.size(0),
         extracted_slicings.size(1));
 
@@ -243,12 +243,12 @@ Tensor sorted_pivot_indices_to_merge_pairs_cuda_kernel_call(
     const int blocks = extracted_slicings_sorted.size(0) / threads_per_block + 1;
 
     format_extracted_sorted_slicings_to_merge_pairs_kernel<<<threads_per_block, blocks, 0, at::cuda::getCurrentCUDAStream()>>>(
-        extracted_slicings_sorted.data<int64_t>(),
+        extracted_slicings_sorted.data_ptr<int64_t>(),
         extracted_slicings_sorted.size(0),
         extracted_slicings_sorted.size(1),
-        lengths.data<int64_t>(),
-        row_offset_for_thread.data<int64_t>(),
-        merge_pairings.data<int64_t>());
+        lengths.data_ptr<int64_t>(),
+        row_offset_for_thread.data_ptr<int64_t>(),
+        merge_pairings.data_ptr<int64_t>());
 
     cudaCheckError(); 
 
@@ -420,10 +420,10 @@ void merge_columns_cuda_kernel_call(
     comp_desc_sort_ba.index_fill_(0, targets, -1);
 
     merge_columns_cuda_kernel<int64_t><<<blocks, threads_per_block, 0, at::cuda::getCurrentCUDAStream()>>>(
-        comp_desc_sort_ba.data<int64_t>(),
+        comp_desc_sort_ba.data_ptr<int64_t>(),
         comp_desc_sort_ba.size(1),
-        cache.data<int64_t>(),
-        merge_pairings.data<int64_t>(),
+        cache.data_ptr<int64_t>(),
+        merge_pairings.data_ptr<int64_t>(),
         merge_pairings.size(0),
         d_boundary_array_needs_resize);
 

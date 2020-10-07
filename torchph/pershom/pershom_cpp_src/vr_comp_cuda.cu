@@ -77,7 +77,7 @@ Tensor binomial_table(int64_t max_n, int64_t max_k, const Device& device){
 
 
     binomial_table_kernel<<<num_blocks, threads_per_block, 0, at::cuda::getCurrentCUDAStream()>>>(
-        ret.data<int64_t>(),
+        ret.data_ptr<int64_t>(),
         max_n, 
         max_k);      
 
@@ -246,13 +246,13 @@ void write_combinations_table_to_tensor(
     int blocks = n_max_over_r/(threads_per_block*n_comb_by_thread) + 1;
 
     write_combinations_to_tensor_kernel<<<blocks, threads_per_block, 0, at::cuda::getCurrentCUDAStream()>>>(
-        out.data<int64_t>(), 
+        out.data_ptr<int64_t>(), 
         out_row_offset, 
         out.size(1), 
         additive_constant, 
         max_n, 
         r, 
-        bt.data<int64_t>(),
+        bt.data_ptr<int64_t>(),
         n_comb_by_thread, 
         n_max_over_r
     );
@@ -304,9 +304,8 @@ __global__ void mask_of_valid_co_faces_from_combinations_kernel(
             }
         }
 
-
         thrust::device_ptr<int64_t> dptr_tmp(tmp);
-        thrust::sort(thrust::seq, dptr_tmp, dptr_tmp + n_faces+1);
+        thrust::sort(thrust::seq, dptr_tmp, dptr_tmp + n_faces + 1);
 
         bool is_boundary = true; 
         for (int i = 1; i < n_faces+1; i += 2){
@@ -339,12 +338,12 @@ Tensor co_faces_from_combinations(
     int blocks = combinations.size(0)/threads_per_block + 1;
 
     mask_of_valid_co_faces_from_combinations_kernel<<<blocks, threads_per_block, 0, at::cuda::getCurrentCUDAStream()>>>(
-        combinations.data<int64_t>(), 
+        combinations.data_ptr<int64_t>(), 
         combinations.size(0),
         combinations.size(1),
-        faces.data<int64_t>(),
+        faces.data_ptr<int64_t>(),
         faces.size(1), 
-        mask.data<int64_t>()
+        mask.data_ptr<int64_t>()
     );
     
     cudaCheckError(); 
