@@ -86,7 +86,9 @@ def test_co_faces_from_combinations__no_co_face():
     assert result.tolist() == expected_result
 
 
-@pytest.mark.parametrize("n_vertices, dim_faces", [(10, 2), (8, 3)])
+# Use only rather small parameters for this test. Otherwise, it may cause 
+# random out of memory errors! 
+@pytest.mark.parametrize("n_vertices, dim_faces", [(10, 2), (5, 3)])
 def test_co_faces_from_combinations__result(n_vertices, dim_faces):
     faces = [sorted(f) for f in combinations(range(n_vertices), dim_faces)]
     comb = [sorted(cf) for cf in combinations(range(len(faces)), dim_faces + 1)]

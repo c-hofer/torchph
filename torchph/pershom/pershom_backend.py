@@ -90,17 +90,6 @@ except Exception as ex:
     __C = ErrorThrower()
 
 
-def _backend_guard(func):
-    if __C is not None:
-        return func
-
-    else:
-        def raise_error():
-            raise __COMPILATION_ERROR
-
-        return raise_error
-
-
 def find_merge_pairings(
         pivots: Tensor,
         max_pairs: int = -1
