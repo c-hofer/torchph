@@ -7,7 +7,6 @@ For a basic tutorial click `here <tutorials/SLayer.html>`_.
 """
 import torch
 import numpy as np
-from torch.tensor import Tensor
 from torch.nn.parameter import Parameter
 from torch.nn.modules.module import Module
 
@@ -20,9 +19,9 @@ import warnings
 
 
 def prepare_batch(
-        batch: List[Tensor],
+        batch: List[torch.Tensor],
         point_dim: int=None
-        )->Tuple[Tensor, Tensor, int, int]:
+        )->Tuple[torch.Tensor, torch.Tensor, int, int]:
     """
     This method 'vectorizes' the multiset in order to take advances of GPU
     processing. The policy is to embed all multisets in batch to the highest
@@ -99,12 +98,12 @@ def is_prepared_batch(input):
         return False
     else:
         batch, not_dummy_points, max_points, batch_size = input
-        return isinstance(batch, Tensor) and isinstance(not_dummy_points, Tensor) and max_points > 0 and batch_size > 0
+        return isinstance(batch, torch.Tensor) and isinstance(not_dummy_points, torch.Tensor) and max_points > 0 and batch_size > 0
 
 
 def is_list_of_tensors(input):
     try:
-        return all([isinstance(x, Tensor) for x in input])
+        return all([isinstance(x, torch.Tensor) for x in input])
 
     except TypeError:
         return False
@@ -159,8 +158,8 @@ class SLayerExponential(Module):
     """
     def __init__(self, n_elements: int,
                  point_dimension: int=2,
-                 centers_init: Tensor=None,
-                 sharpness_init: Tensor=None):
+                 centers_init: torch.Tensor=None,
+                 sharpness_init: torch.Tensor=None):
         """
         Args:
             n_elements:
@@ -195,7 +194,7 @@ class SLayerExponential(Module):
         self.centers = Parameter(centers_init)
         self.sharpness = Parameter(sharpness_init)
 
-    def forward(self, input)->Tensor:
+    def forward(self, input)->torch.Tensor:
         batch, not_dummy_points, max_points, batch_size = prepare_batch_if_necessary(
             input,
             point_dimension=self.point_dimension)
@@ -234,9 +233,9 @@ class SLayerRational(Module):
     """
     def __init__(self, n_elements: int,
                  point_dimension: int=2,
-                 centers_init: Tensor=None,
-                 sharpness_init: Tensor=None,
-                 exponent_init: Tensor=None,
+                 centers_init: torch.Tensor=None,
+                 sharpness_init: torch.Tensor=None,
+                 exponent_init: torch.Tensor=None,
                  pointwise_activation_threshold=None,
                  share_sharpness=False,
                  share_exponent=False,
@@ -294,7 +293,7 @@ class SLayerRational(Module):
         else:
             self.exponent = Parameter(exponent_init)
 
-    def forward(self, input)->Tensor:
+    def forward(self, input)->torch.Tensor:
         batch, not_dummy_points, max_points, batch_size = prepare_batch_if_necessary(
             input,
             point_dimension=self.point_dimension)
@@ -349,7 +348,7 @@ class SLayerRationalHat(Module):
     """
     def __init__(self, n_elements: int,
                  point_dimension: int=2,
-                 centers_init: Tensor=None,
+                 centers_init: torch.Tensor=None,
                  radius_init: float=1,
                  exponent: int=1
                  ):
@@ -391,7 +390,7 @@ class SLayerRationalHat(Module):
         self.radius = Parameter(radius_init)
         self.norm_p = 1
 
-    def forward(self, input)->Tensor:
+    def forward(self, input)->torch.Tensor:
         batch, not_dummy_points, max_points, batch_size = prepare_batch_if_necessary(
             input,
             point_dimension=self.point_dimension)
